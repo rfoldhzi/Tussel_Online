@@ -12,6 +12,14 @@ function gridMouse(x,y) {
 
 function handleClick(xPos,yPos) {
     console.log("handling")
+
+    for (let btn of ButtonCollection) {
+
+        if (btn.potentialMouseClick(xPos,yPos)) {
+            return;
+        }
+    }
+
     let position = gridMouse(xPos,yPos);
 
 
