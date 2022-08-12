@@ -1,6 +1,6 @@
 let board_x_start = 0
 let board_y_start = 0
-
+let moveCircles = []
 
 function gridMouse(x,y) {
     x = x - x_offset;
@@ -8,7 +8,10 @@ function gridMouse(x,y) {
     return [Math.floor(x/(size)), Math.floor(y/(size))];
 }
 
-
+function clearSelected() {
+    selected = null;
+    moveCircles = []
+}
 
 function handleClick(xPos,yPos) {
     console.log("handling")
@@ -27,7 +30,14 @@ function handleClick(xPos,yPos) {
     y = position[1] + board_y_start;
 
     if (x >= 0 && y >= 0 && y<gameObject.height && x< gameObject.width) {
-        selected = getUnitFromPos(this_player,x,y)
+        selected = getUnitFromPos(this_player,x,y);
+        if (selected) {
+            moveCircles = getMoveCircles(selected);
+            console.log("movecircles: "+moveCircles)
+        } else {
+            clearSelected()
+        }
+        
     }
     drawBoard();
 }

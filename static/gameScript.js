@@ -9,3 +9,26 @@ function getUnitFromPos(player,x,y) {
     return null;
 }
        
+function getAnyUnitFromPos(x,y) {
+    for (let player in gameObject.units) {
+        for (let unit of gameObject.units[player]) {
+            console.log(unit)
+            if (unit.position[0] == x && unit.position[1] == y){
+                console.log("selected equals")
+                return unit;
+            }
+        }
+    }
+    return null;
+}
+
+function getPlayerfromUnit(unit) {
+    for (let player in gameObject.units) {
+        for (let unit2 of gameObject.units[player]) {
+            if (unit === unit2) {
+                return player;
+            }
+        }
+    }
+    return null;
+}

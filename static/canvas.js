@@ -56,6 +56,7 @@ function loadGame() {
             generateBoardColors();
         }
         gameObject = newGameObject;
+        clearSelected()
         drawBoard()
     }
     httpGetAsync("http://" + window.location.host + "/finish_turn", callback);
@@ -127,6 +128,16 @@ function clearBoard() {
     context.clearRect(0, 0, canvas.width, canvas.height);
 }
 
+let BlueCircle = new Image(size, size)
+BlueCircle.src = '/static/assets/MoveCircle.png'
+
+function drawMoveCircles() {
+    for (const position of moveCircles) {
+        console.log(position);
+        context.drawImage(BlueCircle, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+    }
+}
+
 function drawUnits() {
     for (const player in gameObject.units) {
         for (const unit of gameObject.units[player]) {
@@ -154,6 +165,7 @@ function drawBoard() {
 
     context.textAlign = "right";
     drawUnits();
+    drawMoveCircles()
     for (let btn of ButtonCollection) {
         btn.render();
     }
