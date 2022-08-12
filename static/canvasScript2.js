@@ -33,13 +33,23 @@ function getUnitImage(player, name) {
     if (!(name in unitImages[player])) {
         if (!(name in baseUnitImages)) {
             let img = new Image(size, size);
+            console.log("requesting image "+name);
             img.src = '/static/assets/' + name + '.png';
 
             img.onload = function () {
                 img.setAttribute('crossOrigin', '');
                 img.crossOrigin = "Anonymous";
                 baseUnitImages[name] = img;
+
+                console.log("recieved image "+name);
+                unitImages= [];
+                drawBoard();
             }
+            baseUnitImages[name] = null;
+            return null;
+        }
+        if (baseUnitImages[name] == null) {
+            return null;
         }
 
 
@@ -116,7 +126,7 @@ function lowestNextTo(x, y) { //Calculates which adjecent tile has lowest depth 
 }
 
 function generateDepthMap() {
-    console.log(Grid);
+    depthMap = [];
 
     for (let layer of Grid) { //This part sets all land to 0 and water to -1
         let list = []
@@ -157,6 +167,7 @@ function generateDepthMap() {
 }
 
 function generateGrid() {
+    Grid = []
     let numbers = gameObject.intGrid;
     let i = 0
     let total = 0;
@@ -175,7 +186,7 @@ function generateGrid() {
             layer.push(TF);
             i += 1;
             total += 1;
-            console.log("a true false");
+            //console.log("a true false");
         }
     }
     Grid.push(layer); //One last for push for final layer
@@ -186,7 +197,7 @@ function generateGrid() {
 }
 
 function generateBoardColors() {
-    console.log(depthMap)
+    BoardColors = []
     for (let y = 0; y < gameObject.height; y++) {
         for (let x = 0; x < gameObject.width; x++) {
             if (Grid[y][x]) {
