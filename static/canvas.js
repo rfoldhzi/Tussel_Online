@@ -35,6 +35,13 @@ class Button {
     }
 }
 
+function httpPostAsync(theUrl, data) {
+    var xmlHttp = new XMLHttpRequest();
+    //var data = JSON.stringify({"data": data});
+    xmlHttp.open("POST", theUrl, true);
+    xmlHttp.send(data);
+}
+
 function httpGetAsync(theUrl, callback) {
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = function () {
@@ -44,6 +51,7 @@ function httpGetAsync(theUrl, callback) {
     xmlHttp.open("GET", theUrl, true); // true for asynchronous 
     xmlHttp.send(null);
 }
+
 
 
 function loadGame() {
@@ -59,10 +67,36 @@ function loadGame() {
         clearSelected()
         drawBoard()
     }
+    //httpPostAsync("http://" + window.location.host + "/action", "{'apple':'hello world2'}");
     httpGetAsync("http://" + window.location.host + "/finish_turn", callback);
 }
 
+function sendToServer(text) {
+    console.log("sending to server: "+text)
+    httpPostAsync("http://" + window.location.host + "/action", text);
+}
 
+function convertToStr(u, state, stateData) {
+    let s = u.UnitID+':'+state+':';
+    if (state == 'move') {
+        s+= stateData[0]+':'+stateData[1]
+    } else if (state == 'attack') {
+        s+= stateData.UnitID
+    } else if (state == 'heal') {
+        s+= stateData.UnitID
+    } else if (state == 'resources') {
+        s+= stateData
+    } else if (state == 'research') {
+        s+= stateData
+    } else if (state == 'build') {
+        s+= stateData[0][0]+':'+stateData[0][1]
+        s+= stateData[1]
+    } else if (state == 'transport') {
+        s+= stateData[0][0]+':'+stateData[0][1]
+        s+= stateData[1]
+    }
+    return s
+}
 
 
 
