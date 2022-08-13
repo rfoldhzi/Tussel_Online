@@ -26,7 +26,7 @@ function buildButtonClicked(btn) {
     stateDataMode = 'build2'
     moveCircles = []
     buildButtons = []
-    buildHexes = getRangeCircles(selected, built = btn.name)
+    buildHexes = getRangeCircles(selected, false, btn.name)
     drawBoard();
 }
 

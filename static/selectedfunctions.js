@@ -14,8 +14,9 @@ function getMoveCircles(unit) {
             for (let pos of spaces){
                 for (let x = pos[0]-1; x < pos[0]+2; x++) {
                     for (let y = pos[1]-1; y < pos[1]+2; y++) {
-
-                        if (!(spaces.includes([x,y])) && x >= 0 && y >= 0 && y<gameObject.height && x<gameObject.width) { //If within board
+                        //let inSpaces = JSON.stringify(moveCircles).indexOf(JSON.stringify([x,y])) !== -1
+                        //if (!(spaces.includes([x,y])) && x >= 0 && y >= 0 && y<gameObject.height && x<gameObject.width) { //If within board
+                        if (!(x == unit.position[0] && y == unit.position[1]) && x >= 0 && y >= 0 && y<gameObject.height && x<gameObject.width) { //If within board
                             blocking_unit = getAnyUnitFromPos(x,y)
                             if (blocking_unit != null) {
                                 if (getPlayerfromUnit(blocking_unit) == this_player) {
@@ -47,7 +48,8 @@ function getMoveCircles(unit) {
      } else {
         for (let x = unit.position[0]-sp; x < unit.position[0]+1+sp; x++) {
             for (let y = unit.position[1]-sp; y < unit.position[1]+1+sp; y++) {
-                if ( !(spaces.includes([x,y])) && x >= 0 && y >= 0 && y<gameObject.height && x<gameObject.width) { 
+                if (!(x == unit.position[0] && y == unit.position[1]) && x >= 0 && y >= 0 && y<gameObject.height && x<gameObject.width) { //If within board
+                //if ( !(spaces.includes([x,y])) && x >= 0 && y >= 0 && y<gameObject.height && x<gameObject.width) { 
                     blocking_unit = getAnyUnitFromPos(x,y)
                     if (blocking_unit != null) {
                         if (getPlayerfromUnit(blocking_unit) == this_player) {
