@@ -3,6 +3,7 @@ let board_y_start = 0
 let moveCircles = []
 let buildHexes = []
 let buildButtons = []
+let possibleAttacks = []
 let stateDataMode = null;
 
 function gridMouse(x,y) {
@@ -17,6 +18,7 @@ function clearSelected() {
     moveCircles = []
     buildHexes = []
     buildButtons = []
+    possibleAttacks = []
 }
 
 function buildButtonClicked(btn) {
@@ -26,6 +28,7 @@ function buildButtonClicked(btn) {
     stateDataMode = 'build2'
     moveCircles = []
     buildButtons = []
+    possibleAttacks = []
     buildHexes = getRangeCircles(selected, false, btn.name)
     drawBoard();
 }
@@ -74,9 +77,21 @@ function handleClick(xPos,yPos) {
             return;
         }
 
+        if (JSON.stringify(possibleAttacks).indexOf(JSON.stringify([x,y])) !== -1) {
+            console.log("clicked on a attack")
+            selected.stateData = getAnyUnitFromPos(x,y)      
+            console.log(selected.stateData)    
+            selected.state = 'attack'
+            sendToServer(convertToStr(selected,'attack',selected.stateData))
+            clearSelected();
+            drawBoard();
+            return;
+        }
+
         selected = getUnitFromPos(this_player,x,y);
         if (selected) {
             moveCircles = getMoveCircles(selected);
+            possibleAttacks = getAttacks(selected);
             if (selected.possibleStates.includes("build")) {
                 buildButtons = []
                 let possibleBuilds = selected.possiblebuilds || UnitDB[selected.name]['possibleBuilds'] || []

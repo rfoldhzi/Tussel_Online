@@ -40,3 +40,7 @@ function checkFriendly(unit1, unit2) {
     } 
     return gameObject.units[player].includes(unit2);
 }
+
+function checkFriendlyPlayer(unit, player) {
+    return gameObject.units[player].includes(unit);
+}

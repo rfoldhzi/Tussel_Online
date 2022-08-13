@@ -109,3 +109,34 @@ function getRangeCircles(unit, anyBlock = false, built = false) {
     }
     return spaces
 }
+
+function getAttacks(unit) {
+    if (!unit.possibleStates.includes("attack")) {
+        return []
+    }
+    let spaces = getRangeCircles(unit, true)
+    let finalSpaces = []
+    for (let pos of spaces) {
+        u = getAnyUnitFromPos(pos[0],pos[1])
+        if (u != null) {
+            goodToAdd = true
+            if (u == unit) {
+                goodToAdd = false
+            }
+            if ('onlyHit' in unit.abilities) {
+                if (!unit.abilities['onlyHit'].includes(u.type)) {
+                    goodToAdd = false
+                }
+                    
+            }
+                
+            if (goodToAdd && (checkFriendlyPlayer(u, this_player))) {
+                goodToAdd = false;
+            }
+            if (goodToAdd) {
+                finalSpaces.push(pos)
+            }
+        }
+    }
+    return finalSpaces;
+}
