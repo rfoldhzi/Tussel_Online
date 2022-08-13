@@ -66,7 +66,7 @@ function loadGame() {
     callback = function (responseText) {
         jsonText = responseText;
         newGameObject = JSON.parse(jsonText)
-        if (gameObject.intGrid.join(',')!== newGameObject.intGrid.join(',')) {
+        if (gameObject.intGrid.join(',') !== newGameObject.intGrid.join(',')) {
             gameObject = newGameObject;
             generateGrid()
             generateBoardColors();
@@ -80,28 +80,28 @@ function loadGame() {
 }
 
 function sendToServer(text) {
-    console.log("sending to server: "+text)
+    console.log("sending to server: " + text)
     httpPostAsync("http://" + window.location.host + "/action", text);
 }
 
 function convertToStr(u, state, stateData) {
-    let s = u.UnitID+':'+state+':';
+    let s = u.UnitID + ':' + state + ':';
     if (state == 'move') {
-        s+= stateData[0]+':'+stateData[1]
+        s += stateData[0] + ':' + stateData[1]
     } else if (state == 'attack') {
-        s+= stateData.UnitID
+        s += stateData.UnitID
     } else if (state == 'heal') {
-        s+= stateData.UnitID
+        s += stateData.UnitID
     } else if (state == 'resources') {
-        s+= stateData
+        s += stateData
     } else if (state == 'research') {
-        s+= stateData
+        s += stateData
     } else if (state == 'build') {
-        s+= stateData[0][0]+':'+stateData[0][1]+":"
-        s+= stateData[1]
+        s += stateData[0][0] + ':' + stateData[0][1] + ":"
+        s += stateData[1]
     } else if (state == 'transport') {
-        s+= stateData[0][0]+':'+stateData[0][1]+":"
-        s+= stateData[1]
+        s += stateData[0][0] + ':' + stateData[0][1] + ":"
+        s += stateData[1]
     }
     return s
 }
@@ -190,10 +190,24 @@ function drawUnits() {
     for (const player in gameObject.units) {
         for (const unit of gameObject.units[player]) {
             //console.log(unit)
-            draw(player, unit);
+            drawUnit(player, unit);
         }
     }
+}
 
+function drawTerritories() {
+    for (const player in gameObject.units) {
+        for (const unit of gameObject.units[player]) {
+            //console.log(unit)
+            drawTerritory(player, unit);
+        }
+    }
+}
+
+function drawStateLines() {
+    for (const unit of gameObject.units[this_player]) {
+        drawStateLine(unit);
+    }
 }
 
 function drawBoard() {
@@ -211,6 +225,8 @@ function drawBoard() {
     context.font = fontSize + "px Arial";
 
     context.textAlign = "right";
+    drawTerritories()
+    drawStateLines()
     drawUnits();
     drawActionIcons()
     for (let btn of ButtonCollection) {
@@ -247,14 +263,46 @@ function replaceColor2(srcR, srcG, srcB, dstR, dstG, dstB) {
     context.putImageData(im, 0, 0);
 }
 
+function drawStateLine(unit) { //As in "action state" (draws the line corresponding to a units action)
+    let position1 = unit.position
+    let position2 = null
+    let color = "#FFFFFF"
 
-function draw(player, unit) {
+    if (unit.state == "move") {
+        position2 = unit.stateData
+        color = "#00FFFF"
+    } else if (unit.state == "build") {
+        position2 = unit.stateData[0]
+        color = "#FF8800"
+    }
+
+    if (position2 != null) {
+        context.strokeStyle = color;
+        context.lineWidth = size / 4;
+
+        context.fillStyle = color;
+
+        let halfSize = size/2; //Used to center the line in the middle of square
+
+        context.beginPath();
+        context.moveTo(position1[0] * size + x_offset + halfSize, position1[1] * size + y_offset + halfSize);
+        context.lineTo(position2[0] * size + x_offset + halfSize, position2[1] * size + y_offset + halfSize);
+        context.stroke();
+        
+        context.fillRect(position2[0] * size + x_offset + size/3, position2[1] * size + y_offset + size/3, size/3, size/3);
+    }
+}
+
+function drawTerritory(player, unit) {
     if (selected === unit) {
-        context.fillStyle = "#FFFFFFBB";
+            context.fillStyle = "#FFFFFFBB";
     } else {
         context.fillStyle = rgbToHex(playerColors[player][0], playerColors[player][1], playerColors[player][2]) + "99";
     }
     context.fillRect(unit.position[0] * size + x_offset, unit.position[1] * size + y_offset, size, size);
+}
+
+function drawUnit(player, unit) {
 
     let img = getUnitImage(player, unit.name);
 
