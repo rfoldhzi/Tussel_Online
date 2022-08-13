@@ -4,14 +4,19 @@ let ButtonCollection = [];
 let doneButton;
 
 class Button {
-    constructor(x, y, width, height, color, text, func) {
+    constructor(x, y, width, height, color, text, func, ...parameters) {
         this.x = x;
         this.y = y;
         this.height = height;
         this.width = width;
         this.color = color;
         this.text = text;
-        this.func = func
+        this.func = func;
+        this.parameters = parameters;
+    }
+
+    addImage(img) {
+        this.img = img;
     }
 
     render() {
@@ -22,13 +27,16 @@ class Button {
         context.fillStyle = "white";
         context.textAlign = "center";
         context.fillText(this.text, this.x + Math.floor(this.width / 2), this.y + Math.floor(this.height * .8) + 2);
+        if (this.hasOwnProperty('img')) {
+            context.drawImage(this.img, this.x, this.y, this.width, this.height);
+        }
     }
 
     potentialMouseClick(mouseX, mouseY) {
         console.log("click checklnig");
         if (mouseX >= this.x && mouseX < this.x + this.width && mouseY >= this.y && mouseY < this.y + this.height) {
             console.log("click successful");
-            this.func()
+            this.func(this.parameters)
             return true;
         }
         return false;
@@ -89,10 +97,10 @@ function convertToStr(u, state, stateData) {
     } else if (state == 'research') {
         s+= stateData
     } else if (state == 'build') {
-        s+= stateData[0][0]+':'+stateData[0][1]
+        s+= stateData[0][0]+':'+stateData[0][1]+":"
         s+= stateData[1]
     } else if (state == 'transport') {
-        s+= stateData[0][0]+':'+stateData[0][1]
+        s+= stateData[0][0]+':'+stateData[0][1]+":"
         s+= stateData[1]
     }
     return s
@@ -164,11 +172,17 @@ function clearBoard() {
 
 let BlueCircle = new Image(size, size)
 BlueCircle.src = '/static/assets/MoveCircle.png'
+let OrangeHex = new Image(size, size)
+OrangeHex.src = '/static/assets/BuildHex.png'
 
-function drawMoveCircles() {
+function drawActionIcons() {
     for (const position of moveCircles) {
         console.log(position);
         context.drawImage(BlueCircle, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+    }
+    for (const position of buildHexes) {
+        console.log(position);
+        context.drawImage(OrangeHex, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
     }
 }
 
@@ -193,14 +207,18 @@ function drawBoard() {
             context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
         }
     }
-    //draw(4, 7,"bot");
     fontSize = Math.floor(size / 2);
     context.font = fontSize + "px Arial";
 
     context.textAlign = "right";
     drawUnits();
-    drawMoveCircles()
+    drawActionIcons()
     for (let btn of ButtonCollection) {
+        btn.render();
+    }
+    console.log("build Btns");
+    console.log(buildButtons)
+    for (let btn of buildButtons) {
         btn.render();
     }
 }

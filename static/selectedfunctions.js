@@ -30,13 +30,13 @@ function getMoveCircles(unit) {
                                     continue
                                 }
                             }
-                                
+                            let water = Grid[y][x]
+                            if ((water == (unit.type == 'boat')) || unit.type == "aircraft") {
+                                newSpaces.push([x,y])
+                            }   
                         }
                         
-                        let water = Grid[y][x]
-                        if ((water == (unit.type == 'boat')) || unit.type == "aircraft") {
-                            newSpaces.push([x,y])
-                        }
+                        
                             
                     }
                 }
@@ -71,4 +71,39 @@ function getMoveCircles(unit) {
         }
      }
     return spaces;
+}
+
+function getRangeCircles(unit, anyBlock = false, built = false) {
+    let sp = unit.range
+    let spaces = []
+    for (let x = unit.position[0]-sp; x < unit.position[0]+1+sp; x++) {
+        for (let y = unit.position[1]-sp; y < unit.position[1]+1+sp; y++) {
+            if (x >= 0 && y >= 0 && y<gameObject.height && x<gameObject.width) { //If within board:
+                let unit2 = null;
+                if (!anyBlock) {
+                    unit2 = getAnyUnitFromPos(x,y)
+                    if (unit2 && unit2.state == "move") {
+                        if (checkFriendly(unit, unit2)) {
+                            unit2 = null;
+                        }
+                    }
+                }
+                if (anyBlock || unit2 == null) {
+                    water = Grid[y][x]
+                    if (built) {
+                        t = UnitDB[built]['type'] || 0
+                        if ((water == (t == 'boat')) || t == "aircraft") {
+                            spaces.push([x,y])
+                        }
+                            
+                    } else {
+                        if (anyBlock || (!water)) {
+                            spaces.push([x,y])
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return spaces
 }

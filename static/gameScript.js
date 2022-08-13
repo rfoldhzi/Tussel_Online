@@ -32,3 +32,11 @@ function getPlayerfromUnit(unit) {
     }
     return null;
 }
+
+function checkFriendly(unit1, unit2) {
+    player = getPlayerfromUnit(unit1)
+    if (player == null) {
+        return false;
+    } 
+    return gameObject.units[player].includes(unit2);
+}
