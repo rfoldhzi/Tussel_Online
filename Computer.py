@@ -112,7 +112,7 @@ def randomizeAttacks(game, player):
             u.state = "attack"
             u.stateData = random.choice(targets)
         else:
-            u.state = None
+            pass#u.state = None
 
 def randomBuild(game, player):
     resources = copy.copy(game.resources[player])

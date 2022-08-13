@@ -942,6 +942,10 @@ class Game:
                 else:
                     setattr(unit, targetStat, buffedUnitOrignals[unit][targetStat])
         
+        for i in self.units:
+            for u in self.units[i]:
+                u.state = None
+
         print('MORE stuff')
         
                             
