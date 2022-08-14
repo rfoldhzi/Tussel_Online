@@ -10,7 +10,7 @@ const playerColors = [[219, 20, 13, 255], [0, 195, 255], [255, 116, 27, 255], [9
 [128, 242, 46], [169, 88, 245], [255, 255, 64], [18, 252, 104]];
 const resourceColors = {
     "gold":"#DDDD00",
-    "metal":"#505050",
+    "metal":"#DDDDDD",
     "energy":"#00FFFF"
 }
 

@@ -190,12 +190,15 @@ function drawActionIcons() {
     }
 }
 
+let resourceBoxHeight = 22
+
+
 function drawResources() {
 
     let newResources = {
-        "gold":0,
-        "metal":0,
-        "energy":0
+        "gold": 0,
+        "metal": 0,
+        "energy": 0
     }
 
     for (let unit of gameObject.units[this_player]) {
@@ -206,17 +209,21 @@ function drawResources() {
         }
     }
 
-    context.fillStyle = "#505050";
-    context.fillRect(0, 0, 135, 90);
+    if (canvas.height > canvas.width) {
+        resourceBoxHeight = Math.floor(canvas.height / 36) + 6
+    }
 
-    context.textAlign = "left";
-    context.font = "26px Arial";
+    context.fillStyle = "#505050";
+    context.fillRect(0, 0, canvas.width, resourceBoxHeight);
+
+    context.textAlign = "center";
+    context.font = (resourceBoxHeight - 2) + "px Arial";
     context.fillStyle = "#FFFF00";
-    context.fillText(gameObject.resources[this_player]["gold"] + " + "+newResources["gold"], 0, 10+13);
+    context.fillText(gameObject.resources[this_player]["gold"] + " + " + newResources["gold"], canvas.width * .2, resourceBoxHeight - 5);
     context.fillStyle = "#DDDDDD";
-    context.fillText(gameObject.resources[this_player]["metal"] + " + "+newResources["metal"], 0, 40+13);
+    context.fillText(gameObject.resources[this_player]["metal"] + " + " + newResources["metal"], canvas.width * .5, resourceBoxHeight - 5);
     context.fillStyle = "#00FFFF";
-    context.fillText(gameObject.resources[this_player]["energy"] + " + "+newResources["energy"], 0, 70+13);
+    context.fillText(gameObject.resources[this_player]["energy"] + " + " + newResources["energy"], canvas.width * .8, resourceBoxHeight - 5);
 }
 
 function drawUnits() {
@@ -322,20 +329,20 @@ function drawStateLine(unit) { //As in "action state" (draws the line correspond
 
         context.fillStyle = color;
 
-        let halfSize = size/2; //Used to center the line in the middle of square
+        let halfSize = size / 2; //Used to center the line in the middle of square
 
         context.beginPath();
         context.moveTo(position1[0] * size + x_offset + halfSize, position1[1] * size + y_offset + halfSize);
         context.lineTo(position2[0] * size + x_offset + halfSize, position2[1] * size + y_offset + halfSize);
         context.stroke();
-        
-        context.fillRect(position2[0] * size + x_offset + size/3, position2[1] * size + y_offset + size/3, size/3, size/3);
+
+        context.fillRect(position2[0] * size + x_offset + size / 3, position2[1] * size + y_offset + size / 3, size / 3, size / 3);
     }
 }
 
 function drawTerritory(player, unit) {
     if (selected === unit) {
-            context.fillStyle = "#FFFFFFBB";
+        context.fillStyle = "#FFFFFFBB";
     } else {
         context.fillStyle = rgbToHex(playerColors[player][0], playerColors[player][1], playerColors[player][2]) + "99";
     }
@@ -350,10 +357,10 @@ function drawUnit(player, unit) {
         let multiplier = 0.7;
         if (unit.type == "building") {
             multiplier = 0.85;
-        } else if (unit.type == "trooper" || unit.type == "bot")  {
+        } else if (unit.type == "trooper" || unit.type == "bot") {
             multiplier = 0.6;
         }
-        context.drawImage(img, size * unit.position[0] + x_offset + size*(1-multiplier)*.5, size * unit.position[1] + y_offset + size*(1-multiplier)*.5, size * multiplier, size * multiplier);
+        context.drawImage(img, size * unit.position[0] + x_offset + size * (1 - multiplier) * .5, size * unit.position[1] + y_offset + size * (1 - multiplier) * .5, size * multiplier, size * multiplier);
     }
 
     context.fillStyle = "white";
@@ -569,7 +576,12 @@ document.addEventListener('DOMContentLoaded', function () {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    doneButton = new Button(canvas.width - 250, canvas.height - 100, 230, 80, "#AAAAAA", "Done", loadGame);
+    if (canvas.height > canvas.width && canvas.width * canvas.height > 1000000) {
+        doneButton = new Button(canvas.width - 250, canvas.height - 100, 230, 80, "#AAAAAA", "Done", loadGame);
+    } else {
+        doneButton = new Button(canvas.width - 160, canvas.height - 60, 140, 50, "#AAAAAA", "Done", loadGame);
+    }
+
     ButtonCollection.push(doneButton)
 
     canvas.addEventListener('wheel', function (event) {

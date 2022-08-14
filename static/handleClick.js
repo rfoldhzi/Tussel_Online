@@ -111,27 +111,22 @@ function handleClick(xPos,yPos) {
             possibleAttacks = getAttacks(selected);
             buildButtons = [];
             resourceButtons = [];
-            if (selected.possibleStates.includes("build")) {
-                let possibleBuilds = selected.possiblebuilds || UnitDB[selected.name]['possibleBuilds'] || []
-                
-                let i = 0
-                for (let unitName of possibleBuilds) {
-                    
-                    let newBuildButton = new Button(0, Math.floor(canvas.height/4) + 100*i, 80, 80, "#AAAAAA", "", buildButtonClicked);
-                    newBuildButton.name = unitName
-                    newBuildButton.parameters = newBuildButton;
-                    newBuildButton.addImage(getUnitImage(this_player, unitName));
-                    buildButtons.push(newBuildButton);
-                    i++;
-                }
-            }
+            let heightforResources = 0;
             if (selected.possibleStates.includes("resources")) {
                 let i = 0
                 for (let resource in selected.resourceGen) {
                     if (selected.resourceGen[resource] <= 0) {
                         continue;
                     }
-                    let newResourceButton = new Button(Math.floor(canvas.width/4) + 130*i, 0, 120, 40, resourceColors[resource], resource, resourceButtonClicked);
+
+                    let btnSize = 120;
+                    if (canvas.height > canvas.width && canvas.width*canvas.height > 1000000) {
+                        btnSize = 180
+                    }
+
+                    heightforResources = btnSize/3;
+
+                    let newResourceButton = new Button((btnSize*1.2)*i, resourceBoxHeight, btnSize, btnSize/3, resourceColors[resource], resource, resourceButtonClicked);
                     newResourceButton.name = resource
                     newResourceButton.parameters = newResourceButton;
                     newResourceButton.textColor = "black"
@@ -139,6 +134,37 @@ function handleClick(xPos,yPos) {
                     i++;
                 }
             }
+            if (selected.possibleStates.includes("build")) {
+                let possibleBuilds = selected.possiblebuilds || UnitDB[selected.name]['possibleBuilds'] || []
+                
+                let btnSize = 50
+                if (canvas.height > canvas.width && canvas.width*canvas.height > 1000000) {
+                    btnSize = 120
+                }
+
+                let btnCount = possibleBuilds.length
+                let combinedHeight = btnCount*btnSize + (btnCount-1)*btnSize*.2
+                let btnHeightStart = Math.floor(canvas.height*.5 - combinedHeight/2) 
+                if (btnHeightStart < resourceBoxHeight + heightforResources) {
+                    while (btnHeightStart < resourceBoxHeight + heightforResources && btnSize > 20) {
+                        btnSize -= 10
+                        combinedHeight = btnCount*btnSize + (btnCount-1)*btnSize*.2
+                        btnHeightStart = Math.floor(canvas.height*.5 - combinedHeight/2)
+                    }
+                }
+
+                let i = 0
+                for (let unitName of possibleBuilds) {
+                    
+                    let newBuildButton = new Button(0, btnHeightStart + (btnSize * 1.2)*i, btnSize, btnSize, "#AAAAAA", "", buildButtonClicked);
+                    newBuildButton.name = unitName
+                    newBuildButton.parameters = newBuildButton;
+                    newBuildButton.addImage(getUnitImage(this_player, unitName));
+                    buildButtons.push(newBuildButton);
+                    i++;
+                }
+            }
+            
         } else {
             clearSelected()
         }
