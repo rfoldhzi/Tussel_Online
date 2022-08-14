@@ -3,6 +3,7 @@ let board_y_start = 0
 let moveCircles = []
 let buildHexes = []
 let buildButtons = []
+let resourceButtons = []
 let possibleAttacks = []
 let stateDataMode = null;
 
@@ -18,6 +19,7 @@ function clearSelected() {
     moveCircles = []
     buildHexes = []
     buildButtons = []
+    resourceButtons = []
     possibleAttacks = []
 }
 
@@ -28,8 +30,17 @@ function buildButtonClicked(btn) {
     stateDataMode = 'build2'
     moveCircles = []
     buildButtons = []
+    resourceButtons = []
     possibleAttacks = []
     buildHexes = getRangeCircles(selected, false, btn.name)
+    drawBoard();
+}
+
+function resourceButtonClicked(btn) {
+    selected.state = "resources"
+    selected.stateData = btn.name
+    sendToServer(convertToStr(selected,'resources',btn.name))
+    clearSelected();
     drawBoard();
 }
 
@@ -44,6 +55,12 @@ function handleClick(xPos,yPos) {
     }
 
     for (let btn of buildButtons) {
+        if (btn.potentialMouseClick(xPos,yPos)) {
+            return;
+        }
+    }
+
+    for (let btn of resourceButtons) {
         if (btn.potentialMouseClick(xPos,yPos)) {
             return;
         }
@@ -92,8 +109,9 @@ function handleClick(xPos,yPos) {
         if (selected) {
             moveCircles = getMoveCircles(selected);
             possibleAttacks = getAttacks(selected);
+            buildButtons = [];
+            resourceButtons = [];
             if (selected.possibleStates.includes("build")) {
-                buildButtons = []
                 let possibleBuilds = selected.possiblebuilds || UnitDB[selected.name]['possibleBuilds'] || []
                 
                 let i = 0
@@ -107,7 +125,20 @@ function handleClick(xPos,yPos) {
                     i++;
                 }
             }
-            console.log("movecircles: "+moveCircles)
+            if (selected.possibleStates.includes("resources")) {
+                let i = 0
+                for (let resource in selected.resourceGen) {
+                    if (selected.resourceGen[resource] <= 0) {
+                        continue;
+                    }
+                    let newResourceButton = new Button(Math.floor(canvas.width/4) + 130*i, 0, 120, 40, resourceColors[resource], resource, resourceButtonClicked);
+                    newResourceButton.name = resource
+                    newResourceButton.parameters = newResourceButton;
+                    newResourceButton.textColor = "black"
+                    resourceButtons.push(newResourceButton);
+                    i++;
+                }
+            }
         } else {
             clearSelected()
         }

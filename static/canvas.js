@@ -22,9 +22,9 @@ class Button {
     render() {
         context.fillStyle = this.color;
         context.fillRect(this.x, this.y, this.width, this.height);
-        fontSize = this.height - 2
+        let fontSize = this.height - 2
         context.font = fontSize + "px Arial";
-        context.fillStyle = "white";
+        context.fillStyle = this.textColor || "white";
         context.textAlign = "center";
         context.fillText(this.text, this.x + Math.floor(this.width / 2), this.y + Math.floor(this.height * .8) + 2);
         if (this.hasOwnProperty('img')) {
@@ -33,9 +33,7 @@ class Button {
     }
 
     potentialMouseClick(mouseX, mouseY) {
-        console.log("click checklnig");
         if (mouseX >= this.x && mouseX < this.x + this.width && mouseY >= this.y && mouseY < this.y + this.height) {
-            console.log("click successful");
             this.func(this.parameters)
             return true;
         }
@@ -192,6 +190,35 @@ function drawActionIcons() {
     }
 }
 
+function drawResources() {
+
+    let newResources = {
+        "gold":0,
+        "metal":0,
+        "energy":0
+    }
+
+    for (let unit of gameObject.units[this_player]) {
+        if (unit.state == "resources") {
+            if (unit.stateData || unit.stateData in newResources) {
+                newResources[unit.stateData] += unit.resourceGen[unit.stateData]
+            }
+        }
+    }
+
+    context.fillStyle = "#505050";
+    context.fillRect(0, 0, 135, 90);
+
+    context.textAlign = "left";
+    context.font = "26px Arial";
+    context.fillStyle = "#FFFF00";
+    context.fillText(gameObject.resources[this_player]["gold"] + " + "+newResources["gold"], 0, 10+13);
+    context.fillStyle = "#DDDDDD";
+    context.fillText(gameObject.resources[this_player]["metal"] + " + "+newResources["metal"], 0, 40+13);
+    context.fillStyle = "#00FFFF";
+    context.fillText(gameObject.resources[this_player]["energy"] + " + "+newResources["energy"], 0, 70+13);
+}
+
 function drawUnits() {
     for (const player in gameObject.units) {
         for (const unit of gameObject.units[player]) {
@@ -217,7 +244,6 @@ function drawStateLines() {
 }
 
 function drawBoard() {
-    console.log("drawing board");
     clearBoard()
 
     for (let y = 0; y < gameObject.height; y++) {
@@ -235,12 +261,17 @@ function drawBoard() {
     drawStateLines()
     drawUnits();
     drawActionIcons()
+
+    //Gui is rendered below
+    drawResources()
+
     for (let btn of ButtonCollection) {
         btn.render();
     }
-    console.log("build Btns");
-    console.log(buildButtons)
     for (let btn of buildButtons) {
+        btn.render();
+    }
+    for (let btn of resourceButtons) {
         btn.render();
     }
 }
@@ -405,7 +436,6 @@ let mouse_move = function (event) {
 //Touch based events
 let touch_down = function (event) {
     event.preventDefault();
-    console.log(event)
 
     if (event.touches.length == 1) {
 
@@ -454,7 +484,6 @@ let touch_up = function (event) {
     }
 
     event.preventDefault();
-    console.log(event)
 
     if (event.touches.length == 1) {
         startX = parseInt(event.touches[0].clientX);

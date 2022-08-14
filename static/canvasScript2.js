@@ -4,8 +4,15 @@ function thing() {
 
 let baseUnitImages = {};
 let unitImages = {};
-const playerColors = [[201, 59, 54, 255], [0, 195, 255], [255, 136, 0, 255], [41, 61, 148],
-[128, 242, 46], [169, 88, 245], [255, 255, 64], [18, 252, 104]]
+//const playerColors = [[201, 59, 54, 255], [0, 195, 255], [255, 136, 0, 255], [41, 61, 148],
+//[128, 242, 46], [169, 88, 245], [255, 255, 64], [18, 252, 104]]
+const playerColors = [[219, 20, 13, 255], [0, 195, 255], [255, 116, 27, 255], [9, 48, 224],
+[128, 242, 46], [169, 88, 245], [255, 255, 64], [18, 252, 104]];
+const resourceColors = {
+    "gold":"#DDDD00",
+    "metal":"#505050",
+    "energy":"#00FFFF"
+}
 
 function replaceColor(imageCanvas, src, dst) {
     let context = imageCanvas.getContext('2d');
