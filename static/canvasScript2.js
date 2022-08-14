@@ -56,11 +56,14 @@ function getUnitImage(player, name) {
         //img.height = size;
 
         let unitCanvas = document.createElement('canvas');
-        unitCanvas.setAttribute('width', size);
-        unitCanvas.setAttribute('height', size);
+        //unitCanvas.setAttribute('width', size);
+        //unitCanvas.setAttribute('height', size);
+        unitCanvas.setAttribute('width', 60);
+        unitCanvas.setAttribute('height', 60);
         let ctx = unitCanvas.getContext('2d');
         ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(baseUnitImages[name], 0, 0, size, size);
+        //ctx.drawImage(baseUnitImages[name], 0, 0, size, size);
+        ctx.drawImage(baseUnitImages[name], 0, 0, 60, 60);
         replaceColor(unitCanvas, [233, 19, 212], playerColors[player])
 
         unitImages[player][name] = ctx.canvas;

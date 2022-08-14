@@ -316,7 +316,13 @@ function drawUnit(player, unit) {
     let img = getUnitImage(player, unit.name);
 
     if (img != null) {
-        context.drawImage(img, size * unit.position[0] + x_offset, size * unit.position[1] + y_offset);
+        let multiplier = 0.7;
+        if (unit.type == "building") {
+            multiplier = 0.85;
+        } else if (unit.type == "trooper" || unit.type == "bot")  {
+            multiplier = 0.6;
+        }
+        context.drawImage(img, size * unit.position[0] + x_offset + size*(1-multiplier)*.5, size * unit.position[1] + y_offset + size*(1-multiplier)*.5, size * multiplier, size * multiplier);
     }
 
     context.fillStyle = "white";
@@ -504,7 +510,7 @@ let touch_move = function (event) {
         //startX = true_startX - (true_startX-true_startX_offset) * (new_zoom_distance/zoom_distance);
         //startY = true_startY - (true_startY-true_startY_offset) * (new_zoom_distance/zoom_distance);
 
-        unitImages = {};
+        //unitImages = {};
     }
 
     let dx = mouseX - startX;
@@ -545,7 +551,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         console.log(size);
 
-        unitImages = {};
+        //unitImages = {};
         drawBoard();
 
         event.preventDefault();
