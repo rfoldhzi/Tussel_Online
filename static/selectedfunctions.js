@@ -140,3 +140,33 @@ function getAttacks(unit) {
     }
     return finalSpaces;
 }
+
+function getHeals(unit) {
+    if (!unit.possibleStates.includes("heal")) {
+        return []
+    }
+    let spaces = getRangeCircles(unit, true)
+    let finalSpaces = []
+    for (let pos of spaces) {
+        u = getUnitFromPos(this_player, pos[0],pos[1])
+        if (u != null) {
+            goodToAdd = true
+            if (u == unit) {
+                goodToAdd = false
+            }
+            if ('onlyHeal' in unit.abilities) {
+                if (!unit.abilities['onlyHeal'].includes(u.type)) {
+                    goodToAdd = false
+                }
+                    
+            }
+            if (goodToAdd && u.health >= u.maxHealth) {
+                goodToAdd = false
+            }
+            if (goodToAdd) {
+                finalSpaces.push(pos)
+            }
+        }
+    }
+    return finalSpaces;
+}

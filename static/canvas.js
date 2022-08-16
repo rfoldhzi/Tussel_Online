@@ -174,6 +174,8 @@ let OrangeHex = new Image(40, 40)
 OrangeHex.src = '/static/assets/BuildHex.png'
 let RedX = new Image(40, 40)
 RedX.src = '/static/assets/AttackX.png'
+let GreenT = new Image(40, 40)
+GreenT.src = '/static/assets/HealT.png'
 
 function drawActionIcons() {
     for (const position of moveCircles) {
@@ -187,6 +189,10 @@ function drawActionIcons() {
     for (const position of possibleAttacks) {
         //console.log(position);
         context.drawImage(RedX, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+    }
+    for (const position of possibleHeals) {
+        //console.log(position);
+        context.drawImage(GreenT, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
     }
 }
 
@@ -321,6 +327,9 @@ function drawStateLine(unit) { //As in "action state" (draws the line correspond
     } else if (unit.state == "attack") {
         position2 = unit.stateData.position
         color = "#FF0000"
+    } else if (unit.state == "heal") {
+        position2 = unit.stateData.position
+        color = "#FFFFFF"
     }
 
     if (position2 != null) {

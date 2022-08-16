@@ -5,6 +5,7 @@ let buildHexes = []
 let buildButtons = []
 let resourceButtons = []
 let possibleAttacks = []
+let possibleHeals = []
 let stateDataMode = null;
 
 function gridMouse(x,y) {
@@ -21,6 +22,7 @@ function clearSelected() {
     buildButtons = []
     resourceButtons = []
     possibleAttacks = []
+    possibleHeals = []
 }
 
 function buildButtonClicked(btn) {
@@ -32,6 +34,7 @@ function buildButtonClicked(btn) {
     //buildButtons = []
     resourceButtons = []
     possibleAttacks = []
+    possibleHeals = []
     buildHexes = getRangeCircles(selected, false, btn.name)
     drawBoard();
 }
@@ -104,11 +107,22 @@ function handleClick(xPos,yPos) {
             drawBoard();
             return;
         }
+        if (JSON.stringify(possibleHeals).indexOf(JSON.stringify([x,y])) !== -1) {
+            console.log("clicked on a heal")
+            selected.stateData = getUnitFromPos(this_player,x,y)      
+            console.log(selected.stateData)    
+            selected.state = 'heal'
+            sendToServer(convertToStr(selected,'heal',selected.stateData))
+            clearSelected();
+            drawBoard();
+            return;
+        }
 
         selected = getUnitFromPos(this_player,x,y);
         if (selected) {
             moveCircles = getMoveCircles(selected);
             possibleAttacks = getAttacks(selected);
+            possibleHeals = getHeals(selected)
             buildButtons = [];
             resourceButtons = [];
             let heightforResources = 0;
