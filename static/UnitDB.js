@@ -104,7 +104,8 @@ const UnitDB = {
             "gold": 10,
             "metal": 10,
             "energy": 10
-        }
+        },
+        "size":1,
     },
     'metropolis':{
         'cost': {'gold':250, 'metal':250, 'energy':250},
@@ -818,7 +819,8 @@ const UnitDB = {
             "gold": 10,
             "metal": 10,
             "energy": 5
-        }
+        },
+        "size":1,
     },
     'hyena':{
         'cost': {'metal':10},
@@ -892,13 +894,14 @@ const UnitDB = {
         'possibleStates': ['resources', 'build'],
         'type': 'building',
         'health': 50,
-	'defense': 3,
+	    'defense': 3,
         'population':4,
         'resourceGen':{
             "gold": 0,
             "metal": 20,
             "energy": 20
-        }
+        },
+        "size":1,
     },
     'servitor':{
         'cost': {'gold':0, 'metal':40, 'energy':40},
@@ -987,7 +990,8 @@ const UnitDB = {
         'abilities':{'deathSpawn':'mad plant base'},
         'resourceGen':{
             "energy": 10
-        }
+        },
+        "size":1,
     },
     'mad plant base':{
         'cost': {'gold':0},
@@ -1000,7 +1004,8 @@ const UnitDB = {
         'abilities':{'multibuild':1},
         'resourceGen':{
             "energy": 0
-        }
+        },
+        "size":1,
     },
     'seed':{
         'cost': {'energy':0},
@@ -1039,7 +1044,8 @@ const UnitDB = {
             "gold": 20,
             "metal": 20,
             "energy": 0
-        }
+        },
+        "size":.75,
     },
     'mad walking roots':{
         'cost': {'gold':0},
@@ -1047,7 +1053,8 @@ const UnitDB = {
         'population':3,
         'resourceGen':{
             "gold": 0
-        }
+        },
+        "size":.75,
     },
     'flower':{
         'cost': {'gold':15},
@@ -1057,12 +1064,14 @@ const UnitDB = {
         'abilities':{'deathSpawn':'mad flower'},
         'resourceGen':{
             "metal": 1
-        }
+        },
+        "size":.7,
     },
     'mad flower':{
         'cost': {'gold':0},
         'possibleStates': ['attack'],
         'type': 'building',
+        "size":.7,
     },
     'plant house':{
         'cost': {'metal':30},

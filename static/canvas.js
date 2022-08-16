@@ -360,6 +360,7 @@ function drawUnit(player, unit) {
         } else if (unit.type == "trooper" || unit.type == "bot") {
             multiplier = 0.6;
         }
+        multiplier = UnitDB[unit.name].size || multiplier;
         context.drawImage(img, size * unit.position[0] + x_offset + size * (1 - multiplier) * .5, size * unit.position[1] + y_offset + size * (1 - multiplier) * .5, size * multiplier, size * multiplier);
     }
 
