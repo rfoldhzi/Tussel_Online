@@ -29,7 +29,7 @@ function buildButtonClicked(btn) {
     selected.stateData = [btn.name]
     stateDataMode = 'build2'
     moveCircles = []
-    buildButtons = []
+    //buildButtons = []
     resourceButtons = []
     possibleAttacks = []
     buildHexes = getRangeCircles(selected, false, btn.name)
@@ -153,10 +153,22 @@ function handleClick(xPos,yPos) {
                     }
                 }
 
+                let effectiveResources = getEffectiveResources(selected)
+
                 let i = 0
                 for (let unitName of possibleBuilds) {
+
+                    let color = "#EE5555"
+                    if (selected.state == "build" && selected.stateData[1] == unitName) {
+                        color = "#6464FF"
+                    } else if (selected.maxPopulation && selected.maxPopulation <= selected.population) {
+                        color = "#777777"
+                    } else if (checkIfAffordable(unitName, effectiveResources))  {
+                        color = "#EEEEEE"
+                    }
+
                     
-                    let newBuildButton = new Button(0, btnHeightStart + (btnSize * 1.2)*i, btnSize, btnSize, "#AAAAAA", "", buildButtonClicked);
+                    let newBuildButton = new Button(0, btnHeightStart + (btnSize * 1.2)*i, btnSize, btnSize, color, "", buildButtonClicked);
                     newBuildButton.name = unitName
                     newBuildButton.parameters = newBuildButton;
                     newBuildButton.addImage(getUnitImage(this_player, unitName));

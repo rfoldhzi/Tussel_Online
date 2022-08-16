@@ -9,9 +9,9 @@ let unitImages = {};
 const playerColors = [[219, 20, 13, 255], [0, 195, 255], [255, 116, 27, 255], [9, 48, 224],
 [128, 242, 46], [169, 88, 245], [255, 255, 64], [18, 252, 104]];
 const resourceColors = {
-    "gold":"#DDDD00",
-    "metal":"#DDDDDD",
-    "energy":"#00FFFF"
+    "gold": "#DDDD00",
+    "metal": "#DDDDDD",
+    "energy": "#00FFFF"
 }
 
 function replaceColor(imageCanvas, src, dst) {
@@ -40,7 +40,7 @@ function getUnitImage(player, name) {
     if (!(name in unitImages[player])) {
         if (!(name in baseUnitImages)) {
             let img = new Image(size, size);
-            console.log("requesting image "+name);
+            console.log("requesting image " + name);
             img.src = '/static/assets/' + name + '.png';
 
             img.onload = function () {
@@ -48,8 +48,8 @@ function getUnitImage(player, name) {
                 img.crossOrigin = "Anonymous";
                 baseUnitImages[name] = img;
 
-                console.log("recieved image "+name);
-                unitImages= [];
+                console.log("recieved image " + name);
+                unitImages = [];
                 drawBoard();
             }
             baseUnitImages[name] = null;
@@ -234,4 +234,48 @@ function generateBoardColors() {
         }
     }
     */
+}
+
+function getCost(unitName) {
+    console.log(unitName);
+    let cost = UnitDB[unitName]['cost']
+    if ('abilities' in UnitDB[unitName] && 'costly' in UnitDB[unitName]['abilities']) {
+
+        cost = { ...cost } //copy the list
+
+        count = getCount(unitName)
+        for (let v in cost) {
+            cost[v] = Math.floor(cost[v] * Math.pow(UnitDB[unitName]['abilities']['costly'], count) / 5) * 5
+        }
+    }
+    return cost
+}
+
+function getEffectiveResources(unitToIgnore) {
+    let resources = gameObject.resources[this_player]
+    resources = { ...resources } //copy the list
+    for (let unit of gameObject.units[this_player]) {
+        if (unit.state == "resources" && unit != unitToIgnore) {
+            resources[unit.stateData] += unit.resourceGen[unit.stateData]
+        } else if (unit.state == "build" && unit != unitToIgnore) {
+            cost = getCost(unit.stateData)
+            for (let r in cost) {
+                resources[r] -= cost[r]
+            }
+        }
+    }
+
+    //Also need to deal with resources with researching
+
+    return resources;
+}
+
+function checkIfAffordable(unitName, effectiveResources) {
+    let cost = getCost(unitName);
+    for (let r in cost) {
+        if (effectiveResources[r] < cost[r]) {
+            return false;
+        }
+    }
+    return true;
 }
