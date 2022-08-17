@@ -1,6 +1,8 @@
 let board_x_start = 0
 let board_y_start = 0
 let moveCircles = []
+let transportSpots = []
+let dropOffSpots = []
 let buildHexes = []
 let buildButtons = []
 let resourceButtons = []
@@ -18,6 +20,8 @@ function clearSelected() {
     stateDataMode = null;
     selected = null;
     moveCircles = []
+    transportSpots = []
+    dropOffSpots = []
     buildHexes = []
     buildButtons = []
     resourceButtons = []
@@ -31,11 +35,29 @@ function buildButtonClicked(btn) {
     selected.stateData = [btn.name]
     stateDataMode = 'build2'
     moveCircles = []
+    transportSpots = []
+    dropOffSpots = []
     //buildButtons = []
     resourceButtons = []
     possibleAttacks = []
     possibleHeals = []
     buildHexes = getRangeCircles(selected, false, btn.name)
+    drawBoard();
+}
+
+function transportButtonClicked(btn) {
+    console.log("transporting: "+btn.name);
+    btn.color = "#00FFCC";
+    selected.stateData = [btn.name]
+    stateDataMode = 'transport2'
+    moveCircles = []
+    transportSpots = []
+    //dropOffSpots = []
+    buildButtons = []
+    resourceButtons = []
+    possibleAttacks = []
+    possibleHeals = []
+    dropOffSpots = getRangeCircles(selected, false, btn.name)
     drawBoard();
 }
 
@@ -86,12 +108,30 @@ function handleClick(xPos,yPos) {
             drawBoard();
             return;
         }
+        if (JSON.stringify(transportSpots).indexOf(JSON.stringify([x,y])) !== -1) {
+            console.log("clicked on a transport")
+            selected.stateData = [x,y]
+            selected.state = 'move'
+            sendToServer(convertToStr(selected,'move',[x,y]))
+            clearSelected();
+            drawBoard();
+            return;
+        }
 
         if (JSON.stringify(buildHexes).indexOf(JSON.stringify([x,y])) !== -1) {
             console.log("clicked on a build")
             selected.stateData.unshift([x,y])            
             selected.state = 'build'
             sendToServer(convertToStr(selected,'build',selected.stateData))
+            clearSelected();
+            drawBoard();
+            return;
+        }
+        if (JSON.stringify(dropOffSpots).indexOf(JSON.stringify([x,y])) !== -1) {
+            console.log("clicked on a transport")
+            selected.stateData.unshift([x,y])            
+            selected.state = 'transport'
+            sendToServer(convertToStr(selected,'transport',selected.stateData))
             clearSelected();
             drawBoard();
             return;
@@ -121,6 +161,7 @@ function handleClick(xPos,yPos) {
         selected = getUnitFromPos(this_player,x,y);
         if (selected) {
             moveCircles = getMoveCircles(selected);
+            transportSpots = getTransportCircles(selected);
             possibleAttacks = getAttacks(selected);
             possibleHeals = getHeals(selected)
             buildButtons = [];
@@ -183,6 +224,39 @@ function handleClick(xPos,yPos) {
 
                     
                     let newBuildButton = new Button(0, btnHeightStart + (btnSize * 1.2)*i, btnSize, btnSize, color, "", buildButtonClicked);
+                    newBuildButton.name = unitName
+                    newBuildButton.parameters = newBuildButton;
+                    newBuildButton.addImage(getUnitImage(this_player, unitName));
+                    buildButtons.push(newBuildButton);
+                    i++;
+                }
+            }
+
+            if (selected.possibleStates.includes("transport") && selected.carrying != undefined) {
+                let possibleBuilds = selected.carrying
+                
+                let btnSize = 50
+                if (canvas.height > canvas.width && canvas.width*canvas.height > 1000000) {
+                    btnSize = 120
+                }
+
+                let btnCount = possibleBuilds.length
+                let combinedHeight = btnCount*btnSize + (btnCount-1)*btnSize*.2
+                let btnHeightStart = Math.floor(canvas.height*.5 - combinedHeight/2) 
+                if (btnHeightStart < resourceBoxHeight + heightforResources) {
+                    while (btnHeightStart < resourceBoxHeight + heightforResources && btnSize > 20) {
+                        btnSize -= 10
+                        combinedHeight = btnCount*btnSize + (btnCount-1)*btnSize*.2
+                        btnHeightStart = Math.floor(canvas.height*.5 - combinedHeight/2)
+                    }
+                }
+                let i = 0
+                for (let unit of possibleBuilds) {
+                    let unitName = unit.name
+                    let color = "#32E632"
+
+                    
+                    let newBuildButton = new Button(0, btnHeightStart + (btnSize * 1.2)*i, btnSize, btnSize, color, "", transportButtonClicked);
                     newBuildButton.name = unitName
                     newBuildButton.parameters = newBuildButton;
                     newBuildButton.addImage(getUnitImage(this_player, unitName));

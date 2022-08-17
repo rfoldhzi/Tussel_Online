@@ -176,6 +176,8 @@ let RedX = new Image(40, 40)
 RedX.src = '/static/assets/AttackX.png'
 let GreenT = new Image(40, 40)
 GreenT.src = '/static/assets/HealT.png'
+let GreenCircle = new Image(40, 40)
+GreenCircle.src = '/static/assets/TransportCircle.png'
 
 function drawActionIcons() {
     for (const position of moveCircles) {
@@ -193,6 +195,14 @@ function drawActionIcons() {
     for (const position of possibleHeals) {
         //console.log(position);
         context.drawImage(GreenT, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+    }
+    for (const position of transportSpots) {
+        //console.log(position);
+        context.drawImage(GreenCircle, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+    }
+    for (const position of dropOffSpots) {
+        //console.log(position);
+        context.drawImage(GreenCircle, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
     }
 }
 
@@ -330,6 +340,9 @@ function drawStateLine(unit) { //As in "action state" (draws the line correspond
     } else if (unit.state == "heal") {
         position2 = unit.stateData.position
         color = "#FFFFFF"
+    } else if (unit.state == "transport") {
+        position2 = unit.stateData[0]
+        color = "#32E632"
     }
 
     if (position2 != null) {

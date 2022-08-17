@@ -170,3 +170,32 @@ function getHeals(unit) {
     }
     return finalSpaces;
 }
+
+function getTransportCircles(unit) {
+    if (!(unit.possibleStates.includes('move'))) {
+        return [];
+    }
+    let sp = unit.speed
+    let spaces = []
+    for (let x = unit.position[0]-sp; x < unit.position[0]+1+sp; x++) {
+        for (let y = unit.position[1]-sp; y < unit.position[1]+1+sp; y++) {
+            if (!(x == unit.position[0] && y == unit.position[1]) && x >= 0 && y >= 0 && y<gameObject.height && x<gameObject.width) { //If within board
+                let unit2 = getUnitFromPos(this_player, x, y)
+                if (unit2 != null && 'transport' in unit2.abilities) {
+                    if (unit2.state == "move") {
+                        continue;
+                    }
+                    if (!unit2.abilities['transport'].includes(unit.type)) {
+                        continue;
+                    }
+                    if (unit2.population >= unit2.maxPopulation) {
+                        continue;
+                    }
+                    spaces.push([x,y])
+                }
+            }
+        }
+    }
+    console.log("here is the stuff: "+JSON.stringify(spaces))
+    return spaces;
+}
