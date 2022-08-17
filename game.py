@@ -944,8 +944,8 @@ class Game:
         
         for i in self.units:
             for u in self.units[i]:
-                u.state = None
-                u.stateData = None
+                pass#u.state = None
+                #u.stateData = None
 
         print('MORE stuff')
         

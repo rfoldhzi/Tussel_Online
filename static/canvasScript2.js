@@ -258,7 +258,7 @@ function getEffectiveResources(unitToIgnore) {
         if (unit.state == "resources" && unit != unitToIgnore) {
             resources[unit.stateData] += unit.resourceGen[unit.stateData]
         } else if (unit.state == "build" && unit != unitToIgnore) {
-            cost = getCost(unit.stateData)
+            cost = getCost(unit.stateData[1])
             for (let r in cost) {
                 resources[r] -= cost[r]
             }
