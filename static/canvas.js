@@ -144,6 +144,8 @@ function randomBlueWeighted(x) {
 var canvas// = document.getElementById("myCanvas");
 let is_dragging = false;
 let maybe_dragging = false;
+let drag_click = false;
+let forceTouchEnabled = false;
 let startX;
 let startY;
 let startX_offset;
@@ -480,6 +482,9 @@ let touch_down = function (event) {
         true_startY_offset = startY_offset;
 
         maybe_dragging = true;
+        if (event.touches[0].force <= 0.5) { //If there is a touch with less force, enable force click drag
+            forceTouchEnabled = true
+        }
     } else if (event.touches.length == 2) {
         if (!is_dragging) {
             startX = parseInt(event.touches[0].clientX);
@@ -504,6 +509,7 @@ let touch_down = function (event) {
 }
 
 let touch_up = function (event) {
+    drag_click = false
     if (!is_dragging) {
         if (maybe_dragging) {
             maybe_dragging = false;
@@ -532,7 +538,20 @@ let touch_up = function (event) {
 }
 
 let touch_move = function (event) {
+    event.preventDefault();
+    if (drag_click) {
+        startX = parseInt(event.touches[0].clientX);
+        startY = parseInt(event.touches[0].clientY);
+        return;
+    }
     if (maybe_dragging) {
+        if (forceTouchEnabled && event.touches[0].force >= 0.2) {
+            drag_click = true;
+            handleClick(parseInt(startX), parseInt(startY))
+            startX = parseInt(event.touches[0].clientX);
+            startY = parseInt(event.touches[0].clientY);
+            return
+        }
         maybe_dragging = false;
         is_dragging = true;
     }
@@ -540,7 +559,6 @@ let touch_move = function (event) {
         return;
     }
 
-    event.preventDefault();
 
     let mouseX = parseInt(event.touches[0].clientX);
     let mouseY = parseInt(event.touches[0].clientY);
