@@ -91,6 +91,7 @@ let cloudGrid = []
 let explorationGrid = []
 let CloudColors = []
 let CloudColors2 = []
+let cloudType = "halo"
 
 function intToBoolList(n) {
     let L = [];
@@ -289,15 +290,21 @@ function initClouds() {
     CloudColors2 = []
     cloudGrid = [];
     explorationGrid = []
+    cloudType = gameObject.mode
     for (let y = 0; y < gameObject.height; y++) {
         let l = []
         let l2 = []
         for (let x = 0; x < gameObject.width; x++) {
             l.push(true)
             l2.push(true)
-            CloudColors.push(randomDark())
-            let BoardColor = hexToRGB(BoardColors[x+y*gameObject.width])
-            CloudColors2.push(rgbToHex(BoardColor[0]/2, BoardColor[1]/2,BoardColor[2]/2)) //TODO, make it so it is half the value of board color
+            if (cloudType == "halo") {
+                CloudColors2.push(randomDark())
+                let BoardColor = hexToRGB(BoardColors[x+y*gameObject.width])
+                CloudColors.push(rgbToHex(BoardColor[0]/2, BoardColor[1]/2,BoardColor[2]/2))
+            } else if (cloudType == "poly") {
+                CloudColors.push(randomWhite())
+            }
+            
         }
         cloudGrid.push(l)
         explorationGrid.push(l2)
@@ -305,13 +312,15 @@ function initClouds() {
 }
 
 function updateCloudCover() {
-    cloudGrid = [];
-    for (let y = 0; y < gameObject.height; y++) {
-        let l = []
-        for (let x = 0; x < gameObject.width; x++) {
-            l.push(true)
+    if (cloudType == "halo") {
+        cloudGrid = [];
+        for (let y = 0; y < gameObject.height; y++) {
+            let l = []
+            for (let x = 0; x < gameObject.width; x++) {
+                l.push(true)
+            }
+            cloudGrid.push(l)
         }
-        cloudGrid.push(l)
     }
     for (let unit of gameObject.units[this_player]) {
         spaces = getRangeCircles(unit,true)
@@ -327,14 +336,17 @@ function updateCloudCover() {
 }
 
 function drawClouds() {
+    if (cloudType == "clear") {
+        return
+    }
     for (let y = 0; y < gameObject.height; y++) {
         for (let x = 0; x < gameObject.width; x++) {
-            if (explorationGrid[y][x]) {
-                let tileColor = CloudColors[x + gameObject.width * y]
+            if (cloudType == "halo" && explorationGrid[y][x]) {
+                let tileColor = CloudColors2[x + gameObject.width * y]
                 context.fillStyle = tileColor;
                 context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
             } else if (cloudGrid[y][x]) {
-                let tileColor = CloudColors2[x + gameObject.width * y]
+                let tileColor = CloudColors[x + gameObject.width * y]
                 context.fillStyle = tileColor;
                 context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
             }

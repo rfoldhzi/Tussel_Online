@@ -155,6 +155,10 @@ function randomDark() {
     let g = Math.random() * 50;
     return rgbToHex(Math.floor(g), Math.floor(g), Math.floor(g));
 }
+function randomWhite() {
+    let g = Math.random() * 35 + 210;
+    return rgbToHex(Math.floor(g), Math.floor(g), Math.floor(g + Math.random() * 20));
+}
 
 var canvas// = document.getElementById("myCanvas");
 let is_dragging = false;
