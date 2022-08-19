@@ -68,9 +68,11 @@ function loadGame() {
             gameObject = newGameObject;
             generateGrid()
             generateBoardColors();
+            initClouds()
         }
         gameObject = newGameObject;
         clearSelected()
+        updateCloudCover()
         drawBoard()
     }
     //httpPostAsync("http://" + window.location.host + "/action", "{'apple':'hello world2'}");
@@ -116,6 +118,14 @@ function rgbToHex(r, g, b) {
     return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 }
 
+function hexToRGB(hex) {
+    return [
+        parseInt(hex.slice(1,3), 16), 
+        parseInt(hex.slice(3,5), 16),
+        parseInt(hex.slice(5,7), 16)
+    ]
+}
+
 function randomGreen() {
     let g = Math.random() * 50 + 150;
     return rgbToHex(Math.floor(g * Math.random() * 0.5), Math.floor(g), Math.floor(g * Math.random() * 0.5));
@@ -139,6 +149,11 @@ function randomBlueWeighted(x) {
     let g = Math.max(0, 180 - sub)
     let b = Math.max(0, 180 - Math.floor(sub / 2))
     return rgbToHex(Math.floor(b * Math.random() * .1 + .1), Math.floor(g * (Math.random() * .125 + .625)), b)
+}
+
+function randomDark() {
+    let g = Math.random() * 50;
+    return rgbToHex(Math.floor(g), Math.floor(g), Math.floor(g));
 }
 
 var canvas// = document.getElementById("myCanvas");
@@ -278,6 +293,9 @@ function drawBoard() {
             context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
         }
     }
+
+    
+
     fontSize = Math.floor(size / 2);
     context.font = fontSize + "px Arial";
 
@@ -286,6 +304,8 @@ function drawBoard() {
     drawStateLines()
     drawUnits();
     drawActionIcons()
+
+    drawClouds()
 
     //Gui is rendered below
     drawResources()
@@ -641,6 +661,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     generateGrid()
     generateBoardColors();
+    initClouds()
+    updateCloudCover()
 
     if (canvas.getContext) {
         context.fillStyle = '#fa4b2a';    // color of fill

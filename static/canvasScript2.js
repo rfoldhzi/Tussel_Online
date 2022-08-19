@@ -87,6 +87,10 @@ function getUnitImage(player, name) {
 let BoardColors = []
 let Grid = []
 let depthMap = []
+let cloudGrid = []
+let explorationGrid = []
+let CloudColors = []
+let CloudColors2 = []
 
 function intToBoolList(n) {
     let L = [];
@@ -278,4 +282,63 @@ function checkIfAffordable(unitName, effectiveResources) {
         }
     }
     return true;
+}
+
+function initClouds() {
+    CloudColors = [];
+    CloudColors2 = []
+    cloudGrid = [];
+    explorationGrid = []
+    for (let y = 0; y < gameObject.height; y++) {
+        let l = []
+        let l2 = []
+        for (let x = 0; x < gameObject.width; x++) {
+            l.push(true)
+            l2.push(true)
+            CloudColors.push(randomDark())
+            let BoardColor = hexToRGB(BoardColors[x+y*gameObject.width])
+            CloudColors2.push(rgbToHex(BoardColor[0]/2, BoardColor[1]/2,BoardColor[2]/2)) //TODO, make it so it is half the value of board color
+        }
+        cloudGrid.push(l)
+        explorationGrid.push(l2)
+    }
+}
+
+function updateCloudCover() {
+    cloudGrid = [];
+    for (let y = 0; y < gameObject.height; y++) {
+        let l = []
+        for (let x = 0; x < gameObject.width; x++) {
+            l.push(true)
+        }
+        cloudGrid.push(l)
+    }
+    for (let unit of gameObject.units[this_player]) {
+        spaces = getRangeCircles(unit,true)
+        for (let pos of spaces) {
+            if (cloudGrid[pos[1]][pos[0]]) {
+                cloudGrid[pos[1]][pos[0]] = false
+            }
+            if (explorationGrid[pos[1]][pos[0]]) {
+                explorationGrid[pos[1]][pos[0]] = false
+            }
+        }
+    }
+}
+
+function drawClouds() {
+    for (let y = 0; y < gameObject.height; y++) {
+        for (let x = 0; x < gameObject.width; x++) {
+            if (explorationGrid[y][x]) {
+                let tileColor = CloudColors[x + gameObject.width * y]
+                context.fillStyle = tileColor;
+                context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
+            } else if (cloudGrid[y][x]) {
+                let tileColor = CloudColors2[x + gameObject.width * y]
+                context.fillStyle = tileColor;
+                context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
+            }
+            
+        }
+    }
 }
