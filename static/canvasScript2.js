@@ -441,7 +441,7 @@ function placeBoxes(tree, key, n = 0) {
             treeOffsets[tree][i] += treeSizes[tree][n][0]
         }
     }
-    treeSizes[tree][n].unshift() //Look right here to for fixing
+    treeSizes[tree][n].shift() //Look right here to for fixing
     console.log(treeOffsets[tree])
     console.log(treeSizes[tree])
 }
