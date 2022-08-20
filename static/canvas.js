@@ -199,6 +199,8 @@ let GreenT = new Image(40, 40)
 GreenT.src = '/static/assets/HealT.png'
 let GreenCircle = new Image(40, 40)
 GreenCircle.src = '/static/assets/TransportCircle.png'
+let Beaker = new Image(40, 40)
+Beaker.src = '/static/assets/Beaker.png'
 
 function drawActionIcons() {
     for (const position of moveCircles) {
@@ -224,6 +226,11 @@ function drawActionIcons() {
     for (const position of dropOffSpots) {
         //console.log(position);
         context.drawImage(GreenCircle, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+    }
+    if (selected != null) {
+        if (selected.possibleStates.includes("research") && stateDataMode == null) {
+            context.drawImage(Beaker, size * selected.position[0] + x_offset, size * selected.position[1] + y_offset, size, size);
+        }
     }
 }
 
@@ -287,8 +294,27 @@ function drawStateLines() {
     }
 }
 
+function drawUI() {
+    //Gui is rendered below
+    drawResources()
+
+    for (let btn of ButtonCollection) {
+        btn.render();
+    }
+}
+
 function drawBoard() {
+    
+
+    if (selected != null && stateDataMode == "research") {
+        researchMenu();
+        drawUI()
+        return
+    }
+
     clearBoard()
+
+    currentlyResearch = false
 
     for (let y = 0; y < gameObject.height; y++) {
         for (let x = 0; x < gameObject.width; x++) {
@@ -311,12 +337,8 @@ function drawBoard() {
 
     drawClouds()
 
-    //Gui is rendered below
-    drawResources()
+    drawUI()
 
-    for (let btn of ButtonCollection) {
-        btn.render();
-    }
     for (let btn of buildButtons) {
         btn.render();
     }
@@ -486,6 +508,8 @@ let mouse_move = function (event) {
     x_offset = startX_offset + dx;
     y_offset = startY_offset + dy;
 
+    currentlyResearch = false //Used to trigger update for research menu
+
     drawBoard();
 }
 
@@ -620,7 +644,7 @@ let touch_move = function (event) {
     x_offset = startX_offset + dx;
     y_offset = startY_offset + dy;
 
-
+    currentlyResearch = false //Used to trigger update for research menu
 
     drawBoard();
 }
@@ -654,10 +678,15 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log(event.deltaY);
 
         size += Math.floor(event.deltaY / 100);
+        if (size < 2) {
+            size = 2
+        }
 
         console.log(size);
 
         //unitImages = {};
+        currentlyResearch = false //Used to trigger update for research menu
+
         drawBoard();
 
         event.preventDefault();

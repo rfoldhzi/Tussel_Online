@@ -69,13 +69,31 @@ function resourceButtonClicked(btn) {
     drawBoard();
 }
 
+function researchButtonClicked(btn) {
+    selected.state = "research"
+    selected.stateData = btn.name
+    sendToServer(convertToStr(selected,'research',btn.name))
+    clearSelected();
+    drawBoard();
+}
+
 function handleClick(xPos,yPos) {
     console.log("handling")
+
+    
 
     for (let btn of ButtonCollection) {
 
         if (btn.potentialMouseClick(xPos,yPos)) {
             return;
+        }
+    }
+
+    if (stateDataMode == "research") {
+        for (let btn of currentTechButtons) {
+            if (btn.potentialMouseClick(xPos,yPos)) {
+                return;
+            }
         }
     }
 
@@ -99,6 +117,11 @@ function handleClick(xPos,yPos) {
 
     if (x >= 0 && y >= 0 && y<gameObject.height && x< gameObject.width) {
         //if (moveCircles.includes([x,y])) {
+        if (selected != null && selected.possibleStates.includes("research") ) {
+            if (x==selected.position[0] && y == selected.position[1]) {
+                stateDataMode = "research"
+            }
+        }
         if (JSON.stringify(moveCircles).indexOf(JSON.stringify([x,y])) !== -1) {
             console.log("clicked on a move")
             selected.stateData = [x,y]

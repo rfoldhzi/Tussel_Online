@@ -299,12 +299,12 @@ function initClouds() {
             l2.push(true)
             if (cloudType == "halo") {
                 CloudColors2.push(randomDark())
-                let BoardColor = hexToRGB(BoardColors[x+y*gameObject.width])
-                CloudColors.push(rgbToHex(BoardColor[0]/2, BoardColor[1]/2,BoardColor[2]/2))
+                let BoardColor = hexToRGB(BoardColors[x + y * gameObject.width])
+                CloudColors.push(rgbToHex(BoardColor[0] / 2, BoardColor[1] / 2, BoardColor[2] / 2))
             } else if (cloudType == "poly") {
                 CloudColors.push(randomWhite())
             }
-            
+
         }
         cloudGrid.push(l)
         explorationGrid.push(l2)
@@ -323,7 +323,7 @@ function updateCloudCover() {
         }
     }
     for (let unit of gameObject.units[this_player]) {
-        spaces = getRangeCircles(unit,true)
+        spaces = getRangeCircles(unit, true)
         for (let pos of spaces) {
             if (cloudGrid[pos[1]][pos[0]]) {
                 cloudGrid[pos[1]][pos[0]] = false
@@ -350,7 +350,275 @@ function drawClouds() {
                 context.fillStyle = tileColor;
                 context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
             }
-            
+
         }
+    }
+}
+
+function GetUnlockedTechs() {
+    let techs = []
+    for (let t of gameObject.tech[this_player]) {
+        for (let t2 of TechDB[t]["unlocks"]) {
+            if (!(techs.includes(t2))) {
+                techs.push(t2)
+            }
+        }
+    }
+
+    //let starters = ['improvements', 'recruitment', 'armament', 'aviation']
+    for (let t of starters) {
+        if (!techs.includes(t)) {
+            techs.push(t)
+        }
+    }
+    let toRemove = []
+    for (let t of gameObject.tech[this_player]) {
+        if (TechDB[t].deny != undefined) {
+            for (let t2 in TechDB[t].deny) {
+                if (techs.includes(t2)) {
+                    toRemove.push(t2)
+                }
+            }
+        }
+    }
+    for (let t of toRemove) {
+        const index = techs.indexOf(5)
+        techs.splice(index, 1)
+    }
+    return techs
+}
+
+//Tree is the tech that starts the tree, key is current tech, and n is layer of tree
+function getTreeSizes(tree, key, n = 0) {
+    //currentTechMenu, treeSizes, treeOffsets
+    if (TechDB[key]["unlocks"] == []) {
+        if (treeSizes[tree].length <= n) {
+            while (treeSizes[tree].length <= n) {
+                treeSizes[tree].push([])
+                treeOffsets[tree].push(0)
+            }
+        }
+        treeSizes[tree][n].append(1)
+        return 1
+    } else {
+        let total = 0
+        if (gameObject.tech[this_player].includes(key) || currentTechMenu.includes(key)) {
+            for (let subTech of TechDB[key]["unlocks"]) {
+                total += getTreeSizes(tree, subTech, n + 1)
+            }
+        }
+        if (total == 0) {
+            if (treeSizes[tree].length <= n) {
+                while (treeSizes[tree].length <= n) {
+                    treeSizes[tree].push([])
+                    treeOffsets[tree].push(0)
+                }
+            }
+            total = 1
+        }
+        treeSizes[tree][n].push(total)
+        return total
+    }
+}
+
+//Tree is the tech that starts the tree, key is current tech, and n is layer of tree
+function placeBoxes(tree, key, n = 0) {
+    //boxPlacements, treeOffsets
+    let noSubtrees = true
+    if (gameObject.tech[this_player].includes(key) || currentTechMenu.includes(key)) {
+        for (let subTech of TechDB[key]["unlocks"]) {
+            noSubtrees = false
+            placeBoxes(tree, subTech, n + 1)
+        }
+    }
+    boxPlacements[tree].push([[treeOffsets[tree][n] + treeSizes[tree][n][0] / 2.0 - 0.5, n], key])
+    console.log(treeOffsets[tree][n] + treeSizes[tree][n][0] / 2.0 - 0.5, n, key)
+    console.log(treeOffsets[tree])
+    console.log(treeSizes[tree])
+    treeOffsets[tree][n] += treeSizes[tree][n][0]
+    if (noSubtrees) {
+        for (let i = n + 1; i < treeSizes[tree].length; i++) {
+            treeOffsets[tree][i] += treeSizes[tree][n][0]
+        }
+    }
+    treeSizes[tree][n].unshift() //Look right here to for fixing
+    console.log(treeOffsets[tree])
+    console.log(treeSizes[tree])
+}
+
+function drawLinesHelper(key, d, treeXOffset, treeYOffset) {
+    let extraX = -2
+    let extraY = -2
+    if (gameObject.tech[this_player].includes(key) || currentTechMenu.includes(key)) {
+        for (let subTech of TechDB[key]["unlocks"]) {
+            drawLinesHelper(subTech, d, treeXOffset, treeYOffset)
+        }
+        for (let subTech of TechDB[key]["unlocks"]) {
+            let x1 = d[key][0][0] + treeXOffset
+            let y1 = d[key][0][1] + treeYOffset
+            let x2 = d[subTech][0][0] + treeXOffset
+            let y2 = d[subTech][0][1] + treeYOffset
+            let ColorOfLine = "#FFFFFF"
+
+            context.strokeStyle = ColorOfLine;
+            context.lineWidth = techSize / 8;
+
+            context.beginPath();
+            context.moveTo(
+                Math.floor((x1 + 0.5) * (techSize + 1) + 1 + extraX + x_offset),
+                Math.floor((y1*mult + 0.5) * (techSize + 1) + 1 + extraY + y_offset),
+            );
+            context.lineTo(
+                Math.floor((x2 + 0.5) * (techSize + 1) + 1 + extraX + x_offset),
+                Math.floor((y2*mult + 0.5) * (techSize + 1) + 1 + extraY + y_offset),
+            );
+            context.stroke();
+        }
+    }
+}
+
+function drawLines(tree, treeXOffset, treeYOffset) {
+    d = {}
+    for (let key of boxPlacements[tree]) {
+        if (!(key[1] in d)) {
+            d[key[1]] = []
+        }
+        d[key[1]].push(key[0])
+    }
+    drawLinesHelper(tree, d, treeXOffset, treeYOffset)
+}
+
+let currentTechMenu = []
+let currentTechImages = {}
+let currentTechButtons = []
+let currentlyResearch = false
+let PrevTechHover = null
+let CurrentTechHover = null
+let knownTechHover = null
+let treeSizes = {}
+let treeOffsets = {}
+let boxPlacements = {}
+let treeWidth = {}
+let treeHeight = {}
+let techSize = 60
+let mult = 1.5
+const starters = ['improvements','recruitment','armament','aviation']
+
+
+function researchMenu() {
+    let techs = GetUnlockedTechs()
+    //if (techs == currentTechMenu && currentlyResearch && knownTechHover == CurrentTechHover) {
+    if (currentlyResearch && knownTechHover == CurrentTechHover) {
+    
+        console.log("it passed")
+        return
+    }
+    knownTechHover = CurrentTechHover
+    currentlyResearch = true
+    currentTechMenu = techs
+
+    treeSizes = {}
+    treeOffsets = {}
+    boxPlacements = {}  
+    treeWidth = {}
+    treeHeight = {}
+    for (let tech of starters) {
+        treeSizes[tech] = [] //initilize each tree
+        treeOffsets[tech] = [] //initilize each tree
+        boxPlacements[tech] = [] //initilize each tree
+        getTreeSizes(tech, tech)
+        treeWidth[tech] = treeSizes[tech][0][0]
+        placeBoxes(tech,tech)
+        treeHeight[tech] = treeSizes[tech].length
+        
+    }
+    console.log("_______")
+    console.log(boxPlacements)
+    console.log(treeSizes)
+    console.log(treeOffsets)
+
+    
+    //let size = Math.floor(techSize)
+    techSize = size
+
+    currentTechButtons = []
+    /*
+    let w = Math.ceil(Math.sqrt(techs.length))
+    if (w == 0) {
+        w = 1
+    }
+    */
+    clearBoard()
+
+    context.fillStyle = "#101010";
+    context.fillRect(x_offset, y_offset, gameObject.width*size,  gameObject.height*size);
+    //context.fillRect(0, 0, canvas.width, canvas.height);
+
+    let maybeDeny = []
+    if (CurrentTechHover != null) {
+
+        maybeDeny = TechDB[CurrentTechHover].deny || []
+    }
+
+    let treeXOffset = 0
+    let treeYOffset = 0
+
+    let extraX = 0
+    let extraY = 0    
+
+    let j = 0
+    for (let key in boxPlacements) {
+        if (j == 1) {
+            console.log("end of row 1")
+            treeXOffset = 0
+            let k = 0
+            for (let key2 in treeWidth) { //Add up two layers of trees. [0] is the top layer, [1] is the bottom layer
+                if (k==0) {
+                    treeYOffset = Math.max(treeYOffset, treeHeight[key2])
+                } else {
+                    break
+                }
+                k += 1
+            }
+        }
+
+        drawLines(key, treeXOffset, treeYOffset)
+        
+        for (let techPlacement of boxPlacements[key]) {
+            let t = techPlacement[1]
+            let x = techPlacement[0][0] + treeXOffset
+            let y = techPlacement[0][1] + treeYOffset
+
+            const xPos = x*(techSize+1)-1+extraX+x_offset
+            const yPos = y*(Math.floor(mult*techSize)+1)-1+extraY+y_offset
+
+            if (!(t in currentTechImages)) {
+                currentTechImages[t] = null
+                let img = new Image(100, 100);
+                console.log("requesting image " + t);
+                img.src = '/static/techAssets/' + t + '.png';
+
+                img.onload = function () {
+                    img.setAttribute('crossOrigin', '');
+                    img.crossOrigin = "Anonymous";
+                    currentTechImages[t] = img;
+
+                    console.log("recieved image " + t);
+                    //drawBoard();
+                }
+            }
+
+            let button = new Button(xPos, yPos, techSize, techSize, "#FFFFFF", "", researchButtonClicked);
+            button.name = t
+            button.parameters = button
+            if (t in currentTechImages && currentTechImages[t] != null) {
+                button.img = currentTechImages[t]
+            }
+            currentTechButtons.push(button)
+            button.render()
+        }
+
+        treeXOffset += treeWidth[key]
+        j+=1
     }
 }
