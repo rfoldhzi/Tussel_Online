@@ -52,3 +52,15 @@ function getCount(unitName) {
     }
     return count;
 }
+
+function getUnitByID(UnitID) {
+    for (let player in gameObject.units) {
+        for (let unit of gameObject.units[player]) {
+            //console.log(unit)
+            if (unit.UnitID == UnitID) {
+                return unit;
+            }
+        }
+    }
+    return null;
+}

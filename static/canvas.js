@@ -2,6 +2,9 @@ let jsonText = '{"units":{"0":[{"name":"town","parent":null,"type":"building","p
 let gameObject = JSON.parse(jsonText)
 let ButtonCollection = [];
 let doneButton;
+let playerSwitchButton;
+let outOfDate = false;
+let currentTurn = 0;
 
 class Button {
     constructor(x, y, width, height, color, text, func, ...parameters) {
@@ -27,8 +30,12 @@ class Button {
         context.fillStyle = this.textColor || "white";
         context.textAlign = "center";
         context.fillText(this.text, this.x + Math.floor(this.width / 2), this.y + Math.floor(this.height * .8) + 2);
-        if (this.hasOwnProperty('img')) {
+        if (this.hasOwnProperty('img') && this.img != null) {
             context.drawImage(this.img, this.x, this.y, this.width, this.height);
+        }
+        if (this.hasOwnProperty('foreground')) {
+            context.fillStyle = this.foreground;
+            context.fillRect(this.x, this.y, this.width, this.height);
         }
     }
 
@@ -58,9 +65,7 @@ function httpGetAsync(theUrl, callback) {
     xmlHttp.send(null);
 }
 
-
-
-function loadGame() {
+function endTurn() {
     callback = function (responseText) {
         jsonText = responseText;
         newGameObject = JSON.parse(jsonText)
@@ -76,10 +81,51 @@ function loadGame() {
         drawBoard()
     }
     //httpPostAsync("http://" + window.location.host + "/action", "{'apple':'hello world2'}");
-    httpGetAsync("http://" + window.location.host + "/finish_turn", callback);
+    //httpGetAsync("http://" + window.location.host + "/finish_turn", callback);
+    httpGetAsync("http://" + window.location.host + "/done/"+this_player, callback);
+}
+
+function loadGame() {
+    callback = function (responseText) {
+        jsonText = responseText;
+        newGameObject = JSON.parse(jsonText)
+        if (gameObject.intGrid.join(',') !== newGameObject.intGrid.join(',')) {
+            gameObject = newGameObject;
+            generateGrid()
+            generateBoardColors();
+            initClouds()
+        }
+        if (outOfDate && currentTurn == newGameObject.turn) {
+            return //Don't render if this is outofdate to recent info sent to server
+            //Just wait for the next request.
+        }
+        gameObject = newGameObject;
+        currentTurn = gameObject.turn;
+        //clearSelected()
+        if (selected) {
+            let newSelected = getUnitByID(selected.UnitID)
+            //newSelected.state = selected.state
+            newSelected.stateData = selected.stateData
+            selected = newSelected
+        }
+        updateCloudCover()
+        drawBoard()
+    }
+    //httpPostAsync("http://" + window.location.host + "/action", "{'apple':'hello world2'}");
+    outOfDate = false
+    httpGetAsync("http://" + window.location.host + "/get_game", callback);
+}
+
+function playerSwap() {
+    this_player += 1
+    this_player %= Object.keys(gameObject.units).length
+    console.log("this_player",this_player, gameObject.units.length)
+    loadGame()
+    //drawBoard()
 }
 
 function sendToServer(text) {
+    outOfDate = true
     console.log("sending to server: " + text)
     httpPostAsync("http://" + window.location.host + "/action", text);
 }
@@ -347,10 +393,10 @@ function drawBoard() {
     }
 }
 
-var intervalID = window.setInterval(myCallback, 1000);
+var intervalID = window.setInterval(myCallback, 2000);
 
 function myCallback() {
-    drawBoard();
+    loadGame()//drawBoard();
 }
 
 function replaceColor2(srcR, srcG, srcB, dstR, dstG, dstB) {
@@ -384,6 +430,12 @@ function drawStateLine(unit) { //As in "action state" (draws the line correspond
         color = "#FF8800"
     } else if (unit.state == "attack") {
         position2 = unit.stateData.position
+        if (position2 == undefined) {
+            let target = getUnitByID(unit.stateData)
+            if (target) {
+                position2 = target.position
+            }
+        }
         color = "#FF0000"
     } else if (unit.state == "heal") {
         position2 = unit.stateData.position
@@ -666,12 +718,20 @@ document.addEventListener('DOMContentLoaded', function () {
     canvas.height = window.innerHeight;
 
     if (canvas.height > canvas.width && canvas.width * canvas.height > 1000000) {
-        doneButton = new Button(canvas.width - 250, canvas.height - 100, 230, 80, "#AAAAAA", "Done", loadGame);
+        doneButton = new Button(canvas.width - 250, canvas.height - 100, 230, 80, "#AAAAAA", "Done", endTurn);
     } else {
-        doneButton = new Button(canvas.width - 160, canvas.height - 60, 140, 50, "#AAAAAA", "Done", loadGame);
+        doneButton = new Button(canvas.width - 160, canvas.height - 60, 140, 50, "#AAAAAA", "Done", endTurn);
     }
 
     ButtonCollection.push(doneButton)
+
+    if (canvas.height > canvas.width && canvas.width * canvas.height > 1000000) {
+        playerSwitchButton = new Button(20, canvas.height - 100, 230, 80, "#AAAAAA", "Swap", playerSwap);
+    } else {
+        playerSwitchButton = new Button(20, canvas.height - 60, 140, 50, "#AAAAAA", "Swap", playerSwap);
+    }
+
+    ButtonCollection.push(playerSwitchButton)
 
     canvas.addEventListener('wheel', function (event) {
 

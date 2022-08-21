@@ -54,7 +54,7 @@ function getMoveCircles(unit) {
                     if (blocking_unit != null) {
                         if (getPlayerfromUnit(blocking_unit) == this_player) {
                             if (blocking_unit.state == "move") {
-                                if (blocking_unit.stateData == pos) {
+                                if (blocking_unit.stateData[0] == x && blocking_unit.stateData[1] == y) {
                                     continue
                                 }
                             } else {
@@ -66,7 +66,7 @@ function getMoveCircles(unit) {
                     }
                     let water = Grid[y][x]
                     if ((water == (unit.type == 'boat')) || unit.type == "aircraft") {
-                        newSpaces.push([x,y])
+                        spaces.push([x,y])
                     }
                 }
             }

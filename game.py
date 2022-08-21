@@ -332,7 +332,7 @@ class Game:
                         SELF = copy.copy(self)
                         uncopied = False
                     print("STATE DATA", type(u.stateData), u.stateData)
-                    if type(type(u.stateData) == dict):
+                    if type(u.stateData) == dict:
                         u.stateData = u.stateData["UnitID"]
                     else:
                         u.stateData = u.stateData.UnitID
@@ -501,8 +501,12 @@ class Game:
             print("Transport in. DATA:", data,"SPLIT:",split)
             stateData = [[int(split[2]),int(split[3])],split[4]]
             print("Final RESULT:",stateData)
-        for u in self.units[player]:
+
+
+        player2 = self.getPlayerfromUnit(unit)
+        for u in self.units[player2]:
             if u == unit:
+                print("")
                 unit.state = state
                 unit.stateData = stateData
                 break#Stop unnessary looping
