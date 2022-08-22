@@ -2,7 +2,7 @@ let jsonText = '{"units":{"0":[{"name":"town","parent":null,"type":"building","p
 let gameObject = JSON.parse(jsonText)
 let ButtonCollection = [];
 let doneButton;
-let playerSwitchButton;
+let logoutButton;
 let outOfDate = false;
 let currentTurn = 0;
 
@@ -116,7 +116,9 @@ function loadGame() {
     httpGetAsync("http://" + window.location.host + "/get_game", callback);
 }
 
-function playerSwap() {
+function logout() {
+    window.location.href = "http://" + window.location.host+"/logout"
+    return
     this_player += 1
     this_player %= Object.keys(gameObject.units).length
     console.log("this_player",this_player, gameObject.units.length)
@@ -730,12 +732,12 @@ document.addEventListener('DOMContentLoaded', function () {
     ButtonCollection.push(doneButton)
 
     if (canvas.height > canvas.width && canvas.width * canvas.height > 1000000) {
-        playerSwitchButton = new Button(20, canvas.height - 100, 230, 80, "#AAAAAA", "Swap", playerSwap);
+        logoutButton = new Button(20, canvas.height - 100, 250, 80, "#AAAAAA", "Logout", logout);
     } else {
-        playerSwitchButton = new Button(20, canvas.height - 60, 140, 50, "#AAAAAA", "Swap", playerSwap);
+        logoutButton = new Button(20, canvas.height - 60, 160, 50, "#AAAAAA", "Logout", logout);
     }
 
-    ButtonCollection.push(playerSwitchButton)
+    ButtonCollection.push(logoutButton)
 
     canvas.addEventListener('wheel', function (event) {
 
