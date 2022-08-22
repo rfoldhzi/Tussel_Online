@@ -33,6 +33,24 @@ function replaceColor(imageCanvas, src, dst) {
 }
 
 
+
+function createShadow(imageCanvas) {
+    let context = imageCanvas.getContext('2d');
+    let im = context.getImageData(0, 0, imageCanvas.width, imageCanvas.height);
+    console.log(im.data.length, imageCanvas.width, imageCanvas.height)
+    const pixelsToCheck = [4,-4,imageCanvas.width*4,imageCanvas.width*-4];
+
+    for (var i = 0; i < im.data.length; i += 4) {
+        if (im.data[i + 3] == 0) {
+            if (im.data[i + 3 + 4] == 255 || im.data[i + 3 - 4] == 255
+                || im.data[i + 3 + imageCanvas.width*4] == 255 || im.data[i + 3 - imageCanvas.width*4] == 255) {
+                im.data[i + 3] = 100
+            } 
+        }
+    }
+    context.putImageData(im, 0, 0);
+}
+
 function getUnitImage(player, name) {
     if (!(player in unitImages)) {
         unitImages[player] = {};
@@ -72,6 +90,7 @@ function getUnitImage(player, name) {
         //ctx.drawImage(baseUnitImages[name], 0, 0, size, size);
         ctx.drawImage(baseUnitImages[name], 0, 0, 60, 60);
         replaceColor(unitCanvas, [233, 19, 212], playerColors[player])
+        createShadow(unitCanvas)
 
         unitImages[player][name] = ctx.canvas;
     };
