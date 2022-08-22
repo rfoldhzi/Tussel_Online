@@ -204,7 +204,7 @@ function handleClick(xPos,yPos) {
 
                     heightforResources = btnSize/3;
 
-                    let newResourceButton = new Button((btnSize*1.2)*i, resourceBoxHeight, btnSize, btnSize/3, resourceColors[resource], resource, resourceButtonClicked);
+                    let newResourceButton = new Button((btnSize*1.2)*i, resourceBoxHeight + statBoxHeight, btnSize, btnSize/3, resourceColors[resource], resource, resourceButtonClicked);
                     newResourceButton.name = resource
                     newResourceButton.parameters = newResourceButton;
                     newResourceButton.textColor = "black"
@@ -223,8 +223,8 @@ function handleClick(xPos,yPos) {
                 let btnCount = possibleBuilds.length
                 let combinedHeight = btnCount*btnSize + (btnCount-1)*btnSize*.2
                 let btnHeightStart = Math.floor(canvas.height*.5 - combinedHeight/2) 
-                if (btnHeightStart < resourceBoxHeight + heightforResources) {
-                    while (btnHeightStart < resourceBoxHeight + heightforResources && btnSize > 20) {
+                if (btnHeightStart < resourceBoxHeight + statBoxHeight + heightforResources) {
+                    while (btnHeightStart < resourceBoxHeight + statBoxHeight + heightforResources && btnSize > 20) {
                         btnSize -= 10
                         combinedHeight = btnCount*btnSize + (btnCount-1)*btnSize*.2
                         btnHeightStart = Math.floor(canvas.height*.5 - combinedHeight/2)
@@ -266,8 +266,8 @@ function handleClick(xPos,yPos) {
                 let btnCount = possibleBuilds.length
                 let combinedHeight = btnCount*btnSize + (btnCount-1)*btnSize*.2
                 let btnHeightStart = Math.floor(canvas.height*.5 - combinedHeight/2) 
-                if (btnHeightStart < resourceBoxHeight + heightforResources) {
-                    while (btnHeightStart < resourceBoxHeight + heightforResources && btnSize > 20) {
+                if (btnHeightStart < resourceBoxHeight + statBoxHeight + heightforResources) {
+                    while (btnHeightStart < resourceBoxHeight + statBoxHeight + heightforResources && btnSize > 20) {
                         btnSize -= 10
                         combinedHeight = btnCount*btnSize + (btnCount-1)*btnSize*.2
                         btnHeightStart = Math.floor(canvas.height*.5 - combinedHeight/2)

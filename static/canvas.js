@@ -250,6 +250,19 @@ GreenCircle.src = '/static/assets/TransportCircle.png'
 let Beaker = new Image(40, 40)
 Beaker.src = '/static/assets/Beaker.png'
 
+let statLogos = {
+    "attack":new Image(20, 20),
+    "defense":new Image(20, 20),
+    "health":new Image(20, 20),
+    "population":new Image(20, 20),
+    "range":new Image(20, 20),
+    "speed":new Image(20, 20),
+}
+
+for (let key in statLogos) {
+    statLogos[key].src = '/static/assets/statLogos/'+key+'.png'
+}
+
 function drawActionIcons() {
     for (const position of moveCircles) {
         //console.log(position);
@@ -283,6 +296,7 @@ function drawActionIcons() {
 }
 
 let resourceBoxHeight = 22
+let statBoxHeight = 22
 
 
 function drawResources() {
@@ -317,6 +331,62 @@ function drawResources() {
     context.fillStyle = "#00FFFF";
     context.fillText(gameObject.resources[this_player]["energy"] + " + " + newResources["energy"], canvas.width * .8, resourceBoxHeight - 5);
 }
+function drawStats() {
+
+    if (selected == null) {
+        statBoxHeight = 0
+        return
+    }
+
+    statBoxHeight = resourceBoxHeight
+
+    context.fillStyle = "#202020";
+    context.fillRect(0, resourceBoxHeight, canvas.width, statBoxHeight);
+
+    let statCount = 6
+    let currentStatCount = 0
+    if (!selected.possibleStates.includes("attack")) {
+        statCount -= 1
+    }
+    if (!selected.possibleStates.includes("move")) {
+        statCount -= 1
+    }
+    if (selected.population == undefined) {
+        statCount -= 1
+    }
+
+    context.textAlign = "left";
+    context.font = (statBoxHeight - 2) + "px Arial";
+
+    function drawStat(stat, text, color) {
+        context.fillStyle = color;
+        context.fillText(text, canvas.width * (currentStatCount+1) * (1/(statCount+1)) + statBoxHeight/4, resourceBoxHeight + statBoxHeight - 4);
+        context.drawImage(statLogos[stat], canvas.width * (currentStatCount+1) * (1/(statCount+1))-statBoxHeight,resourceBoxHeight,statBoxHeight,statBoxHeight)
+        currentStatCount += 1
+    }
+
+    console.log(statLogos["health"])
+
+    drawStat("health",selected.health + "/" + selected.maxHealth,"#CEFFD7")
+
+    if (selected.possibleStates.includes("attack")) {
+        drawStat("attack",selected.attack,"#FF0800")
+    }
+
+    drawStat("defense",selected.defense,"#205DFF")
+
+    if (selected.possibleStates.includes("move")) {
+        drawStat("speed",selected.speed,"#00F5B9")
+    }
+    
+    drawStat("range",selected.range,"#FFA300")
+
+    if (selected.population != undefined) {
+        drawStat("population",selected.population + "/" + selected.maxPopulation,"#9434EB")
+    }
+
+    return
+}
 
 function drawUnits() {
     for (const player in gameObject.units) {
@@ -345,6 +415,9 @@ function drawStateLines() {
 function drawUI() {
     //Gui is rendered below
     drawResources()
+    if (selected != null) {
+        drawStats()
+    }
 
     for (let btn of ButtonCollection) {
         btn.render();
