@@ -76,7 +76,8 @@ const UnitDB = {
             "gold": 0,
             "metal": 0,
             "energy": 0
-        }
+        },
+        "size":0.75,
     },
     'mech':{
         'cost': {'gold':20,'metal':80,'energy':10},

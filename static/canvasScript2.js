@@ -37,14 +37,29 @@ function replaceColor(imageCanvas, src, dst) {
 function createShadow(imageCanvas) {
     let context = imageCanvas.getContext('2d');
     let im = context.getImageData(0, 0, imageCanvas.width, imageCanvas.height);
-    console.log(im.data.length, imageCanvas.width, imageCanvas.height)
     const pixelsToCheck = [4,-4,imageCanvas.width*4,imageCanvas.width*-4];
+    const pixelsToCheck2 = [8,-8];
 
     for (var i = 0; i < im.data.length; i += 4) {
         if (im.data[i + 3] == 0) {
             if (im.data[i + 3 + 4] == 255 || im.data[i + 3 - 4] == 255
                 || im.data[i + 3 + imageCanvas.width*4] == 255 || im.data[i + 3 - imageCanvas.width*4] == 255) {
-                im.data[i + 3] = 100
+                im.data[i + 3] = 40
+                for (let n of pixelsToCheck) {
+                    if (im.data[i + n] <= 30 && im.data[i + 1 + n] <= 30 && im.data[i + 2 + n] <= 30) {
+                        continue
+                    }
+                    im.data[i + 3] = 250
+                }
+                    
+            } else if (im.data[i + 3 + 8] == 255 || im.data[i + 3 - 8] == 255
+                || im.data[i + 3 + imageCanvas.width*8] == 255 || im.data[i + 3 - imageCanvas.width*8] == 255) {
+                    for (let n of pixelsToCheck2) {
+                        if (im.data[i + n] <= 30 && im.data[i + 1 + n] <= 30 && im.data[i + 2 + n] <= 30) {
+                            continue
+                        }
+                        im.data[i + 3] = 80
+                    }
             } 
         }
     }
