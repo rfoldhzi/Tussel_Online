@@ -705,6 +705,10 @@ let touch_move = function (event) {
 
 document.addEventListener('DOMContentLoaded', function () {
 
+    if (document.querySelector('meta[name="player_id"]')){
+        this_player = parseInt(document.querySelector('meta[name="player_id"]').content)
+    }
+
     canvas = document.getElementById("myCanvas");
     context = canvas.getContext('2d');
     canvas.onmousedown = mouse_down;
