@@ -4,7 +4,8 @@ from flask import (
     redirect,
     flash,
     url_for,
-    session
+    session,
+    request
 )
 from game import Game
 
@@ -80,6 +81,11 @@ class login_form(FlaskForm):
     username = StringField(
         validators=[InputRequired()]
     )
+
+class create_game_form(FlaskForm):
+    player_count = StringField(validators=[Optional(), Length(1, 2)])
+    cloud_mode = StringField(validators=[Optional(), Length(1, 8)])
+    mapType = StringField(validators=[Optional(), Length(1, 8)])
 
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
@@ -159,3 +165,39 @@ def action():
     print("HELLO")
     print("this is it ->", request.data.decode())
     return "bye"
+
+@app.route('/newgame', methods=("GET", "POST"), strict_slashes=False)
+@login_required
+def newGame():
+    global CurrentGame
+    form = create_game_form()
+    print("something2")
+
+    print(form.errors)
+
+    if form.is_submitted():
+        print("submitted")
+
+    if form.validate():
+        print("valid")
+
+    print(form.errors)
+
+    if form.validate_on_submit():
+        try:
+            x = int(form.player_count.data)
+            CurrentGame = Game(2)
+            if form.cloud_mode.data:
+                CurrentGame.mode = form.cloud_mode.data.lower()
+            for i in range(x):
+                CurrentGame.addPlayer()
+            #CurrentGame.addPlayer()
+            CurrentGame.start()
+            return redirect(url_for('canvas'))
+        except Exception as e:
+            print("Exception",e)
+            flash(e, "danger")
+
+    return render_template("newGameForm.html",
+        form=form,
+        )
