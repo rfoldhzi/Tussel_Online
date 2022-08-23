@@ -74,7 +74,7 @@ function getUnitImage(player, name) {
         if (!(name in baseUnitImages)) {
             let img = new Image(size, size);
             console.log("requesting image " + name);
-            img.src = '/static/assets/' + name + '.png';
+            img.src = '/static/assets/' + name.replaceAll(" ", "_") + '.png';
 
             img.onload = function () {
                 img.setAttribute('crossOrigin', '');
@@ -630,7 +630,7 @@ function researchMenu() {
                 currentTechImages[t] = null
                 let img = new Image(100, 100);
                 console.log("requesting image " + t);
-                img.src = '/static/techAssets/' + t + '.png';
+                img.src = '/static/techAssets/' + t.replaceAll(" ", "_") + '.png';
 
                 img.onload = function () {
                     img.setAttribute('crossOrigin', '');
