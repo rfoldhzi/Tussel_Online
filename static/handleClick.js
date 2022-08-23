@@ -190,6 +190,7 @@ function handleClick(xPos,yPos) {
             buildButtons = [];
             resourceButtons = [];
             let heightforResources = 0;
+            drawStats(); //Added here so we know the current height for top-bars
             if (selected.possibleStates.includes("resources")) {
                 let i = 0
                 for (let resource in selected.resourceGen) {

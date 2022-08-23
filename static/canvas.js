@@ -359,9 +359,11 @@ function drawStats() {
     context.font = (statBoxHeight - 2) + "px Arial";
 
     function drawStat(stat, text, color) {
+        let width = statBoxHeight + statBoxHeight/4 + statBoxHeight*0.5*text.toString().length
+        console.log("width", width)
         context.fillStyle = color;
-        context.fillText(text, canvas.width * (currentStatCount+1) * (1/(statCount+1)) + statBoxHeight/4, resourceBoxHeight + statBoxHeight - 4);
-        context.drawImage(statLogos[stat], canvas.width * (currentStatCount+1) * (1/(statCount+1))-statBoxHeight,resourceBoxHeight,statBoxHeight,statBoxHeight)
+        context.fillText(text, canvas.width * (currentStatCount+1.3) * (1/(statCount+1)) + statBoxHeight/4 - width/2, resourceBoxHeight + statBoxHeight - 6);
+        context.drawImage(statLogos[stat], canvas.width * (currentStatCount+1.3) * (1/(statCount+1))-statBoxHeight - width/2,resourceBoxHeight,statBoxHeight,statBoxHeight)
         currentStatCount += 1
     }
 
@@ -415,9 +417,8 @@ function drawStateLines() {
 function drawUI() {
     //Gui is rendered below
     drawResources()
-    if (selected != null) {
-        drawStats()
-    }
+    drawStats()
+    
 
     for (let btn of ButtonCollection) {
         btn.render();
