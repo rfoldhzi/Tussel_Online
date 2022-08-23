@@ -501,6 +501,9 @@ class Game:
             print("Transport in. DATA:", data,"SPLIT:",split)
             stateData = [[int(split[2]),int(split[3])],split[4]]
             print("Final RESULT:",stateData)
+        elif state == "cancel":
+            state = None
+            stateData = None
 
 
         player2 = self.getPlayerfromUnit(unit)

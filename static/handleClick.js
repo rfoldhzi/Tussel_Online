@@ -16,6 +16,34 @@ function gridMouse(x,y) {
     return [Math.floor(x/(size)), Math.floor(y/(size))];
 }
 
+function defaultButtonMenu() {
+    let buttonsToDelete = []
+    for (let key in ButtonCollection) {
+        if (key != "logout" || key != "done") {
+            buttonsToDelete.push(key)
+        }
+    }
+    for (let key of buttonsToDelete) {
+        delete ButtonCollection[key]
+    }
+    if (!("done" in ButtonCollection)) {
+        if (canvas.height > canvas.width && canvas.width * canvas.height > 1000000) {
+            doneButton = new Button(canvas.width - 250, canvas.height - 100, 230, 80, "#AAAAAA", "Done", endTurn);
+        } else {
+            doneButton = new Button(canvas.width - 160, canvas.height - 60, 140, 50, "#AAAAAA", "Done", endTurn);
+        }
+        ButtonCollection["done"] = doneButton
+    }
+    if (!("logout" in ButtonCollection)) {
+        if (canvas.height > canvas.width && canvas.width * canvas.height > 1000000) {
+            logoutButton = new Button(20, canvas.height - 100, 250, 80, "#AAAAAA", "Logout", logout);
+        } else {
+            logoutButton = new Button(20, canvas.height - 60, 160, 50, "#AAAAAA", "Logout", logout);
+        }
+        ButtonCollection["logout"] = logoutButton
+    }
+}
+
 function clearSelected() {
     stateDataMode = null;
     selected = null;
@@ -27,6 +55,7 @@ function clearSelected() {
     resourceButtons = []
     possibleAttacks = []
     possibleHeals = []
+    defaultButtonMenu()
 }
 
 function buildButtonClicked(btn) {
@@ -77,14 +106,22 @@ function researchButtonClicked(btn) {
     drawBoard();
 }
 
+function cancelButtonClicked(btn) {
+    selected.state = null
+    selected.stateData = null
+    sendToServer(convertToStr(selected,'cancel'))
+    clearSelected();
+    drawBoard();
+}
+
 function handleClick(xPos,yPos) {
     console.log("handling")
 
     
 
-    for (let btn of ButtonCollection) {
+    for (let key in ButtonCollection) {
 
-        if (btn.potentialMouseClick(xPos,yPos)) {
+        if (ButtonCollection[key].potentialMouseClick(xPos,yPos)) {
             return;
         }
     }
@@ -191,6 +228,18 @@ function handleClick(xPos,yPos) {
             resourceButtons = [];
             let heightforResources = 0;
             drawStats(); //Added here so we know the current height for top-bars
+
+            if (selected.state != null) {
+                let btnSize = 120;
+                if (canvas.height > canvas.width && canvas.width*canvas.height > 1000000) {
+                    btnSize = 180
+                }
+
+                let cancelButton = new Button(canvas.width - btnSize, resourceBoxHeight + statBoxHeight, btnSize, btnSize/3, "#F05050", "cancel", cancelButtonClicked);
+                cancelButton.textColor = "white"
+                ButtonCollection["cancel"] = cancelButton
+            }
+
             if (selected.possibleStates.includes("resources")) {
                 let i = 0
                 for (let resource in selected.resourceGen) {

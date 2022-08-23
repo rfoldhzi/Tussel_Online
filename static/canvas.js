@@ -1,6 +1,6 @@
 let jsonText = '{"units":{"0":[{"name":"town","parent":null,"type":"building","possibleStates":["resources","build","research"],"state":null,"stateData":null,"speed":1,"range":1,"attack":2,"defense":2,"maxHealth":50,"health":50,"UnitID":"0","score":450,"resourceGen":{"gold":10,"metal":10,"energy":10},"abilities":{"costly":1.75},"position":[3,3],"population":0,"maxPopulation":4}],"1":[{"name":"bot fortress","parent":null,"type":"building","possibleStates":["resources","build"],"state":null,"stateData":null,"speed":1,"range":1,"attack":2,"defense":3,"maxHealth":50,"health":50,"UnitID":"1","score":300,"resourceGen":{"gold":0,"metal":20,"energy":20},"abilities":{},"position":[3,15],"population":0,"maxPopulation":4}],"2":[{"name":"town","parent":null,"type":"building","possibleStates":["resources","build","research"],"state":null,"stateData":null,"speed":1,"range":1,"attack":2,"defense":2,"maxHealth":50,"health":50,"UnitID":"2","score":450,"resourceGen":{"gold":10,"metal":10,"energy":10},"abilities":{"costly":1.75},"position":[9,9],"population":0,"maxPopulation":4}],"3":[{"name":"plant base","parent":null,"type":"building","possibleStates":["resources","build"],"state":null,"stateData":null,"speed":1,"range":1,"attack":2,"defense":2,"maxHealth":8,"health":8,"UnitID":"3","score":200,"resourceGen":{"energy":10},"abilities":{"deathSpawn":"mad plant base"},"position":[15,3],"population":0,"maxPopulation":3}],"4":[{"name":"plant base","parent":null,"type":"building","possibleStates":["resources","build"],"state":null,"stateData":null,"speed":1,"range":1,"attack":2,"defense":2,"maxHealth":8,"health":8,"UnitID":"4","score":200,"resourceGen":{"energy":10},"abilities":{"deathSpawn":"mad plant base"},"position":[15,15],"population":0,"maxPopulation":3}]},"resources":{"0":{"gold":20,"metal":0,"energy":0},"1":{"gold":20,"metal":0,"energy":0},"2":{"gold":20,"metal":0,"energy":0},"3":{"gold":20,"metal":0,"energy":0},"4":{"gold":20,"metal":0,"energy":0}},"went":{"0":false,"1":true,"2":true,"3":true,"4":true},"tech":{"0":[],"1":[],"2":[],"3":[],"4":[]},"scores":{"0":0,"1":0,"2":0,"3":0,"4":0},"progress":{"0":{},"1":{},"2":{},"3":{},"4":{}},"botmode":[],"ready":true,"started":true,"turn":0,"id":0,"mode":"halo","allai":false,"width":19,"height":19,"ai":4,"targetPlayers":4,"intGrid":[255,255,248,127,14,7,192,192,248,24,31,3,1,192,112,16,31,199,31,253,183,255,227,255,246,223,252,113,252,4,7,1,192,96,124,12,15,129,129,240,56,127,15,255,255,128]}';
 let gameObject = JSON.parse(jsonText)
-let ButtonCollection = [];
+let ButtonCollection = {};
 let doneButton;
 let logoutButton;
 let outOfDate = false;
@@ -420,8 +420,8 @@ function drawUI() {
     drawStats()
     
 
-    for (let btn of ButtonCollection) {
-        btn.render();
+    for (let key in ButtonCollection) {
+        ButtonCollection[key].render();
     }
 }
 
@@ -797,21 +797,7 @@ document.addEventListener('DOMContentLoaded', function () {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    if (canvas.height > canvas.width && canvas.width * canvas.height > 1000000) {
-        doneButton = new Button(canvas.width - 250, canvas.height - 100, 230, 80, "#AAAAAA", "Done", endTurn);
-    } else {
-        doneButton = new Button(canvas.width - 160, canvas.height - 60, 140, 50, "#AAAAAA", "Done", endTurn);
-    }
-
-    ButtonCollection.push(doneButton)
-
-    if (canvas.height > canvas.width && canvas.width * canvas.height > 1000000) {
-        logoutButton = new Button(20, canvas.height - 100, 250, 80, "#AAAAAA", "Logout", logout);
-    } else {
-        logoutButton = new Button(20, canvas.height - 60, 160, 50, "#AAAAAA", "Logout", logout);
-    }
-
-    ButtonCollection.push(logoutButton)
+    defaultButtonMenu()
 
     canvas.addEventListener('wheel', function (event) {
 
