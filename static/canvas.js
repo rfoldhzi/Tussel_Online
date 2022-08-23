@@ -397,6 +397,10 @@ function drawUnits() {
             drawUnit(player, unit);
         }
     }
+    for (const unit of gameObject.units[this_player]) {
+        //console.log(unit)
+        drawUnitResources(this_player, unit);
+    }
 }
 
 function drawTerritories() {
@@ -577,6 +581,15 @@ function drawUnit(player, unit) {
     img.src = '/static/assets/soldier.png';
     */
 }
+
+function drawUnitResources(player, unit) {
+    if (unit.state == "resources") {
+        context.fillStyle = resourceColors[unit.stateData];
+        context.fillRect(size * unit.position[0] + x_offset + size * (1 - 0.2) * .1, size * unit.position[1] + y_offset + size * (1 - 0.2) * .9, size*.2, size*.2);
+    }
+}
+
+
 
 let mouse_down = function (event) {
     event.preventDefault();
