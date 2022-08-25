@@ -816,10 +816,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
         console.log(event.deltaY);
 
-        size += Math.floor(event.deltaY / 100);
-        if (size < 2) {
-            size = 2
+        let change = event.deltaY / -50
+        let minSize = 500/Math.max(gameObject.width, gameObject.height)
+        size *= 1+(change)/10;
+        if (size < minSize) {
+            size = minSize
+        } else if (size > 100) {
+            size = 100
         }
+        size = Math.floor(size)
+
 
         console.log(size);
 
