@@ -80,9 +80,7 @@ function endTurn() {
         updateCloudCover()
         drawBoard()
     }
-    //httpPostAsync("http://" + window.location.host + "/action", "{'apple':'hello world2'}");
-    //httpGetAsync("http://" + window.location.host + "/finish_turn", callback);
-    httpGetAsync("http://" + window.location.host + "/done/"+this_player, callback);
+    httpGetAsync(location.protocol+"://" + window.location.host + "/done/"+this_player, callback);
 }
 
 function loadGame() {
@@ -111,13 +109,12 @@ function loadGame() {
         updateCloudCover()
         drawBoard()
     }
-    //httpPostAsync("http://" + window.location.host + "/action", "{'apple':'hello world2'}");
     outOfDate = false
-    httpGetAsync("http://" + window.location.host + "/get_game", callback);
+    httpGetAsync(location.protocol+"//" + window.location.host + "/get_game", callback);
 }
 
 function logout() {
-    window.location.href = "http://" + window.location.host+"/logout"
+    window.location.href = location.protocol+"://" + window.location.host+"/logout"
     return
     this_player += 1
     this_player %= Object.keys(gameObject.units).length
@@ -129,7 +126,7 @@ function logout() {
 function sendToServer(text) {
     outOfDate = true
     console.log("sending to server: " + text)
-    httpPostAsync("http://" + window.location.host + "/action", text);
+    httpPostAsync(location.protocol+"://" + window.location.host + "/action", text);
 }
 
 function convertToStr(u, state, stateData) {
