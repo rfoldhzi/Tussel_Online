@@ -813,6 +813,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         console.log(event.deltaY);
 
+        let mouseX = parseInt(event.clientX);
+        let mouseY = parseInt(event.clientY);
+
+        let xBlocks = (mouseX - x_offset) / size
+        let yBlocks = (mouseY - y_offset) / size
+
         let change = event.deltaY / -50
         let minSize = 500/Math.max(gameObject.width, gameObject.height)
         size *= 1+(change)/10;
@@ -822,6 +828,18 @@ document.addEventListener('DOMContentLoaded', function () {
             size = 100
         }
         size = Math.floor(size)
+
+        let xProjected = x_offset + size * xBlocks
+        let xChange = mouseX - xProjected
+
+        x_offset += xChange
+        startX_offset += xChange
+
+        let yProjected = y_offset + size * yBlocks
+        let yChange = mouseY - yProjected
+
+        y_offset += yChange
+        startY_offset += yChange
 
 
         console.log(size);
