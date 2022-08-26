@@ -110,6 +110,18 @@ function invertTechImage(imageCanvas) {
     context.putImageData(im, 0, 0);
 }
 
+function ConvertImageToBlackAndWhite(imageCanvas) {
+    let context = imageCanvas.getContext('2d');
+    let im = context.getImageData(0, 0, imageCanvas.width, imageCanvas.height);
+    for (var i = 0; i < im.data.length; i += 4) {
+        let Brightness = (0.299*im.data[i] + 0.587*im.data[i + 1] + 0.114*im.data[i + 2])
+        im.data[i] = (Brightness * 5 + im.data[i])/6;
+        im.data[i + 1] = (Brightness * 5 + im.data[i + 1])/6;
+        im.data[i + 2] = (Brightness * 5 + im.data[i + 2])/6;
+    }
+    context.putImageData(im, 0, 0);
+}
+
 function getUnitImage(player, name) {
     if (!(player in unitImages)) {
         unitImages[player] = {};
@@ -338,13 +350,18 @@ function getEffectiveResources(unitToIgnore) {
     let resources = gameObject.resources[this_player]
     resources = { ...resources } //copy the list
     for (let unit of gameObject.units[this_player]) {
-        if (unit.state == "resources" && unit != unitToIgnore) {
+        if (unit == unitToIgnore) {
+            continue
+        }
+        if (unit.state == "resources") {
             resources[unit.stateData] += unit.resourceGen[unit.stateData]
-        } else if (unit.state == "build" && unit != unitToIgnore) {
+        } else if (unit.state == "build") {
             cost = getCost(unit.stateData[1])
             for (let r in cost) {
                 resources[r] -= cost[r]
             }
+        } else if (unit.state == "research") {
+            resources["energy"] -= TechDB[unit.stateData[1]]["cost"]
         }
     }
 
@@ -353,7 +370,7 @@ function getEffectiveResources(unitToIgnore) {
     return resources;
 }
 
-function checkIfAffordable(unitName, effectiveResources) {
+function checkIfAffordable(unitName) {
     let cost = getCost(unitName);
     for (let r in cost) {
         if (effectiveResources[r] < cost[r]) {
@@ -361,6 +378,10 @@ function checkIfAffordable(unitName, effectiveResources) {
         }
     }
     return true;
+}
+
+function checkTechIfAffordable(techName) {
+    return effectiveResources["energy"] >= TechDB[techName]["cost"]
 }
 
 function initClouds() {
@@ -623,6 +644,8 @@ function drawLines(tree, treeXOffset, treeYOffset) {
 let currentTechMenu = []
 let currentTechImages = {}
 let currentTechImagesInverted = {}
+let currentTechImagesBW = {}
+let currentTechImagesBWInverted = {}//Yes I know, its two effects on the same image
 let currentTechButtons = {}
 let currentlyResearch = false
 let redrawResearch = false
@@ -673,6 +696,7 @@ function researchMenu() {
         console.log(treeSizes)
         console.log(treeOffsets)
 
+        effectiveResources = getEffectiveResources(selected)
     }
     redrawResearch = false
     //let size = Math.floor(techSize)
@@ -752,6 +776,27 @@ function researchMenu() {
                     ctx.drawImage(img, 0, 0, 20, 20);
                     invertTechImage(techCanvas)
                     currentTechImagesInverted[t] = ctx.canvas;
+
+                    if (!gameObject.tech[this_player].includes(t)) { //Save a little bit of memory since we don't need to save images since they will always be colorful
+                        let techCanvas2 = document.createElement('canvas');
+                        techCanvas2.setAttribute('width', 20);
+                        techCanvas2.setAttribute('height', 20);
+                        let ctx2 = techCanvas2.getContext('2d');
+                        ctx2.imageSmoothingEnabled = false;
+                        ctx2.drawImage(img, 0, 0, 20, 20);
+                        ConvertImageToBlackAndWhite(techCanvas2)
+                        currentTechImagesBW[t] = ctx2.canvas; //For when you can't afford the tech
+
+                        let techCanvas3 = document.createElement('canvas');
+                        techCanvas3.setAttribute('width', 20);
+                        techCanvas3.setAttribute('height', 20);
+                        let ctx3 = techCanvas3.getContext('2d');
+                        ctx3.imageSmoothingEnabled = false;
+                        ctx3.drawImage(img, 0, 0, 20, 20);
+                        ConvertImageToBlackAndWhite(techCanvas3)
+                        invertTechImage(techCanvas3)
+                        currentTechImagesBWInverted[t] = ctx3.canvas; //For when you can't afford the tech AND its being hovered
+                    }
                 }
             }
 
@@ -765,9 +810,19 @@ function researchMenu() {
             button.name = t
             button.parameters = button
             if (t in currentTechImages && currentTechImages[t] != null) {
-                button.img = currentTechImages[t]
-                if (t == CurrentTechHover) {
-                    button.img = currentTechImagesInverted[t]
+                
+                if (!checkTechIfAffordable(t) && !gameObject.tech[this_player].includes(t)) {
+                    if (t == CurrentTechHover) {
+                        button.img = currentTechImagesBWInverted[t]
+                    } else {
+                        button.img = currentTechImagesBW[t]
+                    }
+                } else {
+                    if (t == CurrentTechHover) {
+                        button.img = currentTechImagesInverted[t]
+                    } else {
+                        button.img = currentTechImages[t]
+                    }
                 }
             }
             if (!currentTechMenu.includes(t)) {

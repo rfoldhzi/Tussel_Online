@@ -9,6 +9,7 @@ let resourceButtons = []
 let possibleAttacks = []
 let possibleHeals = []
 let stateDataMode = null;
+let effectiveResources = {}
 
 function gridMouse(x,y) {
     x = x - x_offset;
@@ -281,7 +282,7 @@ function handleClick(xPos,yPos) {
                     }
                 }
 
-                let effectiveResources = getEffectiveResources(selected)
+                effectiveResources = getEffectiveResources(selected) //Store in global variable
 
                 let i = 0
                 for (let unitName of possibleBuilds) {
@@ -291,7 +292,7 @@ function handleClick(xPos,yPos) {
                         color = "#6464FF"
                     } else if (selected.maxPopulation && selected.maxPopulation <= selected.population) {
                         color = "#777777"
-                    } else if (checkIfAffordable(unitName, effectiveResources))  {
+                    } else if (checkIfAffordable(unitName))  {
                         color = "#EEEEEE"
                     }
 
