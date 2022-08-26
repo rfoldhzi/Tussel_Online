@@ -89,6 +89,7 @@ function loadGame() {
         newGameObject = JSON.parse(jsonText)
         if (gameObject.intGrid.join(',') !== newGameObject.intGrid.join(',')) {
             gameObject = newGameObject;
+            initilizeOffsets()
             generateGrid()
             generateBoardColors();
             initClouds()
@@ -820,14 +821,8 @@ document.addEventListener('DOMContentLoaded', function () {
         let yBlocks = (mouseY - y_offset) / size
 
         let change = event.deltaY / -50
-        let minSize = 500/Math.max(gameObject.width, gameObject.height)
         size *= 1+(change)/10;
-        if (size < minSize) {
-            size = minSize
-        } else if (size > 100) {
-            size = 100
-        }
-        size = Math.floor(size)
+        regulateSquareSize()
 
         let xProjected = x_offset + size * xBlocks
         let xChange = mouseX - xProjected

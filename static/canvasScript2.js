@@ -389,6 +389,60 @@ function drawClouds() {
     }
 }
 
+//Keeps the size within a resonable range
+function regulateSquareSize() {
+    let minSize = 500/Math.max(gameObject.width, gameObject.height)
+    if (size < minSize) {
+        size = minSize
+    } else if (size > 100) {
+        size = 100
+    }
+    size = Math.floor(size)
+}
+
+function initilizeOffsets() {
+    let minX = null;
+    let maxX = null;
+    let minY = null;
+    let maxY = null
+    for (let unit of gameObject.units[this_player]) {
+        if (minX == null) {
+            minX = unit.position[0]
+            maxX = unit.position[0]
+            minY = unit.position[1]
+            maxY = unit.position[1]
+        }
+        if (unit.position[0] < minX) {
+            minX = unit.position[0]
+        }
+        if (unit.position[0] > maxX) {
+            maxX = unit.position[0]
+        }
+        if (unit.position[1] < minY) {
+            minY = unit.position[1]
+        }
+        if (unit.position[1] > maxY) {
+            maxY = unit.position[1]
+        }
+    }
+
+    //To give a 1 space buffer around units
+    minX -= 1
+    maxX += 1
+    minY -= 1
+    maxY += 1
+
+    const sizeByX = canvas.width/(maxX-minX+1)
+    const sizeByY = canvas.height/(maxY-minY+1)
+
+    size = Math.floor(Math.min(sizeByX, sizeByY))
+    regulateSquareSize()
+
+
+    x_offset = (canvas.width - (size*(maxX-minX+1)))/2 - size * minX
+    y_offset = (canvas.height - (size*(maxY-minY+1)))/2 - size * minY
+}
+
 function GetUnlockedTechs() {
     let techs = []
     for (let t of gameObject.tech[this_player]) {
