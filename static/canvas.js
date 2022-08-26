@@ -46,6 +46,9 @@ class Button {
         }
         return false;
     }
+    isMouseHovering(mouseX, mouseY) {
+        return mouseX >= this.x && mouseX < this.x + this.width && mouseY >= this.y && mouseY < this.y + this.height
+    }
 }
 
 function httpPostAsync(theUrl, data) {
@@ -633,6 +636,24 @@ let mouse_move = function (event) {
         is_dragging = true;
     }
     if (!is_dragging) {
+        if (stateDataMode == "research") {
+            let mouseX = parseInt(event.clientX);
+            let mouseY = parseInt(event.clientY);
+            for (let key in currentTechButtons) {
+                if (currentTechButtons[key].isMouseHovering(mouseX,mouseY)) {
+                    //currentTechButtons[CurrentTechHover].img = currentTechImages[CurrentTechHover]
+                    CurrentTechHover = key;
+                    console.log("current hover", CurrentTechHover)
+                    //currentTechButtons[CurrentTechHover].img = currentTechImagesInverted[CurrentTechHover]
+                    redrawResearch = true //Used to trigger update for research menu
+                    drawBoard()
+                    return
+                }
+            }
+            redrawResearch = true
+            CurrentTechHover = null;
+            drawBoard()
+        }
         return;
     }
 
@@ -647,7 +668,10 @@ let mouse_move = function (event) {
     x_offset = startX_offset + dx;
     y_offset = startY_offset + dy;
 
-    currentlyResearch = false //Used to trigger update for research menu
+    if (stateDataMode == "research") {
+        redrawResearch = true //Used to trigger update for research menu
+    }
+    
 
     drawBoard();
 }

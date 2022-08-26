@@ -127,8 +127,8 @@ function handleClick(xPos,yPos) {
     }
 
     if (stateDataMode == "research") {
-        for (let btn of currentTechButtons) {
-            if (btn.potentialMouseClick(xPos,yPos)) {
+        for (let key in currentTechButtons) {
+            if (currentTechButtons[key].potentialMouseClick(xPos,yPos)) {
                 return;
             }
         }

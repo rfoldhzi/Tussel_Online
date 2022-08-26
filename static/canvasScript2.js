@@ -66,6 +66,50 @@ function createShadow(imageCanvas) {
     context.putImageData(im, 0, 0);
 }
 
+function invertTechImage(imageCanvas) {
+    let context = imageCanvas.getContext('2d');
+    let im = context.getImageData(0, 0, imageCanvas.width, imageCanvas.height);
+    let RR1 = im.data[0]
+    let GG1 = im.data[1]
+    let BB1 = im.data[2]
+    let RR2
+    let GG2
+    let BB2
+    for (var i = 0; i < im.data.length; i += 4) {
+        if (
+            im.data[i] != RR1 ||
+            im.data[i + 1] != GG1 ||
+            im.data[i + 2] != BB1
+        ) {
+            RR2 = im.data[i]
+            GG2 = im.data[i + 1]
+            BB2 = im.data[i + 2]
+            break
+        }
+    }
+    for (var i = 0; i < im.data.length; i += 4) {
+        if (
+            im.data[i] === RR1 &&
+            im.data[i + 1] === GG1 &&
+            im.data[i + 2] === BB1
+        ) {
+            im.data[i] = RR2;
+            im.data[i + 1] = GG2;
+            im.data[i + 2] = BB2;
+        } else if (
+            im.data[i] === RR2 &&
+            im.data[i + 1] === GG2 &&
+            im.data[i + 2] === BB2
+        ) {
+            im.data[i] = RR1;
+            im.data[i + 1] = GG1;
+            im.data[i + 2] = BB1;
+        }
+
+    }
+    context.putImageData(im, 0, 0);
+}
+
 function getUnitImage(player, name) {
     if (!(player in unitImages)) {
         unitImages[player] = {};
@@ -578,8 +622,10 @@ function drawLines(tree, treeXOffset, treeYOffset) {
 
 let currentTechMenu = []
 let currentTechImages = {}
-let currentTechButtons = []
+let currentTechImagesInverted = {}
+let currentTechButtons = {}
 let currentlyResearch = false
+let redrawResearch = false
 let PrevTechHover = null
 let CurrentTechHover = null
 let knownTechHover = null
@@ -596,7 +642,7 @@ const starters = ['improvements','recruitment','armament','aviation']
 function researchMenu() {
     let techs = GetUnlockedTechs()
     //if (techs == currentTechMenu && currentlyResearch && knownTechHover == CurrentTechHover) {
-    if (currentlyResearch && knownTechHover == CurrentTechHover) {
+    if (currentlyResearch && knownTechHover == CurrentTechHover && !redrawResearch) {
     
         console.log("it passed")
         return
@@ -605,31 +651,34 @@ function researchMenu() {
     currentlyResearch = true
     currentTechMenu = techs
 
-    treeSizes = {}
-    treeOffsets = {}
-    boxPlacements = {}  
-    treeWidth = {}
-    treeHeight = {}
-    for (let tech of starters) {
-        treeSizes[tech] = [] //initilize each tree
-        treeOffsets[tech] = [] //initilize each tree
-        boxPlacements[tech] = [] //initilize each tree
-        getTreeSizes(tech, tech)
-        treeWidth[tech] = treeSizes[tech][0][0]
-        placeBoxes(tech,tech)
-        treeHeight[tech] = treeSizes[tech].length
-        
-    }
-    console.log("_______")
-    console.log(boxPlacements)
-    console.log(treeSizes)
-    console.log(treeOffsets)
+    if (redrawResearch == false) {
+        treeSizes = {}
+        treeOffsets = {}
+        boxPlacements = {}  
+        treeWidth = {}
+        treeHeight = {}
+        for (let tech of starters) {
+            treeSizes[tech] = [] //initilize each tree
+            treeOffsets[tech] = [] //initilize each tree
+            boxPlacements[tech] = [] //initilize each tree
+            getTreeSizes(tech, tech)
+            treeWidth[tech] = treeSizes[tech][0][0]
+            placeBoxes(tech,tech)
+            treeHeight[tech] = treeSizes[tech].length
+            
+        }
 
-    
+        console.log("_______")
+        console.log(boxPlacements)
+        console.log(treeSizes)
+        console.log(treeOffsets)
+
+    }
+    redrawResearch = false
     //let size = Math.floor(techSize)
     techSize = size
 
-    currentTechButtons = []
+    currentTechButtons = {}
     /*
     let w = Math.ceil(Math.sqrt(techs.length))
     if (w == 0) {
@@ -653,6 +702,8 @@ function researchMenu() {
 
     let extraX = 0
     let extraY = 0    
+
+    context.imageSmoothingEnabled = false;
 
     let j = 0
     for (let key in boxPlacements) {
@@ -682,7 +733,7 @@ function researchMenu() {
 
             if (!(t in currentTechImages)) {
                 currentTechImages[t] = null
-                let img = new Image(100, 100);
+                let img = new Image(20, 20);
                 console.log("requesting image " + t);
                 img.src = '/static/techAssets/' + t.replaceAll(" ", "_") + '.png';
 
@@ -692,21 +743,46 @@ function researchMenu() {
                     currentTechImages[t] = img;
 
                     console.log("recieved image " + t);
-                    //drawBoard();
+
+                    let techCanvas = document.createElement('canvas');
+                    techCanvas.setAttribute('width', 20);
+                    techCanvas.setAttribute('height', 20);
+                    let ctx = techCanvas.getContext('2d');
+                    ctx.imageSmoothingEnabled = false;
+                    ctx.drawImage(img, 0, 0, 20, 20);
+                    invertTechImage(techCanvas)
+                    currentTechImagesInverted[t] = ctx.canvas;
                 }
             }
 
-            let button = new Button(xPos, yPos, techSize, techSize, "#FFFFFF", "", researchButtonClicked);
+            if (gameObject.tech[this_player].includes(t)) {
+                context.fillStyle = "#FFFFFF";
+                context.fillRect(xPos-techSize*0.04, yPos-techSize*0.04, techSize*1.08, techSize*1.08);
+            }
+            
+
+            let button = new Button(xPos, yPos, techSize, techSize, "#555555", "", researchButtonClicked);
             button.name = t
             button.parameters = button
             if (t in currentTechImages && currentTechImages[t] != null) {
                 button.img = currentTechImages[t]
+                if (t == CurrentTechHover) {
+                    button.img = currentTechImagesInverted[t]
+                }
             }
-            currentTechButtons.push(button)
+            if (!currentTechMenu.includes(t)) {
+                button.foreground = "#00000088"
+            } else if (maybeDeny.includes(t)) {
+                button.foreground = "#000000BB"
+            }
+
+            currentTechButtons[t] = button
             button.render()
         }
 
         treeXOffset += treeWidth[key]
         j+=1
     }
+
+    context.imageSmoothingEnabled = true;
 }
