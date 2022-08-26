@@ -80,7 +80,7 @@ function endTurn() {
         updateCloudCover()
         drawBoard()
     }
-    httpGetAsync(location.protocol+"://" + window.location.host + "/done/"+this_player, callback);
+    httpGetAsync(location.protocol+"//" + window.location.host + "/done/"+this_player, callback);
 }
 
 function loadGame() {
@@ -114,7 +114,7 @@ function loadGame() {
 }
 
 function logout() {
-    window.location.href = location.protocol+"://" + window.location.host+"/logout"
+    window.location.href = location.protocol+"//" + window.location.host+"/logout"
     return
     this_player += 1
     this_player %= Object.keys(gameObject.units).length
@@ -126,7 +126,7 @@ function logout() {
 function sendToServer(text) {
     outOfDate = true
     console.log("sending to server: " + text)
-    httpPostAsync(location.protocol+"://" + window.location.host + "/action", text);
+    httpPostAsync(location.protocol+"//" + window.location.host + "/action", text);
 }
 
 function convertToStr(u, state, stateData) {
