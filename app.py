@@ -36,11 +36,11 @@ app = Flask(__name__)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-CurrentGame = Game(2)
-CurrentGame.addPlayer()
+#CurrentGame = Game(2)
 #CurrentGame.addPlayer()
-CurrentGame.start()
-CurrentGame.saveGame()
+#CurrentGame.addPlayer()
+#CurrentGame.start()
+#CurrentGame.saveGame()
 
 app.secret_key = b'_5#y5L"F4Q8z\n\xec]/' #Made up secret key
 
@@ -140,12 +140,12 @@ def canvas():
     elif current_user.username == "RjFx5":
         userid = 1
     return render_template('canvas2.html', player_id = userid)
-
+"""
 @app.route('/get_game')
 @login_required
 def get_game():
     return CurrentGame.getJSON()
-
+"""
 """
 @app.route('/get_states')
 @login_required
@@ -199,13 +199,17 @@ def get_states2(turn):
 
 @app.route('/finish_turn')
 def finish_turn():
-    CurrentGame.round()
-    return CurrentGame.getJSON()
+    with open(Path("savefiles/games/game_2.txt"), 'r') as f:
+        CurrentGame = GameMaker(f.read())
+        CurrentGame.round()
+        return CurrentGame.getJSON()
 
 @app.route('/done/<this_player>')
 def done(this_player):
-    CurrentGame.playerDone(int(this_player))
-    return CurrentGame.getJSON()
+    with open(Path("savefiles/games/game_2.txt"), 'r') as f:
+        CurrentGame = GameMaker(f.read())
+        CurrentGame.playerDone(int(this_player))
+        return CurrentGame.getJSON()
 
 @app.route('/action', methods=['GET', 'POST'])
 def action():
@@ -213,6 +217,7 @@ def action():
         game.stateStuff(2, 0,request.data.decode())
         try:
             print("data recieved",request.data.decode())
+            CurrentGame = None
             with open(Path("savefiles/games/game_2.txt"), 'r') as f:
                 CurrentGame = GameMaker(f.read())
             CurrentGame.setState(0, request.data.decode())
@@ -250,6 +255,7 @@ def newGame():
                 CurrentGame.addPlayer()
             #CurrentGame.addPlayer()
             CurrentGame.start()
+            CurrentGame.saveGame()
             return redirect(url_for('canvas'))
         except Exception as e:
             print("Exception",e)
