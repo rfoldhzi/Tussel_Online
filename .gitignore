@@ -1,2 +1,4 @@
 
 *.pyc
+savefiles/games/*
+savefiles/states/*

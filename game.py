@@ -1,5 +1,5 @@
 #os.chdir(r"/Users/reeganfoldhazi/Documents/PythonStuff")
-from contextlib import nullcontext
+from pathlib import Path
 from UnitDB import UnitDB
 from UnitDB import TechDB
 import numpy as np
@@ -540,6 +540,67 @@ class Game:
             return False
         return True
     
+    #Takes unit and returns its state and state data in a condensed string form (":attack:54")
+    #similar to convertToString found in client.py
+    def shortConvertToString(self, unit):
+        state = unit.state
+        stateData = unit.stateData
+        s = '%s:' % state
+        if state == 'move':
+            s+= '%s:%s' % tuple(stateData)
+        elif state == 'attack':
+            s+= stateData.UnitID
+        elif state == 'heal':
+            s+= stateData.UnitID
+        elif state == 'resources':
+            s+= stateData
+        elif state == 'research':
+            s+= stateData
+        elif state == 'build':
+            s+= '%s:%s:' % tuple(stateData[0])
+            s+= stateData[1]
+        elif state == 'transport':
+            s+= '%s:%s:' % tuple(stateData[0])
+            s+= stateData[1]
+        return s
+    
+    #Sets the turn of the current game and saves it to states file
+    #Saves current states of units into states file
+    #Previously added the refresh tag to states file to indicate a refresh needs to be sent to client
+    def addIndicatorsToStateFile(self):
+        #text = ""
+        #for playerNum in self.units:
+        #    text += "%srefresh" % playerNum
+
+        with open(Path("savefiles/states/game_%s.json" % self.id), "r+") as f:
+            #print("file111",f.read())
+            data = json.load(f)
+            #data["refresh"] = text
+
+            data["turn"] = self.turn
+            for playerNum in self.units:
+                data[str(playerNum)] = {}
+                for unit in self.units[playerNum]:
+                    if unit.state == None:
+                        continue
+                    data[str(playerNum)][unit.UnitID] = self.shortConvertToString(unit)
+
+            f.truncate(0)
+            f.seek(0)
+            json.dump(data, f)
+
+    #Retrieves states from state file and applies it to self
+    def applyStates(self):
+        with open(Path("savefiles/states/game_%s.json" % self.id), "r") as f:
+            data = json.load(f)
+            for key in data:
+                try:
+                    if int(key) in self.units:
+                        for unitID in data[key]:
+                            self.setState(int(key),"%s:%s"%(unitID, data[key][unitID]))
+                except:
+                    print("key failed",key)
+
     # Performs EVERYTHING at the end of a round. 
     # Order: AI/Default States, Resources, Attack/Heal, Move, Build, Research, Resource Cap
     def round(self):
@@ -553,6 +614,7 @@ class Game:
         for i in range(len(self.intGrid)):
             self.intGrid[i] = int(self.intGrid[i])
         """
+        self.applyStates()
 
         buffedUnitOrignals = {}
 
@@ -954,8 +1016,17 @@ class Game:
                 pass#u.state = None
                 #u.stateData = None
 
+        self.saveGame()
+        self.addIndicatorsToStateFile()
+
         print('MORE stuff')
         
+    def saveGame(self):#savefiles/games/
+        #Path("source_data/text_files/raw_data.txt")
+        
+        #with open('savefiles\\games\\game_%s.txt' % self.id, 'w') as f:
+        with open(Path("savefiles/games/game_%s.txt" % self.id), 'w') as f:
+            f.write(self.getJSON())
                             
 
 #This part recreates the game from JSON from the server
@@ -998,3 +1069,30 @@ class GameMaker(Game):
                     new = self.getUnitFromID2(self.units[i][j].stateData)
                     print("dfdfjkdrhjdhj")
                     self.units[i][j].stateData = new
+
+#Saves action from client into state file
+def stateStuff(id = 2,player = 0, received = ":::"):
+    data = None
+
+    try:
+        with open(Path("savefiles/states/game_%s.json" % id), "r") as f:
+            data = json.load(f)
+    except:
+        print("there was an exception")
+        pass
+
+    if data == None:
+        print("panik")
+        data = {}
+    
+    if str(player) not in data:
+        data[str(player)] = {}
+
+    
+    unitID = received[:received.find(":")]
+    state = received[received.find(":")+1:]
+
+    data[str(player)][unitID] = state
+
+    with open(Path("savefiles/states/game_%s.json" % id), 'w') as f:
+        json.dump(data, f)

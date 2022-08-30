@@ -7,7 +7,8 @@ from flask import (
     session,
     request
 )
-from game import Game
+from game import Game, GameMaker
+import game
 
 from wtforms import (
     StringField,
@@ -18,7 +19,7 @@ from wtforms import (
     TextAreaField,
 )
 from flask_login import UserMixin
-
+from pathlib import Path
 
 from flask_wtf import FlaskForm
 from wtforms.validators import InputRequired, Length, EqualTo, Regexp ,Optional
@@ -39,6 +40,7 @@ CurrentGame = Game(2)
 CurrentGame.addPlayer()
 #CurrentGame.addPlayer()
 CurrentGame.start()
+CurrentGame.saveGame()
 
 app.secret_key = b'_5#y5L"F4Q8z\n\xec]/' #Made up secret key
 
@@ -144,6 +146,57 @@ def canvas():
 def get_game():
     return CurrentGame.getJSON()
 
+"""
+@app.route('/get_states')
+@login_required
+def get_states():
+    player = "0"
+    try:
+        with open(Path("savefiles/states/game_2.json"), "r+") as text_file:
+            out = text_file.read()
+            if out.find('%srefresh' % player) != -1: #Indicator in states file that player hasn't recieved updated version yet
+                print("found indicator")
+                CurrentGame = ""
+                try:
+                    with open(Path("savefiles/games/game_2.txt"), 'r') as f:
+                        CurrentGame = GameMaker(f.read())
+                        out = out.replace('%srefresh' % player,"") #Remove indicator
+                        print("re")
+                        text_file.truncate(0)
+                        text_file.seek(0)
+                        text_file.write(out)
+                        return CurrentGame.getJSON()
+                except:
+                    print("panik545")
+                    return "" #This means not good,could not open file
+            return out
+    except Exception as e:
+        print(str(e))
+        return "{}"
+"""
+
+@app.route('/get_states/<turn>')
+@login_required
+def get_states2(turn):
+    player = "0"
+    try:
+        with open(Path("savefiles/states/game_2.json"), "r+") as text_file:
+            out = text_file.read()
+            if out.find('"turn": %s' % turn) == -1: #Indicator in states file that player hasn't recieved updated version yet
+                print("wrong turn. Updating")
+                CurrentGame = ""
+                try:
+                    with open(Path("savefiles/games/game_2.txt"), 'r') as f:
+                        CurrentGame = GameMaker(f.read())
+                        return CurrentGame.getJSON()
+                except:
+                    print("panik545")
+                    return "" #This means not good,could not open file
+            return out
+    except Exception as e:
+        print(str(e))
+        return "{}"
+
 @app.route('/finish_turn')
 def finish_turn():
     CurrentGame.round()
@@ -157,9 +210,13 @@ def done(this_player):
 @app.route('/action', methods=['GET', 'POST'])
 def action():
     if request.method == "POST":
+        game.stateStuff(2, 0,request.data.decode())
         try:
             print("data recieved",request.data.decode())
+            with open(Path("savefiles/games/game_2.txt"), 'r') as f:
+                CurrentGame = GameMaker(f.read())
             CurrentGame.setState(0, request.data.decode())
+            CurrentGame.saveGame()
         except Exception as e:
             print(str(e))
     print("HELLO")

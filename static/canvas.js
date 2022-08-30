@@ -86,35 +86,98 @@ function endTurn() {
     httpGetAsync(location.protocol+"//" + window.location.host + "/done/"+this_player, callback);
 }
 
+
+//Sets up a new gameObject
+function useNewGameObject(newGameObject) {
+    if (gameObject.intGrid.join(',') !== newGameObject.intGrid.join(',')) {
+        gameObject = newGameObject;
+        initilizeOffsets()
+        generateGrid()
+        generateBoardColors();
+        initClouds()
+    }
+    if (outOfDate && currentTurn == newGameObject.turn) {
+        return //Don't render if this is outofdate to recent info sent to server
+        //Just wait for the next request.
+    }
+    gameObject = newGameObject;
+    currentTurn = gameObject.turn;
+    //clearSelected()
+    if (selected) {
+        let newSelected = getUnitByID(selected.UnitID)
+        //newSelected.state = selected.state
+        newSelected.stateData = selected.stateData
+        selected = newSelected
+    }
+    updateCloudCover()
+    drawBoard()
+}
+
 function loadGame() {
     callback = function (responseText) {
         jsonText = responseText;
         newGameObject = JSON.parse(jsonText)
-        if (gameObject.intGrid.join(',') !== newGameObject.intGrid.join(',')) {
-            gameObject = newGameObject;
-            initilizeOffsets()
-            generateGrid()
-            generateBoardColors();
-            initClouds()
-        }
-        if (outOfDate && currentTurn == newGameObject.turn) {
-            return //Don't render if this is outofdate to recent info sent to server
-            //Just wait for the next request.
-        }
-        gameObject = newGameObject;
-        currentTurn = gameObject.turn;
-        //clearSelected()
-        if (selected) {
-            let newSelected = getUnitByID(selected.UnitID)
-            //newSelected.state = selected.state
-            newSelected.stateData = selected.stateData
-            selected = newSelected
-        }
-        updateCloudCover()
-        drawBoard()
+        useNewGameObject(newGameObject)
     }
     outOfDate = false
     httpGetAsync(location.protocol+"//" + window.location.host + "/get_game", callback);
+}
+
+//Takes state data and applies it to current Game
+function setState(data) {
+    let split = data.split(':')
+    let unit = getUnitByID(split[0])
+    if (unit == null) { //Unit doesn't exist (incorrect state file I think)
+        return
+    }
+    if (selected == unit) {
+        return //Don't want to reset the state of selected
+    }
+    let state = split[1]
+    let stateData = split[2]
+    if (state == 'move') {
+        stateData = [parseInt(split[2]),parseInt(split[3])]
+    } else if (state == 'attack') {
+        stateData = getUnitByID(split[2])
+    } else if (state == 'heal') {
+        stateData = getUnitByID(split[2])
+    } else if (state == 'build') {
+        stateData = [[parseInt(split[2]),parseInt(split[3])],split[4]]
+    } else if (state == 'transport') {
+        stateData = [[parseInt(split[2]),parseInt(split[3])],split[4]]
+    } else if (state == 'transport') {
+        state = null
+        stateData = null
+    }
+    
+    unit.state = state
+    unit.stateData = stateData
+}
+
+//Gets state data and updates game if a gameobject is sent here from server
+function loadGame2() {
+    callback = function (responseText) {
+        jsonText = responseText;
+        states = JSON.parse(jsonText)
+        if (states.units != undefined) {
+            //Its not states, its a game object!
+            outOfDate = false
+            useNewGameObject(states)
+            return
+        }
+
+        if (this_player in states) {
+            for (let key in states[this_player]) {
+                setState(key + ":"+states[this_player][key])
+            }
+        }
+        
+
+        drawBoard()
+    }
+    outOfDate = false
+    //httpGetAsync(location.protocol+"//" + window.location.host + "/get_states", callback);
+    httpGetAsync(location.protocol+"//" + window.location.host + "/get_states/"+currentTurn, callback);
 }
 
 function logout() {
@@ -477,7 +540,7 @@ function drawBoard() {
 var intervalID = window.setInterval(myCallback, 2000);
 
 function myCallback() {
-    loadGame()//drawBoard();
+    loadGame2()//drawBoard();
 }
 
 function replaceColor2(srcR, srcG, srcB, dstR, dstG, dstB) {
