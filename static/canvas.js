@@ -109,6 +109,8 @@ function useNewGameObject(newGameObject) {
         newSelected.stateData = selected.stateData
         selected = newSelected
     }
+    organizeTechTrees()
+    initilizeTechOffsets()
     updateCloudCover()
     drawBoard()
 }

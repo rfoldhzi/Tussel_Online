@@ -508,6 +508,39 @@ function initilizeOffsets() {
     y_offset = (canvas.height - (size*(maxY-minY+1)))/2 - size * minY
 }
 
+//Not a very verstile function: will need to modify if there a major changes to tree layout
+function initilizeTechOffsets() {
+    let totalHeight = treeHeight["improvements"] + Math.max(treeHeight["recruitment"], treeHeight["armament"], treeHeight["aviation"])
+    let totalWidth = Math.max(treeWidth["improvements"], treeWidth["recruitment"]+treeWidth["armament"]+treeWidth["aviation"])
+
+    //Account for 50% gap between techs vertically
+    totalHeight *= 1.5
+
+    //To give a 2 space buffer around tech
+    totalHeight += 2
+    totalWidth += 2
+    
+    
+    if (stateDataMode != "research") {
+        flipBoardVariables()
+    }
+
+
+    const sizeByX = canvas.width/totalWidth
+    const sizeByY = canvas.height/totalHeight
+
+    size = Math.floor(Math.min(sizeByX, sizeByY))
+    regulateSquareSize()
+
+
+    x_offset = (canvas.width - (size*(totalWidth-1)))/2
+    y_offset = (canvas.height - (size*(totalHeight-1.5)))/2
+
+    if (stateDataMode != "research") {
+        flipBoardVariables()
+    }
+}
+
 function GetUnlockedTechs() {
     let techs = []
     for (let t of gameObject.tech[this_player]) {
@@ -662,8 +695,34 @@ let mult = 1.5
 const starters = ['improvements','recruitment','armament','aviation']
 
 
+function organizeTechTrees() {
+    currentTechMenu = GetUnlockedTechs()
+    treeSizes = {}
+    treeOffsets = {}
+    boxPlacements = {}  
+        boxPlacements = {}  
+    boxPlacements = {}  
+    treeWidth = {}
+    treeHeight = {}
+    for (let tech of starters) {
+        treeSizes[tech] = [] //initilize each tree
+        treeOffsets[tech] = [] //initilize each tree
+        boxPlacements[tech] = [] //initilize each tree
+        getTreeSizes(tech, tech)
+        treeWidth[tech] = treeSizes[tech][0][0]
+        placeBoxes(tech,tech)
+        treeHeight[tech] = treeSizes[tech].length
+        
+    }
+
+    console.log("_______")
+    console.log(boxPlacements)
+    console.log(treeSizes)
+    console.log(treeOffsets)
+}
+
 function researchMenu() {
-    let techs = GetUnlockedTechs()
+    //let techs = GetUnlockedTechs()
     //if (techs == currentTechMenu && currentlyResearch && knownTechHover == CurrentTechHover) {
     if (currentlyResearch && knownTechHover == CurrentTechHover && !redrawResearch) {
     
@@ -672,30 +731,11 @@ function researchMenu() {
     }
     knownTechHover = CurrentTechHover
     currentlyResearch = true
-    currentTechMenu = techs
+    //currentTechMenu = techs
+
 
     if (redrawResearch == false) {
-        treeSizes = {}
-        treeOffsets = {}
-        boxPlacements = {}  
-        treeWidth = {}
-        treeHeight = {}
-        for (let tech of starters) {
-            treeSizes[tech] = [] //initilize each tree
-            treeOffsets[tech] = [] //initilize each tree
-            boxPlacements[tech] = [] //initilize each tree
-            getTreeSizes(tech, tech)
-            treeWidth[tech] = treeSizes[tech][0][0]
-            placeBoxes(tech,tech)
-            treeHeight[tech] = treeSizes[tech].length
-            
-        }
-
-        console.log("_______")
-        console.log(boxPlacements)
-        console.log(treeSizes)
-        console.log(treeOffsets)
-
+        organizeTechTrees()
         effectiveResources = getEffectiveResources(selected)
     }
     redrawResearch = false

@@ -10,6 +10,9 @@ let possibleAttacks = []
 let possibleHeals = []
 let stateDataMode = null;
 let effectiveResources = {}
+let researchOffsetXStored = 0
+let researchOffsetYStored = 0
+let researchOffsetSizeStored = 30
 
 function gridMouse(x,y) {
     x = x - x_offset;
@@ -45,7 +48,29 @@ function defaultButtonMenu() {
     }
 }
 
+//Flip the stored research board variables with the real ones
+function flipBoardVariables() {
+    let offsetX_temp = x_offset;
+    let offsetY_temp = y_offset;
+    let size_temp = size;
+    x_offset = researchOffsetXStored;
+    y_offset = researchOffsetYStored;
+    size = researchOffsetSizeStored;
+    researchOffsetXStored = offsetX_temp
+    researchOffsetYStored = offsetY_temp
+    researchOffsetSizeStored = size_temp
+}
+
+function enterResearchMenu() {
+    stateDataMode = "research"
+    flipBoardVariables()
+    drawBoard()
+}
+
 function clearSelected() {
+    if (stateDataMode == "research") {
+        flipBoardVariables()
+    }
     stateDataMode = null;
     selected = null;
     moveCircles = []
@@ -133,6 +158,10 @@ function handleClick(xPos,yPos) {
                 return;
             }
         }
+        //No button was pressed
+        clearSelected();
+        drawBoard();
+        return;
     }
 
     for (let btn of buildButtons) {
@@ -157,7 +186,8 @@ function handleClick(xPos,yPos) {
         //if (moveCircles.includes([x,y])) {
         if (selected != null && selected.possibleStates.includes("research") ) {
             if (x==selected.position[0] && y == selected.position[1]) {
-                stateDataMode = "research"
+                enterResearchMenu()
+                return;
             }
         }
         if (JSON.stringify(moveCircles).indexOf(JSON.stringify([x,y])) !== -1) {
