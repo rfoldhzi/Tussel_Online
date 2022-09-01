@@ -153,7 +153,7 @@ def chooseMap(players): #Looks randomly for a map with the correct number of pla
 UnitID = 0 #Static varible to give a unit a unique ID
 
 class Unit:
-    def __init__(self, pos = [0,0], name = 'soldier', parent= None, score = -1):
+    def __init__(self, pos = [0,0], name = 'soldier', parent= None, score = -1, givenID = UnitID):
         global UnitID
         self.name = name
         self.parent = parent
@@ -168,7 +168,7 @@ class Unit:
         self.defense = UnitDB[name].get('defense') or 2
         self.maxHealth = UnitDB[name].get('health') or 10
         self.health = int(self.maxHealth)
-        self.UnitID = str(UnitID)
+        self.UnitID = str(givenID)
         if score == -1:
             self.score = 0
             costs = UnitDB[name].get('cost') or {}
@@ -215,6 +215,7 @@ class Game:
         self.id = id
         self.mode = settings.mode
         self.allai = settings.allai
+        self.currentUnitID = 0
         
     
     #adds a new player and all revelant lists to the game object
@@ -309,15 +310,15 @@ class Game:
                 if i >= realPlayers: #AIs start with trees
                     rand = random.random()
                     if random.random() < 0.33:
-                        self.units[p].append(Unit(startingspots[p], "town"))
+                        self.units[p].append(self.newUnit(startingspots[p], "town"))
                     elif random.random() < 0.5:
-                        self.units[p].append(Unit(startingspots[p], "plant base"))
+                        self.units[p].append(self.newUnit(startingspots[p], "plant base"))
                     elif random.random() < 0.75:
-                        self.units[p].append(Unit(startingspots[p], "bot fortress"))
+                        self.units[p].append(self.newUnit(startingspots[p], "bot fortress"))
                     else:
-                        self.units[p].append(Unit(startingspots[p], "tree"))
+                        self.units[p].append(self.newUnit(startingspots[p], "tree"))
                 else:
-                    self.units[p].append(Unit(startingspots[p], "town"))
+                    self.units[p].append(self.newUnit(startingspots[p], "town"))
                 i+=1
 
     #??? Something to do with JSON stuff
@@ -549,9 +550,15 @@ class Game:
         if state == 'move':
             s+= '%s:%s' % tuple(stateData)
         elif state == 'attack':
-            s+= stateData.UnitID
+            if type(stateData) == str:  #Sometimes stateData is still the unitID, could be a problem
+                s+= stateData
+            else:   
+                s+= stateData.UnitID
         elif state == 'heal':
-            s+= stateData.UnitID
+            if type(stateData) == str:  #Sometimes stateData is still the unitID, could be a problem
+                s+= stateData
+            else:   
+                s+= stateData.UnitID
         elif state == 'resources':
             s+= stateData
         elif state == 'research':
@@ -754,7 +761,7 @@ class Game:
                                 par.population = max(0,par.population-1)
             
             if 'deathSpawn' in u.abilities:
-                newUnit = Unit(u.position,u.abilities['deathSpawn'],u.UnitID)
+                newUnit = self.newUnit(u.position,u.abilities['deathSpawn'],u.UnitID)
                 self.upgradeUnit(newUnit, i)
                 self.units[self.getPlayerfromUnit(u)].append(newUnit)
             if u in hunterList: #For abilities that the hunters may have.
@@ -949,7 +956,7 @@ class Game:
 
                             self.scores[i] += score
 
-                            newUnit = Unit(u.stateData[0],u.stateData[1],u.UnitID, score)
+                            newUnit = self.newUnit(u.stateData[0],u.stateData[1],u.UnitID, score)
                             self.upgradeUnit(newUnit, i)
                             self.units[i].append(newUnit)
 
@@ -960,7 +967,7 @@ class Game:
                                     for j in range(len(tiles)):
                                         pos = random.choice(tiles)
                                         if (not pos in BlockedSpaces) and CheckIfGoodToBuild(self, i, u, Grid, pos):
-                                            self.units[i].append(Unit(pos,u.stateData[1],u.UnitID))
+                                            self.units[i].append(self.newUnit(pos,u.stateData[1],u.UnitID))
                                             BlockedSpaces.append(pos)
                                             if getattr(u,'maxPopulation',False):
                                                 u.population += 1
@@ -1027,6 +1034,10 @@ class Game:
         #with open('savefiles\\games\\game_%s.txt' % self.id, 'w') as f:
         with open(Path("savefiles/games/game_%s.txt" % self.id), 'w') as f:
             f.write(self.getJSON())
+    
+    def newUnit(self, pos = [0,0], name = 'soldier', parent= None, score = -1):
+        self.currentUnitID += 1
+        return Unit(pos = pos, name = name, parent= parent, score = score, givenID = self.currentUnitID)
                             
 
 #This part recreates the game from JSON from the server
@@ -1063,6 +1074,9 @@ class GameMaker(Game):
         for i in self.units:
             for j in range(len(self.units[i])):
                 self.units[i][j] = UnitMaker(self.units[i][j])
+        
+        for i in self.units:
+            for j in range(len(self.units[i])):
                 if self.units[i][j].state == "attack" and type(self.units[i][j].stateData) == str:
                     print("Okay... I'm going to do the thing")
                     print("thingL:", self.units[i][j].stateData)

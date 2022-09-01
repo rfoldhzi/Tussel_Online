@@ -361,7 +361,7 @@ function getEffectiveResources(unitToIgnore) {
                 resources[r] -= cost[r]
             }
         } else if (unit.state == "research") {
-            resources["energy"] -= TechDB[unit.stateData[1]]["cost"]
+            resources["energy"] -= TechDB[unit.stateData]["cost"]
         }
     }
 
