@@ -560,7 +560,7 @@ function GetUnlockedTechs() {
     let toRemove = []
     for (let t of gameObject.tech[this_player]) {
         if (TechDB[t].deny != undefined) {
-            for (let t2 in TechDB[t].deny) {
+            for (let t2 of TechDB[t].deny) {
                 if (techs.includes(t2)) {
                     toRemove.push(t2)
                 }
@@ -568,7 +568,7 @@ function GetUnlockedTechs() {
         }
     }
     for (let t of toRemove) {
-        const index = techs.indexOf(5)
+        const index = techs.indexOf(t)
         techs.splice(index, 1)
     }
     return techs
@@ -873,6 +873,24 @@ function researchMenu() {
 
             currentTechButtons[t] = button
             button.render()
+
+            if (TechDB[t]['time'] > 1 && !gameObject.tech[this_player].includes(t)) {
+                let n = TechDB[t]['time'] 
+                if (t in gameObject.progress[this_player]) {
+                    n -= gameObject.progress[this_player][t]
+                }
+                if (n>1) {
+                    context.font = (size/3) + "px Arial";
+                    context.textAlign = "right";
+                    context.fillStyle = "white";
+                    context.fillText(n, xPos+size*.95, yPos+size*.95);
+                }
+            }
+
+            //context.textAlign = "left";
+            //context.font = (size/4) + "px Arial";
+            //context.fillStyle = "#00FFFF";
+            //context.fillText("20", xPos+size*.05, yPos+size*.95);
         }
 
         treeXOffset += treeWidth[key]
