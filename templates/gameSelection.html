@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        label {
+            font-family: "Montserrat", Arial, Helvetica, sans-serif;
+            font-size: 30px;
+        }
+
+        input {
+            display: inline-block;
+            padding: 5px 10px;
+            line-height: 200%;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="text-align: center;">
+        <div class="container py-4 text-center" style="display: inline-block; margin:0 auto; background-color: #555555">
+            <img src="/static/images/TussleLogo2.png">
+
+            {% for game_name in gameList %}
+                <div>
+                    <button onclick="location.href='/game/{{ game_name }}'" type="button">
+                    Game {{ game_name }}</button>
+                </div>
+            {% endfor %}
+            <div>
+                <button onclick="location.href='/newgame/'" type="button">New Game</button>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+
+</html>

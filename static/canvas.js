@@ -4,7 +4,7 @@ let ButtonCollection = {};
 let doneButton;
 let logoutButton;
 let outOfDate = false;
-let currentTurn = 0;
+let currentTurn = -1;
 
 class Button {
     constructor(x, y, width, height, color, text, func, ...parameters) {
@@ -83,7 +83,7 @@ function endTurn() {
         updateCloudCover()
         drawBoard()
     }
-    httpGetAsync(location.protocol+"//" + window.location.host + "/done/"+this_player, callback);
+    httpGetAsync(location.protocol+"//" + window.location.host + "/done/"+this_game+"/"+this_player, callback);
 }
 
 
@@ -122,7 +122,7 @@ function loadGame() {
         useNewGameObject(newGameObject)
     }
     outOfDate = false
-    httpGetAsync(location.protocol+"//" + window.location.host + "/get_game", callback);
+    httpGetAsync(location.protocol+"//" + window.location.host + "/get_game/"+this_game, callback);
 }
 
 //Takes state data and applies it to current Game
@@ -179,7 +179,7 @@ function loadGame2() {
     }
     outOfDate = false
     //httpGetAsync(location.protocol+"//" + window.location.host + "/get_states", callback);
-    httpGetAsync(location.protocol+"//" + window.location.host + "/get_states/"+currentTurn, callback);
+    httpGetAsync(location.protocol+"//" + window.location.host + "/get_states/"+this_game+"/"+currentTurn, callback);
 }
 
 function logout() {
@@ -195,7 +195,7 @@ function logout() {
 function sendToServer(text) {
     outOfDate = true
     console.log("sending to server: " + text)
-    httpPostAsync(location.protocol+"//" + window.location.host + "/action", text);
+    httpPostAsync(location.protocol+"//" + window.location.host + "/action/"+this_game, text);
 }
 
 function convertToStr(u, state, stateData) {
@@ -294,6 +294,7 @@ let zoom_distance;
 let start_size = 20;
 
 let this_player = 0;
+let this_game = 0;
 let selected = null;
 
 var context;// = canvas.getContext('2d');
@@ -896,6 +897,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (document.querySelector('meta[name="player_id"]')){
         this_player = parseInt(document.querySelector('meta[name="player_id"]').content)
+    }
+    if (document.querySelector('meta[name="game_id"]')){
+        this_game = document.querySelector('meta[name="game_id"]').content
     }
 
     canvas = document.getElementById("myCanvas");

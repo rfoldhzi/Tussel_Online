@@ -9,6 +9,7 @@ from flask import (
 )
 from game import Game, GameMaker
 import game
+from os import walk
 
 from wtforms import (
     StringField,
@@ -60,6 +61,7 @@ class User(UserMixin):
             return User("RjFx3")
         elif user_id == "RjFx5":
             return User("RjFx5")
+        return User(user_id)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -88,6 +90,8 @@ class create_game_form(FlaskForm):
     player_count = StringField(validators=[Optional(), Length(1, 2)])
     cloud_mode = StringField(validators=[Optional(), Length(1, 8)])
     mapType = StringField(validators=[Optional(), Length(1, 8)])
+    game_id = StringField(validators=[Optional(), Length(1, 8)])
+    players = StringField(validators=[Optional(), Length(1, 64)])
 
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
@@ -117,8 +121,11 @@ def login():
             #user = User.query.filter_by(email=form.email.data).first()
             if form.username.data == "RjFx3" or form.username.data == "RjFx5": #if check_password_hash(user.pwd, form.pwd.data):
                 login_user(User(form.username.data))
-                return redirect(url_for('canvas'))
+                return redirect(url_for('find_game'))
             else:
+                login_user(User(form.username.data)) #Lets anyone log in as whoever
+                return redirect(url_for('find_game'))
+
                 flash("Invalid Username or password!", "danger")
         except Exception as e:
             print("Exception",e)
@@ -128,8 +135,39 @@ def login():
         form=form,
         )
 
+def getAllgameIDs():
+    filenames = next(walk(Path("savefiles/games/")), (None, None, []))[2]  # [] if no file
+    l = []
+    for fileName in filenames:
+        if fileName == ".gitignore":
+            continue
+        l.append(fileName[5:][:-4])
+    return l
+
+def findGamesPlayerIsIn(username):
+    gameList = getAllgameIDs()
+    output = []
+    for game_id in gameList:
+        with open(Path("savefiles/games/game_%s.txt" % game_id), "r+") as text_file:
+            if text_file.read().find(username.lower()) != -1:
+                output.append(game_id)
+    return output
 
 
+@app.route('/find_game')
+@login_required
+def find_game():
+    return render_template('gameSelection.html', gameList = findGamesPlayerIsIn(current_user.username))
+
+@app.route('/game/<game_id>')
+@login_required
+def canvas_game_by_id(game_id):
+    with open(Path("savefiles/games/game_%s.txt"%game_id), 'r') as f:
+        CurrentGame = GameMaker(f.read())
+        if not (current_user.username.lower() in CurrentGame.playernames[0]):
+            return redirect(url_for('find_game'))
+        userid = CurrentGame.playernames[0][current_user.username.lower()]
+        return render_template('canvas2.html', player_id = userid, game_id = game_id)
 
 @app.route('/')
 @login_required
@@ -139,7 +177,8 @@ def canvas():
         userid = 0
     elif current_user.username == "RjFx5":
         userid = 1
-    return render_template('canvas2.html', player_id = userid)
+    gameID = "3"
+    return render_template('canvas2.html', player_id = userid, game_id = gameID)
 """
 @app.route('/get_game')
 @login_required
@@ -175,18 +214,18 @@ def get_states():
         return "{}"
 """
 
-@app.route('/get_states/<turn>')
+@app.route('/get_states/<game_id>/<turn>')
 @login_required
-def get_states2(turn):
+def get_states2(game_id, turn):
     player = "0"
     try:
-        with open(Path("savefiles/states/game_2.json"), "r+") as text_file:
+        with open(Path("savefiles/states/game_%s.json" % game_id), "r+") as text_file:
             out = text_file.read()
             if out.find('"turn": %s' % turn) == -1: #Indicator in states file that player hasn't recieved updated version yet
                 print("wrong turn. Updating")
                 CurrentGame = ""
                 try:
-                    with open(Path("savefiles/games/game_2.txt"), 'r') as f:
+                    with open(Path("savefiles/games/game_%s.txt" % game_id), 'r') as f:
                         CurrentGame = GameMaker(f.read())
                         return CurrentGame.getJSON()
                 except:
@@ -197,28 +236,28 @@ def get_states2(turn):
         print(str(e))
         return "{}"
 
-@app.route('/finish_turn')
-def finish_turn():
-    with open(Path("savefiles/games/game_2.txt"), 'r') as f:
+@app.route('/finish_turn/<game_id>')
+def finish_turn(game_id):
+    with open(Path("savefiles/games/game_%s.txt"%game_id), 'r') as f:
         CurrentGame = GameMaker(f.read())
         CurrentGame.round()
         return CurrentGame.getJSON()
 
-@app.route('/done/<this_player>')
-def done(this_player):
-    with open(Path("savefiles/games/game_2.txt"), 'r') as f:
+@app.route('/done/<game_id>/<this_player>')
+def done(game_id, this_player):
+    with open(Path("savefiles/games/game_%s.txt"%game_id), 'r') as f:
         CurrentGame = GameMaker(f.read())
         CurrentGame.playerDone(int(this_player))
         return CurrentGame.getJSON()
 
-@app.route('/action', methods=['GET', 'POST'])
-def action():
+@app.route('/action/<game_id>', methods=['GET', 'POST'])
+def action(game_id):
     if request.method == "POST":
-        game.stateStuff(2, 0,request.data.decode())
+        game.stateStuff(game_id, 0,request.data.decode())
         try:
             print("data recieved",request.data.decode())
             CurrentGame = None
-            with open(Path("savefiles/games/game_2.txt"), 'r') as f:
+            with open(Path("savefiles/games/game_%s.txt"%game_id), 'r') as f:
                 CurrentGame = GameMaker(f.read())
             CurrentGame.setState(0, request.data.decode())
             CurrentGame.saveGame()
@@ -248,15 +287,30 @@ def newGame():
     if form.validate_on_submit():
         try:
             x = int(form.player_count.data)
-            CurrentGame = Game(2)
+            CurrentGame = Game(form.game_id.data)
             if form.cloud_mode.data:
                 CurrentGame.mode = form.cloud_mode.data.lower()
             for i in range(x):
                 CurrentGame.addPlayer()
+
+
+            playerText = form.players.data.lower()
+            if playerText == "":
+                playerText = "RjFx3,RjFx5"
+            playerText = playerText.replace(" ", "")
+            players = playerText.split(",")
+            playerDict = {}
+            i = 0
+            for player in players:
+                playerDict[player] = i
+                i+=1
+
+            CurrentGame.playernames = [playerDict]
             #CurrentGame.addPlayer()
             CurrentGame.start()
             CurrentGame.saveGame()
-            return redirect(url_for('canvas'))
+            CurrentGame.addIndicatorsToStateFile()
+            return redirect(url_for('canvas_game_by_id',game_id=form.game_id.data))
         except Exception as e:
             print("Exception",e)
             flash(e, "danger")

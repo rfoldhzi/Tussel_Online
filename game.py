@@ -155,7 +155,7 @@ UnitID = 0 #Static varible to give a unit a unique ID
 class Unit:
     def __init__(self, pos = [0,0], name = 'soldier', parent= None, score = -1, givenID = UnitID):
         global UnitID
-        self.name = name
+        self.name = name.lower()
         self.parent = parent
         self.type = UnitDB[name].get('type') or 'trooper'
         self.possibleStates = UnitDB[name].get('possibleStates') or ['attack','move','resources']
@@ -579,22 +579,27 @@ class Game:
         #for playerNum in self.units:
         #    text += "%srefresh" % playerNum
 
-        with open(Path("savefiles/states/game_%s.json" % self.id), "r+") as f:
-            #print("file111",f.read())
-            data = json.load(f)
-            #data["refresh"] = text
+        
+        try:
+            with open(Path("savefiles/states/game_%s.json" % self.id), "r+") as f:
+                #print("file111",f.read())
+                data = json.load(f)
+                #data["refresh"] = text
 
-            data["turn"] = self.turn
-            for playerNum in self.units:
-                data[str(playerNum)] = {}
-                for unit in self.units[playerNum]:
-                    if unit.state == None:
-                        continue
-                    data[str(playerNum)][unit.UnitID] = self.shortConvertToString(unit)
+                data["turn"] = self.turn
+                for playerNum in self.units:
+                    data[str(playerNum)] = {}
+                    for unit in self.units[playerNum]:
+                        if unit.state == None:
+                            continue
+                        data[str(playerNum)][unit.UnitID] = self.shortConvertToString(unit)
 
-            f.truncate(0)
-            f.seek(0)
-            json.dump(data, f)
+                f.truncate(0)
+                f.seek(0)
+                json.dump(data, f)
+        except:
+            with open(Path("savefiles/states/game_%s.json" % self.id), "w") as f:
+                f.write('{"turn": 0}')
 
     #Retrieves states from state file and applies it to self
     def applyStates(self):
@@ -1044,7 +1049,7 @@ class Game:
 class GameMaker(Game):
     def __init__(self, text):
         #print("TEST", text)
-        text = methods.unzipper(text)
+        #text = methods.unzipper(text)
         #print(text)
         dictionary = None
         for i in range(20):
