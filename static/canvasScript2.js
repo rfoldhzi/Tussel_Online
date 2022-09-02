@@ -508,6 +508,125 @@ function initilizeOffsets() {
     y_offset = (canvas.height - (size*(maxY-minY+1)))/2 - size * minY
 }
 
+//Draws a popup box describing a unit thats about to be built
+function buildPopup(unit) {
+    ButtonCollection = {}
+    createCancelButton()
+
+    let boxWidth = Math.floor(canvas.height * 0.9 * .7)
+    let boxHeight = Math.floor(boxWidth * 0.25)
+
+    let boxXoffset = Math.floor((canvas.width - boxWidth) / 2)
+    boxYoffset = Math.floor(canvas.height * .98 - boxHeight)
+
+    if (canvas.height > canvas.width) {
+        boxWidth = Math.floor(canvas.width * 0.9)
+        if (canvas.width/canvas.height > .7) {
+            boxWidth = Math.floor(canvas.height * 0.9 * .7)
+        }
+        boxXoffset =  Math.floor((canvas.width - boxWidth) / 2)
+        boxHeight = Math.floor(boxWidth * 0.25)
+        boxYoffset = Math.floor(canvas.height * .98 - boxHeight)
+    }
+
+    context.fillStyle = "#222"
+    context.fillRect(boxXoffset, boxYoffset, boxWidth, boxHeight);
+    context.fillStyle = "#BBB"
+    context.fillRect(boxXoffset, boxYoffset, boxHeight, boxHeight);
+    var grd = context.createLinearGradient(boxXoffset, 0, boxXoffset + boxHeight* 1.5, 0);
+    grd.addColorStop(0, "#DDD");
+    grd.addColorStop(0.5, "#777");
+    grd.addColorStop(0.7, "#444");
+    grd.addColorStop(1, "#222");
+    context.fillStyle = grd
+    context.fillRect(boxXoffset, boxYoffset, boxHeight*1.5, boxHeight);
+
+
+    
+    let image = getUnitImage(this_player, unit)
+    if (image != null) {
+        let multiplier = getMultiplier(unit)
+        context.drawImage(image, boxXoffset+boxHeight*(1-multiplier)/2, boxYoffset+boxHeight*(1-multiplier)/2, boxHeight*multiplier, boxHeight*multiplier);
+    }
+
+    i = 0
+    context.font = (boxHeight*.2) + "px Arial";
+    context.textAlign = "right";
+    let cost = getCost(unit)
+    let resourceTextSize = 0
+    for (let resource in cost) {
+        context.fillStyle = resourceColors[resource]
+        context.fillText(cost[resource] + " "+resource, boxXoffset+boxWidth*.98, boxYoffset+boxHeight*.2 + i * boxHeight*.2);
+        if (i < 2) {
+            resourceTextSize = Math.max(context.measureText(cost[resource] + " "+resource).width + boxWidth*.04, resourceTextSize)
+        }
+        i+= 1        
+        
+    }
+    console.log(resourceTextSize,resourceTextSize)
+
+    //Unit Title
+    let fontSize = boxHeight*.3
+    context.font = fontSize + "px Arial";
+    context.textAlign = "left";
+    context.fillStyle = "white";
+    if (context.measureText(titleCase(unit)).width> boxWidth - (boxHeight+boxWidth*.02 + resourceTextSize)) {
+        let CurrentSize = context.measureText(titleCase(unit)).width
+        let TargetSize = boxWidth - (boxHeight+boxWidth*.02 + resourceTextSize)
+        fontSize = boxHeight*.3* TargetSize/CurrentSize
+        context.font = fontSize + "px Arial";
+    }
+    context.fillText(titleCase(unit), boxXoffset+boxHeight+boxWidth*.02, boxYoffset+fontSize+(boxHeight*.3-fontSize)/3+boxHeight*.02);
+
+
+    let currentStatCount = 0 
+
+    function drawStat(stat, text, color) {
+        let width = statBoxHeight + statBoxHeight/4 + statBoxHeight*0.5*text.toString().length
+        console.log("width", width)
+
+        let xPos = boxXoffset + boxWidth*.27 + Math.floor(currentStatCount/2) * boxWidth*.15
+        let yPos = boxYoffset + boxHeight*.4 + boxHeight*.3 * (currentStatCount % 2)
+
+        context.fillStyle = color;
+        context.font = (boxHeight*.25) + "px Arial";
+        context.textAlign = "left";
+
+        context.drawImage(statLogos[stat], xPos,yPos, boxHeight*.25, boxHeight*.25)
+        context.fillText(text, xPos + boxHeight*.27, yPos+(boxHeight*.22))
+
+        
+        currentStatCount += 1
+    }
+
+    let health = UnitDB[unit].health || 10
+    let possibleStates = UnitDB[unit].possibleStates || ['attack','move','resources'] 
+    let range = UnitDB[unit].range || 1
+    let speed = UnitDB[unit].speed || 1
+    let attack = UnitDB[unit].attack || 2
+    let defense = UnitDB[unit].defense || 2
+    let unitType = UnitDB[unit].type || "trooper"
+    drawStat("health",health,"#CEFFD7")
+
+
+    if (possibleStates.includes("attack")) {
+        drawStat("attack",attack,"#FF0800")
+    }
+
+    drawStat("defense",defense,"#205DFF")
+
+    if (possibleStates.includes("move")) {
+        drawStat("speed",speed,"#00F5B9")
+    }
+    
+    drawStat("range",range,"#FFA300")
+
+    if ((possibleStates.includes("build") && unitType == 'building') || UnitDB[unit].population != undefined) {
+        let population = UnitDB[unit].population || 3
+        drawStat("population",population,"#9434EB")
+    }
+}
+
 //Not a very verstile function: will need to modify if there a major changes to tree layout
 function initilizeTechOffsets() {
     let totalHeight = treeHeight["improvements"] + Math.max(treeHeight["recruitment"], treeHeight["armament"], treeHeight["aviation"])

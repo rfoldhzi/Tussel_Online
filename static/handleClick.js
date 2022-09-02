@@ -85,11 +85,23 @@ function clearSelected() {
     defaultButtonMenu()
 }
 
+function createCancelButton() {
+    let btnSize = 120;
+    if (canvas.height > canvas.width && canvas.width*canvas.height > 1000000) {
+        btnSize = 180
+    }
+
+    let cancelButton = new Button(canvas.width - btnSize, resourceBoxHeight + statBoxHeight, btnSize, btnSize/3, "#F05050", "cancel", cancelButtonClicked);
+    cancelButton.textColor = "white"
+    ButtonCollection["cancel"] = cancelButton
+}
+
 function buildButtonClicked(btn) {
     console.log("building: "+btn.name);
-    btn.color = "#00FFCC";
     selected.stateData = [btn.name]
     stateDataMode = 'build2'
+    buildPopup(btn.name)
+
     moveCircles = []
     transportSpots = []
     dropOffSpots = []
@@ -98,6 +110,23 @@ function buildButtonClicked(btn) {
     possibleAttacks = []
     possibleHeals = []
     buildHexes = getRangeCircles(selected, false, btn.name)
+
+    for (let btn of buildButtons) {
+        let unitName = btn.name
+        let color = "#EE5555"
+        if (selected.state == "build" && selected.stateData[1] == unitName) {
+            color = "#6464FF"
+        } else if (selected.maxPopulation && selected.maxPopulation <= selected.population) {
+            color = "#777777"
+        } else if (checkIfAffordable(unitName))  {
+            color = "#EEEEEE"
+        }
+        btn.color = color
+    }
+
+    btn.color = "#00FFCC";
+    
+
     drawBoard();
 }
 
@@ -254,7 +283,13 @@ function handleClick(xPos,yPos) {
             return;
         }
 
-        selected = getUnitFromPos(this_player,x,y);
+        if (selected) {
+            let newSelected = getUnitFromPos(this_player,x,y);
+            clearSelected()
+            selected = newSelected
+        } else {
+            selected = getUnitFromPos(this_player,x,y);
+        }
         if (selected) {
             moveCircles = getMoveCircles(selected);
             transportSpots = getTransportCircles(selected);
@@ -266,14 +301,7 @@ function handleClick(xPos,yPos) {
             drawStats(); //Added here so we know the current height for top-bars
 
             if (selected.state != null) {
-                let btnSize = 120;
-                if (canvas.height > canvas.width && canvas.width*canvas.height > 1000000) {
-                    btnSize = 180
-                }
-
-                let cancelButton = new Button(canvas.width - btnSize, resourceBoxHeight + statBoxHeight, btnSize, btnSize/3, "#F05050", "cancel", cancelButtonClicked);
-                cancelButton.textColor = "white"
-                ButtonCollection["cancel"] = cancelButton
+                createCancelButton()
             }
 
             if (selected.possibleStates.includes("resources")) {

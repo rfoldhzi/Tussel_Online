@@ -493,6 +493,10 @@ function drawUI() {
     for (let key in ButtonCollection) {
         ButtonCollection[key].render();
     }
+
+    if (stateDataMode == "build2") {
+        buildPopup(selected.stateData[0])
+    }
 }
 
 function drawBoard() {
@@ -617,18 +621,27 @@ function drawTerritory(player, unit) {
     context.fillRect(unit.position[0] * size + x_offset, unit.position[1] * size + y_offset, size, size);
 }
 
+//Get unit image size multiplier based on unit type (or specified size)
+function getMultiplier(unitName, unitType = -1) {
+    if (unitType == -1) {
+        unitType = UnitDB[unitName].type || "trooper";
+    }
+    let multiplier = 0.7;
+    if (unitType == "building") {
+        multiplier = 0.85;
+    } else if (unitType == "trooper" || unitType == "bot") {
+        multiplier = 0.6;
+    }
+    multiplier = UnitDB[unitName].size || multiplier;
+    return multiplier
+}
+
 function drawUnit(player, unit) {
 
     let img = getUnitImage(player, unit.name);
 
     if (img != null) {
-        let multiplier = 0.7;
-        if (unit.type == "building") {
-            multiplier = 0.85;
-        } else if (unit.type == "trooper" || unit.type == "bot") {
-            multiplier = 0.6;
-        }
-        multiplier = UnitDB[unit.name].size || multiplier;
+        let multiplier = getMultiplier(unit.name, unit.type);
         context.drawImage(img, size * unit.position[0] + x_offset + size * (1 - multiplier) * .5, size * unit.position[1] + y_offset + size * (1 - multiplier) * .5, size * multiplier, size * multiplier);
     }
 
