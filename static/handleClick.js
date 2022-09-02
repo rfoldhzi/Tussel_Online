@@ -71,6 +71,7 @@ function clearSelected() {
     if (stateDataMode == "research") {
         flipBoardVariables()
     }
+    popupTech = null
     stateDataMode = null;
     selected = null;
     moveCircles = []
@@ -159,6 +160,10 @@ function handleClick(xPos,yPos) {
             }
         }
         //No button was pressed
+        if (popupTech != null) {
+            back_research()
+            return
+        }
         clearSelected();
         drawBoard();
         return;

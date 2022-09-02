@@ -674,6 +674,233 @@ function drawLines(tree, treeXOffset, treeYOffset) {
     drawLinesHelper(tree, d, treeXOffset, treeYOffset)
 }
 
+
+//Writes text as a dictionary (from stackoverflow)
+function wrapText(context, text, x, y, maxWidth, fontSize, fontFace){
+    var words = text.split(' ');
+    var line = '';
+    var lineHeight=fontSize;
+  
+    context.font = fontSize + "px " + fontFace;
+  
+    for(var n = 0; n < words.length; n++) {
+      var testLine = line + words[n] + ' ';
+      var metrics = context.measureText(testLine);
+      var testWidth = metrics.width;
+      if(testWidth > maxWidth) {
+        context.fillText(line, x, y);
+        line = words[n] + ' ';
+        y += lineHeight;
+      }
+      else {
+        line = testLine;
+      }
+    }
+    context.fillText(line, x, y);
+    return(y);
+}
+
+//Capitalizes each word in a string (from stackoverflow)
+function titleCase(str) {
+    var splitStr = str.toLowerCase().split(' ');
+    for (var i = 0; i < splitStr.length; i++) {
+        splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);     
+    }
+    return splitStr.join(' '); 
+}
+
+//Generates a description for a tech
+function techTextGenerator(tech) {
+    let text = ""
+    for (let ability of TechDB[tech].ability) {
+        if (ability[0] == "unlock build") {
+            text += "Unlocks the "+titleCase(ability[2])+" at the "+titleCase(ability[1])+". "
+        }else if (ability[0] == "lose build") {
+            text += "Removes the "+titleCase(ability[2])+" from the "+titleCase(ability[1])+". "
+        } else if (ability[0] == "stat") {
+            text += "Increases the "+titleCase(ability[1])+"'s "+ability[2]+" by "+ability[3]+". "
+        } else if (ability[0] == "typeStat") {
+            text += "Increases all "+ability[1]+"s' "+ability[2]+" by "+ability[3]+". "
+        } else if (ability[0] == "gain ability") {
+            text += "Gives the "+titleCase(ability[1])+" "+titleCase(ability[2])
+            if (ability[3] != 0) {
+                text += " "+ability[3]
+            }
+            text += ". "
+        } else if (ability[0] == "typeAbility") {
+            text += "Gives all "+ability[1]+"s "+titleCase(ability[2])
+            if (ability[3] != 0) {
+                text += " "+ability[3]
+            }
+            text += ". "
+        }
+
+    }
+    if (text == "") {
+        text = "A stepping stone for more techs."
+    }
+    return text
+}
+
+//For back research button
+function back_research() {
+    popupTech = null
+    defaultButtonMenu()
+    redrawResearch = true
+    drawBoard()
+}
+
+//Draws a popup box describing a tech
+function techPopupBox(tech) {
+    popupTech = tech
+    defaultButtonMenu()
+
+    let boxWidth = canvas.width * .3
+    let boxHeight = boxWidth * .5
+
+    let boxXoffset = Math.floor((canvas.width - boxWidth) / 2)
+    let boxYoffset = Math.floor((canvas.height - boxHeight) / 2)
+
+    if (canvas.height > canvas.width) {
+        boxWidth = Math.floor(canvas.width * 0.9)
+        boxXoffset = Math.floor(canvas.width * 0.05)
+
+        boxHeight = Math.floor(canvas.height * 0.33)
+        boxYoffset = Math.floor(canvas.height * 0.33)
+    }
+
+    context.fillStyle = "#222"
+    context.fillRect(boxXoffset, boxYoffset, boxWidth, boxHeight);
+
+    //Tech Title
+    context.font = (boxHeight*.15) + "px Arial";
+    context.textAlign = "left";
+    context.fillStyle = "white";
+    context.fillText(titleCase(tech), boxXoffset+boxWidth*.02, boxYoffset+boxHeight*.17);
+
+    //Time text
+    context.font = (boxHeight*.08) + "px Arial";
+    context.textAlign = "right";
+    context.fillStyle = "white";
+    let n = 0
+    if (gameObject.tech[this_player].includes(tech)) {
+        n = TechDB[tech].time
+    } else if (tech in gameObject.progress[this_player]) {
+        n = gameObject.progress[this_player][tech]
+    }
+    context.fillText(n+"/"+TechDB[tech].time, boxXoffset+boxWidth*.98, boxYoffset+boxHeight*.10);
+
+    //Tech energy cost
+    context.fillText(TechDB[tech].cost + " Energy", boxXoffset+boxWidth*.98, boxYoffset+boxHeight*.18);
+
+
+    let image = currentTechImages[tech]
+    if (!checkTechIfAffordable(tech) && !gameObject.tech[this_player].includes(tech)) {
+        image = currentTechImagesBW[tech]
+    }
+    context.imageSmoothingEnabled = false;
+    context.drawImage(image, Math.floor(boxXoffset+boxWidth*.02), Math.floor(boxYoffset+boxHeight*.3), boxHeight*.3, boxHeight*.3);
+    
+    //Show Unlock Images
+    let numberOfSubtechs = Math.max(TechDB[tech].unlocks.length, 3)
+    let i = 0
+    for (let subTech of TechDB[tech].unlocks) {
+        let xPos = Math.floor(boxXoffset+boxWidth*.02 + i * boxHeight*.3/numberOfSubtechs)
+        let yPos = Math.floor(boxYoffset+boxHeight*.31 + boxHeight*.3)
+        let image = currentTechImages[subTech]
+        if (!checkTechIfAffordable(subTech) && !gameObject.tech[this_player].includes(subTech)) {
+            image = currentTechImagesBW[subTech]
+        }
+        if (image == undefined) {
+            image = currentTechImages["question"]
+            context.drawImage(image, xPos, yPos, boxHeight*.3/numberOfSubtechs, boxHeight*.3/numberOfSubtechs);
+            //context.fillStyle = "#333"
+            //context.fillRect(xPos, yPos, boxHeight*.3/numberOfSubtechs, boxHeight*.3/numberOfSubtechs);
+        } else {
+            context.drawImage(image, xPos, yPos, boxHeight*.3/numberOfSubtechs, boxHeight*.3/numberOfSubtechs);
+        }
+        i += 1
+    }
+
+    //Show deny images
+    if (TechDB[tech].deny != undefined) {
+        numberOfSubtechs2 = Math.max(TechDB[tech].deny.length, 3)
+        i = 0
+        for (let subTech of TechDB[tech].deny) {
+            let xPos = Math.floor(boxXoffset+boxWidth*.02 + i * boxHeight*.3/numberOfSubtechs2)
+            let yPos = Math.floor(boxYoffset+boxHeight*.31 + boxHeight*.3 + boxHeight*.3/numberOfSubtechs)
+            let image = currentTechImagesInverted[subTech]
+            if (!checkTechIfAffordable(subTech) && !gameObject.tech[this_player].includes(subTech)) {
+                image = currentTechImagesBWInverted[subTech]
+            }
+            if (image == undefined) {
+                image = currentTechImages["question"]
+                context.drawImage(image, xPos, yPos, boxHeight*.3/numberOfSubtechs2, boxHeight*.3/numberOfSubtechs2);
+                context.fillStyle = "#0009"
+                context.fillRect(xPos, yPos, boxHeight*.3/numberOfSubtechs, boxHeight*.3/numberOfSubtechs);
+            } else {
+                context.drawImage(image, xPos, yPos, boxHeight*.3/numberOfSubtechs2, boxHeight*.3/numberOfSubtechs2);
+                context.fillStyle = "#0009"
+                context.fillRect(xPos, yPos, boxHeight*.3/numberOfSubtechs, boxHeight*.3/numberOfSubtechs);
+            }
+            i += 1
+        }
+    }
+
+    //Paragraph
+    context.fillStyle = "white"
+    context.textAlign = "left";
+    wrapText(context,techTextGenerator(tech), boxXoffset+boxWidth*.04 + boxHeight*.3, boxYoffset+boxHeight*.33, boxWidth*.96 - boxHeight*.3, boxHeight*.10, "Arial");
+
+    context.font = (boxHeight*.15) + "px Arial";
+
+    //"Research" button
+    if (!gameObject.tech[this_player].includes(tech) && currentTechMenu.includes(tech)) {
+        let buttonAction = researchButtonClicked
+        let buttonColor = "#1090FF"
+        if (selected.state == "research" && selected.stateData == tech) {
+            buttonColor = "#10DD30"
+        } else if (!checkTechIfAffordable(tech) && !gameObject.tech[this_player].includes(tech)) {
+            buttonColor = "#FF6060"
+            buttonAction = function(){}
+        }
+
+        let buttonwidth = context.measureText("Research").width;
+        let researchButton = new Button(boxXoffset+boxWidth - buttonwidth * 1.2 - boxWidth*.02, boxYoffset+boxHeight - boxHeight*.15 - boxHeight*.02, buttonwidth * 1.2, boxHeight*.15, buttonColor, "Research", buttonAction);
+        researchButton.name = tech
+        researchButton.parameters = researchButton
+        ButtonCollection["research"] = researchButton
+        researchButton.render()
+    }
+
+    //"Back" button
+    let buttonwidth = context.measureText("Back").width;
+    backButton = new Button(boxXoffset + boxWidth*.02, boxYoffset+boxHeight - boxHeight*.15 - boxHeight*.02, buttonwidth * 1.2, boxHeight*.15, "#555", "Back", back_research);
+    ButtonCollection["back_research"] = backButton
+    backButton.render()
+
+    context.imageSmoothingEnabled = true;
+}
+
+//Loads question mark image if not already loaded
+function checkForQuestionMarkImage() {
+    let t = "question"
+    if (!(t in currentTechImages)) {
+        currentTechImages[t] = null
+        let img = new Image(20, 20);
+        console.log("requesting image " + t);
+        img.src = '/static/techAssets/' + t.replaceAll(" ", "_") + '.png';
+
+        img.onload = function () {
+            img.setAttribute('crossOrigin', '');
+            img.crossOrigin = "Anonymous";
+            currentTechImages[t] = img;
+
+            console.log("recieved image " + t);
+        }
+    }
+}
+
 let currentTechMenu = []
 let currentTechImages = {}
 let currentTechImagesInverted = {}
@@ -685,6 +912,7 @@ let redrawResearch = false
 let PrevTechHover = null
 let CurrentTechHover = null
 let knownTechHover = null
+let popupTech = null
 let treeSizes = {}
 let treeOffsets = {}
 let boxPlacements = {}
@@ -735,6 +963,7 @@ function researchMenu() {
 
 
     if (redrawResearch == false) {
+        checkForQuestionMarkImage()
         organizeTechTrees()
         effectiveResources = getEffectiveResources(selected)
     }
@@ -845,10 +1074,11 @@ function researchMenu() {
                 context.fillRect(xPos-techSize*0.04, yPos-techSize*0.04, techSize*1.08, techSize*1.08);
             }
             
-
-            let button = new Button(xPos, yPos, techSize, techSize, "#555555", "", researchButtonClicked);
+            
+            let button = new Button(xPos, yPos, techSize, techSize, "#555555", "", techPopupBox);
+            //let button = new Button(xPos, yPos, techSize, techSize, "#555555", "", researchButtonClicked);
             button.name = t
-            button.parameters = button
+            button.parameters = button.name
             if (t in currentTechImages && currentTechImages[t] != null) {
                 
                 if (!checkTechIfAffordable(t) && !gameObject.tech[this_player].includes(t)) {
@@ -895,6 +1125,10 @@ function researchMenu() {
 
         treeXOffset += treeWidth[key]
         j+=1
+    }
+
+    if (popupTech != null) {
+        techPopupBox(popupTech)
     }
 
     context.imageSmoothingEnabled = true;
