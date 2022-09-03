@@ -248,17 +248,19 @@ def done(game_id, this_player):
     with open(Path("savefiles/games/game_%s.txt"%game_id), 'r') as f:
         CurrentGame = GameMaker(f.read())
         CurrentGame.playerDone(int(this_player))
+        CurrentGame.saveGame()
         return CurrentGame.getJSON()
 
 @app.route('/action/<game_id>', methods=['GET', 'POST'])
 def action(game_id):
     if request.method == "POST":
-        game.stateStuff(game_id, 0,request.data.decode())
         try:
             print("data recieved",request.data.decode())
             CurrentGame = None
             with open(Path("savefiles/games/game_%s.txt"%game_id), 'r') as f:
                 CurrentGame = GameMaker(f.read())
+            player = CurrentGame.playernames[0][current_user.username.lower()]
+            game.stateStuff(game_id, player,request.data.decode())
             CurrentGame.setState(0, request.data.decode())
             CurrentGame.saveGame()
         except Exception as e:
