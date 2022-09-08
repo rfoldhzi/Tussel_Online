@@ -970,14 +970,14 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     }
-    loadGame();
+    loadGame2();
 
     document.body.onkeyup = function (e) {
         if (e.key == " " ||
             e.code == "Space" ||
             e.keyCode == 32
         ) {
-            loadGame()
+            endTurn()
         }
     }
 })
