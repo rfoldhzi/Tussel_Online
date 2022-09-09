@@ -7,6 +7,15 @@ function getUnitFromPos(player, x, y) {
     return null;
 }
 
+function getUnitFromPosGameObject(specific_game,player, x, y) {
+    for (let unit of specific_game.units[player]) {
+        if (unit.position[0] == x && unit.position[1] == y) {
+            return unit;
+        }
+    }
+    return null;
+}
+
 function getAnyUnitFromPos(x, y) {
     for (let player in gameObject.units) {
         for (let unit of gameObject.units[player]) {
@@ -63,4 +72,27 @@ function getUnitByID(UnitID) {
         }
     }
     return null;
+}
+
+function getUnitByIDwithGameObject(specific_gameObject, UnitID) {
+    for (let player in specific_gameObject.units) {
+        for (let unit of specific_gameObject.units[player]) {
+            //console.log(unit)
+            if (unit.UnitID == UnitID) {
+                return unit;
+            }
+        }
+    }
+    return null;
+}
+
+function checkIfUnitTransported(transportee, transporter) {
+    if (transporter.carrying != undefined) {
+        for (let unit of transporter.carrying) {
+            if (unit.UnitID == transportee.UnitID) {
+                return true
+            }
+        }
+    }
+    return false
 }

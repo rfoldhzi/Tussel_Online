@@ -1,10 +1,14 @@
 let jsonText = '{"units":{"0":[{"name":"town","parent":null,"type":"building","possibleStates":["resources","build","research"],"state":null,"stateData":null,"speed":1,"range":1,"attack":2,"defense":2,"maxHealth":50,"health":50,"UnitID":"0","score":450,"resourceGen":{"gold":10,"metal":10,"energy":10},"abilities":{"costly":1.75},"position":[3,3],"population":0,"maxPopulation":4}],"1":[{"name":"bot fortress","parent":null,"type":"building","possibleStates":["resources","build"],"state":null,"stateData":null,"speed":1,"range":1,"attack":2,"defense":3,"maxHealth":50,"health":50,"UnitID":"1","score":300,"resourceGen":{"gold":0,"metal":20,"energy":20},"abilities":{},"position":[3,15],"population":0,"maxPopulation":4}],"2":[{"name":"town","parent":null,"type":"building","possibleStates":["resources","build","research"],"state":null,"stateData":null,"speed":1,"range":1,"attack":2,"defense":2,"maxHealth":50,"health":50,"UnitID":"2","score":450,"resourceGen":{"gold":10,"metal":10,"energy":10},"abilities":{"costly":1.75},"position":[9,9],"population":0,"maxPopulation":4}],"3":[{"name":"plant base","parent":null,"type":"building","possibleStates":["resources","build"],"state":null,"stateData":null,"speed":1,"range":1,"attack":2,"defense":2,"maxHealth":8,"health":8,"UnitID":"3","score":200,"resourceGen":{"energy":10},"abilities":{"deathSpawn":"mad plant base"},"position":[15,3],"population":0,"maxPopulation":3}],"4":[{"name":"plant base","parent":null,"type":"building","possibleStates":["resources","build"],"state":null,"stateData":null,"speed":1,"range":1,"attack":2,"defense":2,"maxHealth":8,"health":8,"UnitID":"4","score":200,"resourceGen":{"energy":10},"abilities":{"deathSpawn":"mad plant base"},"position":[15,15],"population":0,"maxPopulation":3}]},"resources":{"0":{"gold":20,"metal":0,"energy":0},"1":{"gold":20,"metal":0,"energy":0},"2":{"gold":20,"metal":0,"energy":0},"3":{"gold":20,"metal":0,"energy":0},"4":{"gold":20,"metal":0,"energy":0}},"went":{"0":false,"1":true,"2":true,"3":true,"4":true},"tech":{"0":[],"1":[],"2":[],"3":[],"4":[]},"scores":{"0":0,"1":0,"2":0,"3":0,"4":0},"progress":{"0":{},"1":{},"2":{},"3":{},"4":{}},"botmode":[],"ready":true,"started":true,"turn":0,"id":0,"mode":"halo","allai":false,"width":19,"height":19,"ai":4,"targetPlayers":4,"intGrid":[255,255,248,127,14,7,192,192,248,24,31,3,1,192,112,16,31,199,31,253,183,255,227,255,246,223,252,113,252,4,7,1,192,96,124,12,15,129,129,240,56,127,15,255,255,128]}';
 let gameObject = JSON.parse(jsonText)
+let gameObject2 = null;
 let ButtonCollection = {};
 let doneButton;
 let logoutButton;
 let outOfDate = false;
 let currentTurn = -1;
+let animationInterval = false;
+let animationCounter = -1;
+let animationMax = 30;
 
 class Button {
     constructor(x, y, width, height, color, text, func, ...parameters) {
@@ -72,6 +76,9 @@ function endTurn() {
     callback = function (responseText) {
         jsonText = responseText;
         newGameObject = JSON.parse(jsonText)
+        clearSelected()
+        useNewGameObject(newGameObject)
+        /*
         if (gameObject.intGrid.join(',') !== newGameObject.intGrid.join(',')) {
             gameObject = newGameObject;
             generateGrid()
@@ -82,6 +89,7 @@ function endTurn() {
         clearSelected()
         updateCloudCover()
         drawBoard()
+        */
     }
     httpGetAsync(location.protocol+"//" + window.location.host + "/done/"+this_game+"/"+this_player, callback);
 }
@@ -99,6 +107,16 @@ function useNewGameObject(newGameObject) {
     if (outOfDate && currentTurn == newGameObject.turn) {
         return //Don't render if this is outofdate to recent info sent to server
         //Just wait for the next request.
+    }
+    if (animationCounter >= 0) { // animationCounter < 0 makes sure not already animating
+        return
+    }
+    if (currentTurn != -1 && newGameObject.turn > currentTurn) { 
+        console.log("entering animation")
+        animationInterval = window.setInterval(drawAnimation, 50);
+        animationCounter = 0
+        gameObject2 = newGameObject;
+        return
     }
     gameObject = newGameObject;
     currentTurn = gameObject.turn;
@@ -479,6 +497,15 @@ function drawTerritories() {
     }
 }
 
+function drawTerritoriesSpecificGameObject(specific_gameObject) {
+    for (const player in specific_gameObject.units) {
+        for (const unit of specific_gameObject.units[player]) {
+            //console.log(unit)
+            drawTerritory(player, unit);
+        }
+    }
+}
+
 function drawStateLines() {
     for (const unit of gameObject.units[this_player]) {
         drawStateLine(unit);
@@ -501,6 +528,11 @@ function drawUI() {
 }
 
 function drawBoard() {
+    if(animationCounter >= 0) {
+        console.log("not drawing board")
+        return
+    }
+    console.log("drawing board")
     
 
     if (selected != null && stateDataMode == "research") {
@@ -542,6 +574,36 @@ function drawBoard() {
     for (let btn of resourceButtons) {
         btn.render();
     }
+}
+
+function drawAnimation() {
+    animationCounter += 1
+    if (animationCounter >= animationMax) {
+        animationCounter = -1
+        clearInterval(animationInterval)
+        gameObject = gameObject2
+        gameObject2 = null
+        currentTurn = gameObject.turn
+        drawBoard()
+        return 
+    }
+
+    let t = animationCounter/animationMax
+    
+    clearBoard()
+    drawTerritories()
+    drawClouds()
+
+    for (let y = 0; y < gameObject.height; y++) {
+        for (let x = 0; x < gameObject.width; x++) {
+            let tileColor = BoardColors[x + gameObject.width * y]
+            context.fillStyle = tileColor;
+            context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
+        }
+    }
+    drawTerritoriesSpecificGameObject(gameObject)
+    //drawTerritoriesSpecificGameObject(gameObject2)
+    animateBoard(gameObject,gameObject2,t)
 }
 
 var intervalID = window.setInterval(myCallback, 2000);

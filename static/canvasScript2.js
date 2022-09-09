@@ -508,6 +508,112 @@ function initilizeOffsets() {
     y_offset = (canvas.height - (size*(maxY-minY+1)))/2 - size * minY
 }
 
+function animateBoard(g1, g2, t) {
+    for (const player in g1.units) {
+        for (const unit1 of g1.units[player]) {
+            let unit2 = getUnitByIDwithGameObject(g2, unit1.UnitID)
+            if (unit2 == null) { //Unit destroyed
+                if (unit1.state == "move") {
+                    let possibleTransport = getUnitFromPosGameObject(g2, player, unit1.stateData[0], unit1.stateData[1])
+                    if (possibleTransport != null) {
+                        if (checkIfUnitTransported(unit1,possibleTransport)) {
+                            animateUnit(unit1,possibleTransport,t,player)
+                            continue
+                        }
+                    }
+                }
+                animateUnit(unit1,unit1,t,player)
+            } else {
+                animateUnit(unit1,unit2,t,player)
+            }
+        }
+    }
+    for (const player in g2.units) {
+        for (const unit2 of g2.units[player]) {
+            let unit1 = getUnitByIDwithGameObject(g1, unit2.UnitID)
+            if (unit1 == null) { //Unit was just build
+                animateUnit(null,unit2,t,player)
+            }
+        }
+    }
+}
+function Lerp(a,b,t) {
+    return a + t*(b-a)
+}
+
+function drawLerpedImage(img,x1,y1,x2,y2,t, multiplier) {
+    let startX = size * x1 + x_offset + size * (1 - multiplier) * .5
+    let startY = size * y1 + y_offset + size * (1 - multiplier) * .5
+    let endX = size * x2 + x_offset + size * (1 - multiplier) * .5
+    let endY = size * y2 + y_offset + size * (1 - multiplier) * .5
+    let actual_X = Lerp(startX,endX,t)
+    let actual_Y = Lerp(startY,endY,t)
+    context.drawImage(img, actual_X, actual_Y, size * multiplier, size * multiplier);
+}
+
+function animateUnit(unit1, unit2, t, specfic_player) {
+
+    let unit = unit1 || unit2;
+    let x = unit.position[0]
+    let y = unit.position[1]
+
+    //If not in animate Grid: return
+
+    //If out of bounds: return
+
+    let img = getUnitImage(specfic_player, unit.name);
+    if (img == null) {
+        return
+    }
+    let defaultAnimation = true;
+    let multiplier = getMultiplier(unit.name, unit.type);
+
+    if (unit1 == null) {
+        //Transport unit stuff
+        let parent = getUnitByID(unit2.parent)
+        if (unit2.transporter != undefined) {
+            parent = getUnitByID(unit2.transporter)
+        }
+        if (parent != null) {
+            defaultAnimation = false
+            let x2 = parent.position[0]
+            let y2 = parent.position[1]
+            //return if x2 or y2 out of bounds
+            drawLerpedImage(img,x2,y2,x,y,t, multiplier)
+        }
+    } else if (x != unit2.position[0] || y != unit2.position[1]) {
+        defaultAnimation = false
+        drawLerpedImage(img,x,y,unit2.position[0],unit2.position[1],t, multiplier)
+    }
+    if (defaultAnimation) {
+        context.drawImage(img, size * unit.position[0] + x_offset + size * (1 - multiplier) * .5, size * unit.position[1] + y_offset + size * (1 - multiplier) * .5, size * multiplier, size * multiplier);
+        //State square
+        //Lerped health
+        let healthText = unit.health
+        context.fillStyle = "white";
+        fontSize = Math.floor(size / 2);
+        context.font = fontSize + "px Arial";
+        context.textAlign = "right";
+        if (unit1 != null && unit2 != null) {
+            if (unit2.health < unit1.health) {
+                healthText = Math.floor(Lerp(unit1.health, unit2.health, t))
+                context.fillStyle = "red";
+            } else if (unit2.health > unit1.health) {
+                healthText = Math.floor(Lerp(unit1.health, unit2.health, t))
+            } else if (unit1 == unit2) { // Unit is dying, lerping health with 0
+                healthText = Math.floor(Lerp(unit1.health, 0, t))
+                context.fillStyle = "red";
+            }
+        }
+        context.fillText(healthText, size * unit.position[0] + size + x_offset, size * unit.position[1] + size + y_offset);
+    }
+
+    if (unit1 == unit2) { //This unit is dead
+        context.drawImage(RedX, size * x + x_offset, size * y + y_offset, size, size);
+    }
+}
+
+
 //Draws a popup box describing a unit thats about to be built
 function buildPopup(unit) {
     ButtonCollection = {}
