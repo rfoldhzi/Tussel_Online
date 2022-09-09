@@ -170,6 +170,42 @@ function cancelButtonClicked(btn) {
     drawBoard();
 }
 
+function checkWhatCouldBeClicked(xPos,yPos) {
+    for (let key in ButtonCollection) {
+
+        if (ButtonCollection[key].isMouseHovering(xPos,yPos)) {
+            return ButtonCollection[key];
+        }
+    }
+
+    if (stateDataMode == "research") {
+        for (let key in currentTechButtons) {
+            if (currentTechButtons[key].isMouseHovering(xPos,yPos)) {
+                return currentTechButtons[key];
+            }
+        }
+    }
+
+    for (let btn of buildButtons) {
+        if (btn.isMouseHovering(xPos,yPos)) {
+            return btn;
+        }
+    }
+
+    for (let btn of resourceButtons) {
+        if (btn.isMouseHovering(xPos,yPos)) {
+            return btn;
+        }
+    }
+
+    let position = gridMouse(xPos,yPos);
+
+    x = position[0] + board_x_start;
+    y = position[1] + board_y_start;
+
+    return x+","+y
+}
+
 function handleClick(xPos,yPos) {
     console.log("handling")
 

@@ -756,6 +756,15 @@ let mouse_up = function (event) {
             handleClick(parseInt(event.clientX), parseInt(event.clientY))
         }
         return;
+    } else {
+        let mouseX = parseInt(event.clientX);
+        let mouseY = parseInt(event.clientY);
+        if (checkWhatCouldBeClicked(startX,startY) == checkWhatCouldBeClicked(mouseX,mouseY)) {
+            event.preventDefault();
+            handleClick(mouseX, mouseY)
+            is_dragging = false;
+            return
+        }
     }
 
     event.preventDefault();
