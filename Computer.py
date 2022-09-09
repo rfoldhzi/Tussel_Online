@@ -242,10 +242,15 @@ def betterRandomMove(game, player,spaces):
         if hasattr(u, "carrying"):
             if len(u.carrying) > 0 and random.random() < 1:
                 u2 = random.choice(u.carrying)
-                buildHexes = getRangeCircles(u, built = u2.name)
+                u2Name = False
+                if type(u2) == dict:
+                    u2Name = u2["name"]
+                else:
+                    u2Name = u2.name
+                buildHexes = getRangeCircles(u, built = u2Name)
                 if len(buildHexes) > 0:
                     pos = random.choice(buildHexes)
-                    u.stateData = [pos,u2.name]
+                    u.stateData = [pos,u2Name]
                     u.state = "transport"
 
 

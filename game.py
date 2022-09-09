@@ -759,8 +759,13 @@ class Game:
                         par.population = max(0,par.population-1)
             if hasattr(u, "carrying"):
                 for u2 in u.carrying:
-                    if u2.parent:
-                        par = self.getUnitFromID(u2.parent)
+                    u2Parent = False
+                    if type(u2) == dict: #In case the u2 is a dict
+                        u2Parent = u2["parent"]
+                    else:
+                        u2Parent = u2.parent
+                    if u2Parent:
+                        par = self.getUnitFromID(u2Parent)
                         if par:
                             if getattr(par,'maxPopulation',False): #Reduces population of parent
                                 par.population = max(0,par.population-1)
@@ -798,12 +803,21 @@ class Game:
                         par.population = max(0,par.population-1)
             if hasattr(u, "carrying"):
                 for u2 in u.carrying:
-                    if u2.parent:
-                        par = self.getUnitFromID(u2.parent)
+                    u2Parent = False
+                    u2Score = 0
+                    if type(u2) == dict: #In case the u2 is a dict
+                        u2Parent = u2["parent"]
+                        u2Score = u2["score"]
+                    else:
+                        u2Parent = u2.parent
+                        u2Score = u2.score
+                    if u2Parent:
+                        par = self.getUnitFromID(u2Parent)
                         if par:
                             if getattr(par,'maxPopulation',False): #Reduces population of parent
                                 par.population = max(0,par.population-1)
-                    u.score += u2.score # Add transportee's score to transporter when transporter is removed
+                    
+                    u.score += u2Score # Add transportee's score to transporter when transporter is removed
             self.scores[player] -= int(u.score/2)
             self.units[player].remove(u)
         
@@ -884,9 +898,18 @@ class Game:
                     if not u.stateData[0] in BlockedSpaces:
                         
                         transportedUnit = None
+                        transportedUnitUnchanged = None #Unchanged version of transported Unit so we can remove it later
                         for v in u.carrying: #May need to check that unit has carrying attribute
-                            if v.name == u.stateData[1]:
+                            vName = False
+                            if type(v) == dict:
+                                vName = v["name"]
+                            else:
+                                vName = v.name
+                            if vName == u.stateData[1]:
                                 transportedUnit = v
+                                transportedUnitUnchanged = v
+                                if type(transportedUnit) == dict:
+                                    transportedUnit = UnitMaker(transportedUnit)
                         
                         if transportedUnit == None: #Just in case unit can't be found
                             u.state = None
@@ -899,7 +922,7 @@ class Game:
                             continue
 
                         if transportedUnit:
-                            u.carrying.remove(transportedUnit)
+                            u.carrying.remove(transportedUnitUnchanged)
                             self.units[i].append(transportedUnit)
                             transportedUnit.position = u.stateData[0]
                             transportedUnit.state = None
