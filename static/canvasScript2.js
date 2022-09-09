@@ -1033,12 +1033,6 @@ function techPopupBox(tech) {
     context.fillStyle = "#222"
     context.fillRect(boxXoffset, boxYoffset, boxWidth, boxHeight);
 
-    //Tech Title
-    context.font = (boxHeight*.15) + "px Arial";
-    context.textAlign = "left";
-    context.fillStyle = "white";
-    context.fillText(titleCase(tech), boxXoffset+boxWidth*.02, boxYoffset+boxHeight*.17);
-
     //Time text
     context.font = (boxHeight*.08) + "px Arial";
     context.textAlign = "right";
@@ -1053,6 +1047,23 @@ function techPopupBox(tech) {
 
     //Tech energy cost
     context.fillText(TechDB[tech].cost + " Energy", boxXoffset+boxWidth*.98, boxYoffset+boxHeight*.18);
+    let costTextSize = context.measureText(TechDB[tech].cost + " Energy").width + boxWidth*.04
+
+    //Tech Title
+    let fontSize = boxHeight*.15
+    context.font = fontSize + "px Arial";
+    context.textAlign = "left";
+    context.fillStyle = "white";
+    //context.fillText(titleCase(tech), boxXoffset+boxWidth*.02, boxYoffset+boxHeight*.17);
+    console.log("here", context.measureText(titleCase(tech)).width,boxWidth,boxWidth - (boxWidth*.02 + costTextSize))
+    if (context.measureText(titleCase(tech)).width> boxWidth - (boxWidth*.02 + costTextSize)) {
+        console.log("too big")
+        let CurrentSize = context.measureText(titleCase(tech)).width
+        let TargetSize = boxWidth - (boxWidth*.02 + costTextSize)
+        fontSize = fontSize * TargetSize/CurrentSize
+        context.font = fontSize + "px Arial";
+    }
+    context.fillText(titleCase(tech), boxXoffset+boxWidth*.02, boxYoffset+fontSize+(boxHeight*.15-fontSize)/3+boxHeight*.02);
 
 
     let image = currentTechImages[tech]
