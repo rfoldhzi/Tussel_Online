@@ -113,9 +113,10 @@ function useNewGameObject(newGameObject) {
     }
     if (currentTurn != -1 && newGameObject.turn > currentTurn) { 
         console.log("entering animation")
-        animationInterval = window.setInterval(drawAnimation, 50);
+        animationInterval = window.setInterval(drawAnimation, 33);
         animationCounter = 0
         gameObject2 = newGameObject;
+        setAnimateSpeed(gameObject,gameObject2)
         return
     }
     gameObject = newGameObject;
