@@ -508,6 +508,42 @@ function initilizeOffsets() {
     y_offset = (canvas.height - (size*(maxY-minY+1)))/2 - size * minY
 }
 
+function setAnimateSpeed(g1, g2) {
+    let minX = Math.floor((-x_offset)/(size))
+    let minY = Math.floor((-y_offset)/(size))
+    let maxX = Math.floor((canvas.width-x_offset)/(size))
+    let maxY = Math.floor((canvas.height-y_offset)/(size))
+
+    let unitCount = 0
+    for (const player in g1.units) {
+        for (const unit1 of g1.units[player]) {
+            if (unit1.position[0] < minX || unit1.position[0] > maxX 
+                || unit1.position[1] < minY || unit1.position[1] > maxY) {
+                    continue
+                }
+            let unit2 = getUnitByIDwithGameObject(g2, unit1.UnitID)
+            if (unit2 == null) { //Unit Died
+                unitCount += 1
+            } else if (unit1.position[0] != unit2.position[0] || unit1.position[1] != unit2.position[1]) {
+                //Unit moved
+                unitCount += 1
+            } else if (unit1.health != unit2.health) { //Unit health changed
+                unitCount += 1
+            }
+        }
+    }
+    for (const player in g2.units) {
+        for (const unit2 of g2.units[player]) {
+            let unit1 = getUnitByIDwithGameObject(g1, unit2.UnitID)
+            if (unit1 == null) { //Unit was built
+                unitCount += 1
+            }
+        }
+    }
+    animationMax = Math.min(60,Math.max(15,5+unitCount*2))
+    console.log(animationMax)
+}
+
 function animateBoard(g1, g2, t) {
     for (const player in g1.units) {
         for (const unit1 of g1.units[player]) {
