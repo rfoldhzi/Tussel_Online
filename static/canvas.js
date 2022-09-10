@@ -9,6 +9,7 @@ let currentTurn = -1;
 let animationInterval = false;
 let animationCounter = -1;
 let animationMax = 30;
+let animationTerritoryMap = [];
 
 class Button {
     constructor(x, y, width, height, color, text, func, ...parameters) {
@@ -117,6 +118,7 @@ function useNewGameObject(newGameObject) {
         animationCounter = 0
         gameObject2 = newGameObject;
         setAnimateSpeed(gameObject,gameObject2)
+        determineAnimationTerritories(gameObject,gameObject2)
         return
     }
     gameObject = newGameObject;
@@ -489,6 +491,21 @@ function drawUnits() {
     }
 }
 
+// Draws colored boxes for territories during animations
+function drawAnimationTerritories() {
+    let y = 0
+    for (const layer of animationTerritoryMap) {
+        let x = 0
+        for (const player of layer) {
+            if (player != null) {
+                drawTerritoryAtPos(player,x,y)
+            }
+            x += 1
+        }
+        y += 1
+    }
+}
+
 function drawTerritories() {
     for (const player in gameObject.units) {
         for (const unit of gameObject.units[player]) {
@@ -592,8 +609,6 @@ function drawAnimation() {
     let t = animationCounter/animationMax
     
     clearBoard()
-    drawTerritories()
-    drawClouds()
 
     for (let y = 0; y < gameObject.height; y++) {
         for (let x = 0; x < gameObject.width; x++) {
@@ -602,9 +617,9 @@ function drawAnimation() {
             context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
         }
     }
-    drawTerritoriesSpecificGameObject(gameObject)
-    //drawTerritoriesSpecificGameObject(gameObject2)
+    drawAnimationTerritories()
     animateBoard(gameObject,gameObject2,t)
+    //drawClouds()
 }
 
 var intervalID = window.setInterval(myCallback, 2000);
@@ -674,6 +689,11 @@ function drawStateLine(unit) { //As in "action state" (draws the line correspond
 
         context.fillRect(position2[0] * size + x_offset + size / 3, position2[1] * size + y_offset + size / 3, size / 3, size / 3);
     }
+}
+
+function drawTerritoryAtPos(player,x,y) {
+    context.fillStyle = rgbToHex(playerColors[player][0], playerColors[player][1], playerColors[player][2]) + "99";
+    context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
 }
 
 function drawTerritory(player, unit) {

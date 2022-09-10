@@ -544,6 +544,29 @@ function setAnimateSpeed(g1, g2) {
     console.log(animationMax)
 }
 
+//Calculates where territories should go during animation
+//Stores this map into animationTerritoryMap
+function determineAnimationTerritories(g1,g2) {
+    animationTerritoryMap = []
+    for (let i = 0; i<gameObject.height; i++) {
+        let layer = []
+        for (let j = 0; j<gameObject.width; j++) {
+            layer.push(null)
+        }
+        animationTerritoryMap.push(layer)
+    }
+    for (const player in g1.units) {
+        for (const unit1 of g1.units[player]) {
+            animationTerritoryMap[unit1.position[1]][unit1.position[0]] = player
+        }
+    }
+    for (const player in g2.units) {
+        for (const unit2 of g2.units[player]) {
+            animationTerritoryMap[unit2.position[1]][unit2.position[0]] = player
+        }
+    }
+}
+
 function animateBoard(g1, g2, t) {
     for (const player in g1.units) {
         for (const unit1 of g1.units[player]) {
