@@ -1046,6 +1046,17 @@ class Game:
                 else:
                     setattr(unit, targetStat, buffedUnitOrignals[unit][targetStat])
         
+        #Fix incorrect and invalid states
+        for i in self.units:
+            for u in self.units[i]:
+                if u.state == "attack": #Turn off attack of out-of-range targets
+                    target = u.stateData
+                    if type(target) == str:
+                        target = self.getUnitFromID(target)
+                    if checkRange(u, target) > u.range:
+                        u.state = None
+                        u.stateData = None
+
         for i in self.units:
             for u in self.units[i]:
                 pass#u.state = None
