@@ -6,6 +6,8 @@ let doneButton;
 let logoutButton;
 let outOfDate = false;
 let currentTurn = -1;
+let territoryMap = []
+let territoryNumberCode = []
 let animationInterval = false;
 let animationCounter = -1;
 let animationMax = 30;
@@ -105,7 +107,8 @@ function useNewGameObject(newGameObject) {
         generateBoardColors();
         initClouds()
     }
-    if (outOfDate && currentTurn == newGameObject.turn) {
+    //if (outOfDate && currentTurn == newGameObject.turn) {
+    if (outOfDate) {
         return //Don't render if this is outofdate to recent info sent to server
         //Just wait for the next request.
     }
@@ -130,6 +133,8 @@ function useNewGameObject(newGameObject) {
         newSelected.stateData = selected.stateData
         selected = newSelected
     }
+    console.log("reinit stuff")
+    determineTerritories()
     organizeTechTrees()
     initilizeTechOffsets()
     updateCloudCover()
@@ -506,6 +511,21 @@ function drawAnimationTerritories() {
     }
 }
 
+// Draws colored boxes for territories normally
+function drawTerritories2() {
+    let y = 0
+    for (const layer of territoryMap) {
+        let x = 0
+        for (const player of layer) {
+            if (player != null) {
+                drawTerritoryAtPos2(player,x,y)
+            }
+            x += 1
+        }
+        y += 1
+    }
+}
+
 function drawTerritories() {
     for (const player in gameObject.units) {
         for (const unit of gameObject.units[player]) {
@@ -578,6 +598,7 @@ function drawBoard() {
 
     context.textAlign = "right";
     drawTerritories()
+    drawTerritories2()
     drawStateLines()
     drawUnits();
     drawActionIcons()
@@ -598,11 +619,12 @@ function drawAnimation() {
     animationCounter += 1
     if (animationCounter >= animationMax) {
         animationCounter = -1
-        clearInterval(animationInterval)
-        gameObject = gameObject2
-        gameObject2 = null
-        currentTurn = gameObject.turn
-        drawBoard()
+        clearInterval(animationInterval) //Ends animation frame rendering
+        //gameObject = gameObject2
+        //gameObject2 = null
+        currentTurn = gameObject2.turn
+        useNewGameObject(gameObject2)
+        //drawBoard()
         return 
     }
 
@@ -696,11 +718,41 @@ function drawTerritoryAtPos(player,x,y) {
     context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
 }
 
+//Draws outlined territory
+function drawTerritoryAtPos2(player,x,y) {
+    context.fillStyle = rgbToHex(playerColors[player][0], playerColors[player][1], playerColors[player][2]);
+    if (territoryNumberCode[y][x] % 2 >= 1) { //Top
+        context.fillRect(x * size + x_offset, y * size + y_offset, size, size * .05);
+    }
+    if (territoryNumberCode[y][x] % 4 >= 2) { //Top right
+        context.fillRect((x+0.95) * size + x_offset, y * size + y_offset, size * .05, size * .05);
+    }
+    if (territoryNumberCode[y][x] % 8 >= 4) { //Right
+        context.fillRect((x+0.95) * size + x_offset, y * size + y_offset, size * .05, size);
+    }
+    if (territoryNumberCode[y][x] % 16 >= 8) { //Right bottom
+        context.fillRect((x+0.95) * size + x_offset, (y+0.95) * size + y_offset, size * .05, size * .05);
+    }
+    if (territoryNumberCode[y][x] % 32 >= 16) { //Bottom
+        context.fillRect(x * size + x_offset, (y+0.95) * size + y_offset, size, size * .05);
+    }
+    if (territoryNumberCode[y][x] % 64 >= 32) { //Bottom left
+        context.fillRect(x * size + x_offset, (y+0.95) * size + y_offset, size * .05, size * .05);
+    }
+    if (territoryNumberCode[y][x] % 128 >= 64) { //Left
+        context.fillRect(x * size + x_offset, y * size + y_offset, size * .05, size);
+    }
+    if (territoryNumberCode[y][x] % 256 >= 128) { //Left
+        context.fillRect(x * size + x_offset, y * size + y_offset, size * .05, size * .05);
+    }
+    //context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
+}
+
 function drawTerritory(player, unit) {
     if (selected === unit) {
         context.fillStyle = "#FFFFFFBB";
     } else {
-        context.fillStyle = rgbToHex(playerColors[player][0], playerColors[player][1], playerColors[player][2]) + "99";
+        context.fillStyle = rgbToHex(playerColors[player][0], playerColors[player][1], playerColors[player][2]) + "33";
     }
     context.fillRect(unit.position[0] * size + x_offset, unit.position[1] * size + y_offset, size, size);
 }

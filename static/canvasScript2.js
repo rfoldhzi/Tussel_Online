@@ -567,6 +567,57 @@ function determineAnimationTerritories(g1,g2) {
     }
 }
 
+//Calculates where territories should go
+//Stores this map into territoryMap and territoryNumberCode
+function determineTerritories() {
+    territoryMap = []
+    territoryNumberCode = []
+    for (let i = 0; i<gameObject.height; i++) {
+        let layer = []
+        let layer2 = []
+        for (let j = 0; j<gameObject.width; j++) {
+            layer.push(null)
+            layer2.push(0)
+        }
+        territoryMap.push(layer)
+        territoryNumberCode.push(layer2)
+    }
+    let directions = {1:[0,-1], 4:[1,0], 16:[0,1], 64:[-1,0]}
+    for (const player in gameObject.units) {
+        for (const unit of gameObject.units[player]) {
+            territoryMap[unit.position[1]][unit.position[0]] = player
+            let total = 0
+            for (const num in directions) {
+                if (getUnitFromPos(player, unit.position[0] + directions[num][0], unit.position[1] + directions[num][1]) == null) {
+                    total += parseInt(num)
+                }
+            }
+            if (total % 2 < 1 &&  total % 8 < 4) { //Top right
+                if (getUnitFromPos(player, unit.position[0] + 1, unit.position[1] - 1) == null) {
+                    total += 2
+                }
+            }
+            if (total % 8 < 4 &&  total % 32 < 16) { //Bottom right
+                if (getUnitFromPos(player, unit.position[0] + 1, unit.position[1] + 1) == null) {
+                    total += 8
+                }
+            }
+            if (total % 32 < 16 &&  total % 128 < 64) { //bottom left
+                if (getUnitFromPos(player, unit.position[0] - 1, unit.position[1] + 1) == null) {
+                    total += 32
+                }
+            }
+            if (total % 128 < 64 &&  total % 2 < 1) { //Top left
+                if (getUnitFromPos(player, unit.position[0] - 1, unit.position[1] - 1) == null) {
+                    total += 128
+                }
+            }
+            territoryNumberCode[unit.position[1]][unit.position[0]] = total
+        }
+    }
+    console.log("thingythingy")
+}
+
 function animateBoard(g1, g2, t) {
     for (const player in g1.units) {
         for (const unit1 of g1.units[player]) {
