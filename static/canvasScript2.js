@@ -544,27 +544,149 @@ function setAnimateSpeed(g1, g2) {
     console.log(animationMax)
 }
 
+
+let directions = {1:[0,-1], 4:[1,0], 16:[0,1], 64:[-1,0]}
+
+function claim3s() {
+    for (let y = 0; y < gameObject.height; y++) {
+        for (let x = 0; x < gameObject.width; x++) {
+            if (territoryMap[y][x] == null) {
+                let player1 = -1
+                let player2 = -1
+                let friendlyCount1 = 0 //Count number of friendly units that are adjacent
+                let friendlyCount2 = 0
+                //We use two counters because we only want the player with the majority. If there are 3 players around
+                //this spot, no one has a majority. Thus, we only need to keep track of two players
+                for (const num in directions) {
+                    if (territoryMap[y + directions[num][1]] === undefined) { //ignore if out of bounds
+                        continue
+                    }
+                    if (player1 == -1) {
+                        player1 = territoryMap[y + directions[num][1]][x + directions[num][0]]
+                        friendlyCount1 += 1
+                    } else if (player2 == -1 && territoryMap[y + directions[num][1]][x + directions[num][0]] !== player1) {
+                        player2 = territoryMap[y + directions[num][1]][x + directions[num][0]]
+                        friendlyCount2 += 1
+                    } else {
+                        if (territoryMap[y + directions[num][1]][x + directions[num][0]] === player1) {
+                            friendlyCount1 += 1
+                        } else if (territoryMap[y + directions[num][1]][x + directions[num][0]] === player2) {
+                            friendlyCount2 += 1
+                        }
+                    }
+                }
+                if (friendlyCount1 >= 3) {
+                    territoryMap[y][x] = player1
+                } else if (friendlyCount2 >= 3) {
+                    territoryMap[y][x] = player2
+                }
+            }
+        }
+    }
+}
+function claimAcross() {
+    for (let y = 0; y < gameObject.height; y++) {
+        for (let x = 0; x < gameObject.width; x++) {
+            if (territoryMap[y][x] == null) {
+                let player1 = null
+                let player2 = null
+                if (territoryMap[y - 1] !== undefined && territoryMap[y + 1] !== undefined) {
+                    if (territoryMap[y - 1][x] == territoryMap[y + 1][x]) {
+                        player1 = territoryMap[y - 1][x]
+                    }
+                }
+                if (territoryMap[y][x - 1] == territoryMap[y][x + 1]) {
+                    player2 = territoryMap[y][x - 1]
+                }
+                if (player1 != player2) {
+                    if (player1 != null) {
+                        territoryMap[y][x] = player1
+                    } else if (player2 != null) {
+                        territoryMap[y][x] = player2
+                    }
+                }
+            }
+        }
+    }
+}
+
+function numberMap() {
+    for (let y = 0; y < gameObject.height; y++) {
+        for (let x = 0; x < gameObject.width; x++) {
+            let player = territoryMap[y][x]
+            if (player != null) {
+                let total = 0
+                for (const num in directions) {
+                    if (territoryMap[y + directions[num][1]] === undefined) {//Make sure y layer is in range
+                        total += parseInt(num)
+                    } else if (territoryMap[y + directions[num][1]][x + directions[num][0]] !== player) {
+                        total += parseInt(num)
+                    }
+                }
+                if (territoryMap[y + 1] !== undefined) { //Checks to make sure in range
+                    if (total % 2 < 1 &&  total % 8 < 4) { //Top right
+                        if (territoryMap[y - 1][x + 1] !== player) {
+                            total += 2
+                        }
+                    }
+                    if (total % 8 < 4 &&  total % 32 < 16) { //Bottom right
+                        if (territoryMap[y + 1][x + 1] !== player) {
+                            total += 8
+                        }
+                    }
+                }
+                if (territoryMap[y - 1] !== undefined) { //Checks to make sure in range
+                    if (total % 32 < 16 &&  total % 128 < 64) { //bottom left
+                        if (territoryMap[y + 1][x - 1] !== player) {
+                            total += 32
+                        }
+                    }
+                    if (total % 128 < 64 &&  total % 2 < 1) { //Top left
+                        if (territoryMap[y - 1][x - 1] !== player) {
+                            total += 128
+                        }
+                    }
+                }
+                territoryNumberCode[y][x] = total
+            }
+        }
+    }
+}
+
 //Calculates where territories should go during animation
 //Stores this map into animationTerritoryMap
 function determineAnimationTerritories(g1,g2) {
-    animationTerritoryMap = []
+    territoryMap = []
+    territoryNumberCode = []
     for (let i = 0; i<gameObject.height; i++) {
         let layer = []
+        let layer2 = []
         for (let j = 0; j<gameObject.width; j++) {
             layer.push(null)
+            layer2.push(0)
         }
-        animationTerritoryMap.push(layer)
+        territoryMap.push(layer)
+        territoryNumberCode.push(layer2)
     }
     for (const player in g1.units) {
         for (const unit1 of g1.units[player]) {
-            animationTerritoryMap[unit1.position[1]][unit1.position[0]] = player
+            territoryMap[unit1.position[1]][unit1.position[0]] = player
         }
     }
+
+    claim3s()
+    claimAcross()
+    claim3s()
+    claimAcross()
+    claim3s()
+
     for (const player in g2.units) {
         for (const unit2 of g2.units[player]) {
-            animationTerritoryMap[unit2.position[1]][unit2.position[0]] = player
+            territoryMap[unit2.position[1]][unit2.position[0]] = player
         }
     }
+
+    numberMap()
 }
 
 //Calculates where territories should go
@@ -582,40 +704,19 @@ function determineTerritories() {
         territoryMap.push(layer)
         territoryNumberCode.push(layer2)
     }
-    let directions = {1:[0,-1], 4:[1,0], 16:[0,1], 64:[-1,0]}
     for (const player in gameObject.units) {
         for (const unit of gameObject.units[player]) {
             territoryMap[unit.position[1]][unit.position[0]] = player
-            let total = 0
-            for (const num in directions) {
-                if (getUnitFromPos(player, unit.position[0] + directions[num][0], unit.position[1] + directions[num][1]) == null) {
-                    total += parseInt(num)
-                }
-            }
-            if (total % 2 < 1 &&  total % 8 < 4) { //Top right
-                if (getUnitFromPos(player, unit.position[0] + 1, unit.position[1] - 1) == null) {
-                    total += 2
-                }
-            }
-            if (total % 8 < 4 &&  total % 32 < 16) { //Bottom right
-                if (getUnitFromPos(player, unit.position[0] + 1, unit.position[1] + 1) == null) {
-                    total += 8
-                }
-            }
-            if (total % 32 < 16 &&  total % 128 < 64) { //bottom left
-                if (getUnitFromPos(player, unit.position[0] - 1, unit.position[1] + 1) == null) {
-                    total += 32
-                }
-            }
-            if (total % 128 < 64 &&  total % 2 < 1) { //Top left
-                if (getUnitFromPos(player, unit.position[0] - 1, unit.position[1] - 1) == null) {
-                    total += 128
-                }
-            }
-            territoryNumberCode[unit.position[1]][unit.position[0]] = total
         }
     }
-    console.log("thingythingy")
+    
+    claim3s()
+    claimAcross()
+    claim3s()
+    claimAcross()
+    claim3s()
+
+    numberMap()
 }
 
 function animateBoard(g1, g2, t) {

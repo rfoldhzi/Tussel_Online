@@ -597,7 +597,7 @@ function drawBoard() {
     context.font = fontSize + "px Arial";
 
     context.textAlign = "right";
-    drawTerritories()
+    //drawTerritories()
     drawTerritories2()
     drawStateLines()
     drawUnits();
@@ -639,7 +639,7 @@ function drawAnimation() {
             context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
         }
     }
-    drawAnimationTerritories()
+    drawTerritories2()
     animateBoard(gameObject,gameObject2,t)
     //drawClouds()
 }
@@ -745,6 +745,8 @@ function drawTerritoryAtPos2(player,x,y) {
     if (territoryNumberCode[y][x] % 256 >= 128) { //Left
         context.fillRect(x * size + x_offset, y * size + y_offset, size * .05, size * .05);
     }
+    context.fillStyle = rgbToHex(playerColors[player][0], playerColors[player][1], playerColors[player][2]) + "33";
+    context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
     //context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
 }
 
