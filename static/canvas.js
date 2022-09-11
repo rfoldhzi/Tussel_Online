@@ -513,12 +513,22 @@ function drawAnimationTerritories() {
 
 // Draws colored boxes for territories normally
 function drawTerritories2() {
+    let selectedX = -1
+    let selectedY = -1
+    if (selected != null) {
+        selectedX = selected.position[0]
+        selectedY = selected.position[1]
+    }
     let y = 0
     for (const layer of territoryMap) {
         let x = 0
         for (const player of layer) {
             if (player != null) {
-                drawTerritoryAtPos2(player,x,y)
+                if (x == selectedX && y == selectedY) {
+                    drawTerritoryAtPos2Highlight(player,x,y)
+                } else {
+                    drawTerritoryAtPos2(player,x,y)
+                }
             }
             x += 1
         }
@@ -718,35 +728,72 @@ function drawTerritoryAtPos(player,x,y) {
     context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
 }
 
+let thickness = 0.05
+let oppositeThickness = 1 - thickness
+
 //Draws outlined territory
 function drawTerritoryAtPos2(player,x,y) {
     context.fillStyle = rgbToHex(playerColors[player][0], playerColors[player][1], playerColors[player][2]);
     if (territoryNumberCode[y][x] % 2 >= 1) { //Top
-        context.fillRect(x * size + x_offset, y * size + y_offset, size, size * .05);
+        context.fillRect(x * size + x_offset, y * size + y_offset, size, size * thickness);
     }
     if (territoryNumberCode[y][x] % 4 >= 2) { //Top right
-        context.fillRect((x+0.95) * size + x_offset, y * size + y_offset, size * .05, size * .05);
+        context.fillRect((x+oppositeThickness) * size + x_offset, y * size + y_offset, size * thickness, size * thickness);
     }
     if (territoryNumberCode[y][x] % 8 >= 4) { //Right
-        context.fillRect((x+0.95) * size + x_offset, y * size + y_offset, size * .05, size);
+        context.fillRect((x+oppositeThickness) * size + x_offset, y * size + y_offset, size * thickness, size);
     }
     if (territoryNumberCode[y][x] % 16 >= 8) { //Right bottom
-        context.fillRect((x+0.95) * size + x_offset, (y+0.95) * size + y_offset, size * .05, size * .05);
+        context.fillRect((x+oppositeThickness) * size + x_offset, (y+oppositeThickness) * size + y_offset, size * thickness, size * thickness);
     }
     if (territoryNumberCode[y][x] % 32 >= 16) { //Bottom
-        context.fillRect(x * size + x_offset, (y+0.95) * size + y_offset, size, size * .05);
+        context.fillRect(x * size + x_offset, (y+oppositeThickness) * size + y_offset, size, size * thickness);
     }
     if (territoryNumberCode[y][x] % 64 >= 32) { //Bottom left
-        context.fillRect(x * size + x_offset, (y+0.95) * size + y_offset, size * .05, size * .05);
+        context.fillRect(x * size + x_offset, (y+oppositeThickness) * size + y_offset, size * thickness, size * thickness);
     }
     if (territoryNumberCode[y][x] % 128 >= 64) { //Left
-        context.fillRect(x * size + x_offset, y * size + y_offset, size * .05, size);
+        context.fillRect(x * size + x_offset, y * size + y_offset, size * thickness, size);
     }
     if (territoryNumberCode[y][x] % 256 >= 128) { //Left
-        context.fillRect(x * size + x_offset, y * size + y_offset, size * .05, size * .05);
+        context.fillRect(x * size + x_offset, y * size + y_offset, size * thickness, size * thickness);
     }
     context.fillStyle = rgbToHex(playerColors[player][0], playerColors[player][1], playerColors[player][2]) + "33";
     context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
+    //context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
+}
+
+//Same as function before, but this one highlights the square
+function drawTerritoryAtPos2Highlight(player,x,y) {
+    context.fillStyle = "#FFFFFFBB";
+    context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
+
+    context.fillStyle = rgbToHex(playerColors[player][0], playerColors[player][1], playerColors[player][2]);
+    if (territoryNumberCode[y][x] % 2 >= 1) { //Top
+        context.fillRect(x * size + x_offset, y * size + y_offset, size, size * thickness);
+    }
+    if (territoryNumberCode[y][x] % 4 >= 2) { //Top right
+        context.fillRect((x+oppositeThickness) * size + x_offset, y * size + y_offset, size * thickness, size * thickness);
+    }
+    if (territoryNumberCode[y][x] % 8 >= 4) { //Right
+        context.fillRect((x+oppositeThickness) * size + x_offset, y * size + y_offset, size * thickness, size);
+    }
+    if (territoryNumberCode[y][x] % 16 >= 8) { //Right bottom
+        context.fillRect((x+oppositeThickness) * size + x_offset, (y+oppositeThickness) * size + y_offset, size * thickness, size * thickness);
+    }
+    if (territoryNumberCode[y][x] % 32 >= 16) { //Bottom
+        context.fillRect(x * size + x_offset, (y+oppositeThickness) * size + y_offset, size, size * thickness);
+    }
+    if (territoryNumberCode[y][x] % 64 >= 32) { //Bottom left
+        context.fillRect(x * size + x_offset, (y+oppositeThickness) * size + y_offset, size * thickness, size * thickness);
+    }
+    if (territoryNumberCode[y][x] % 128 >= 64) { //Left
+        context.fillRect(x * size + x_offset, y * size + y_offset, size * thickness, size);
+    }
+    if (territoryNumberCode[y][x] % 256 >= 128) { //Left
+        context.fillRect(x * size + x_offset, y * size + y_offset, size * thickness, size * thickness);
+    }
+    
     //context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
 }
 
