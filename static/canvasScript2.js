@@ -802,9 +802,11 @@ function animateUnit(unit1, unit2, t, specfic_player) {
         //Lerped health
         let healthText = unit.health
         context.fillStyle = "white";
-        fontSize = Math.floor(size / 2);
+        fontSize = Math.floor(size / 3);
         context.font = fontSize + "px Arial";
         context.textAlign = "right";
+        context.strokeStyle = 'black';
+        context.lineWidth = Math.floor(fontSize / 6);
         if (unit1 != null && unit2 != null) {
             if (unit2.health < unit1.health) {
                 healthText = Math.floor(Lerp(unit1.health, unit2.health, t))
@@ -816,6 +818,7 @@ function animateUnit(unit1, unit2, t, specfic_player) {
                 context.fillStyle = "red";
             }
         }
+        context.strokeText(healthText, size * unit.position[0] + size + x_offset, size * unit.position[1] + size + y_offset);
         context.fillText(healthText, size * unit.position[0] + size + x_offset, size * unit.position[1] + size + y_offset);
     }
 

@@ -601,7 +601,8 @@ function drawBoard() {
         }
     }
 
-    
+    drawTerritories2()
+    drawStateLines()
 
     fontSize = Math.floor(size / 3);
     context.font = fontSize + "px Arial";
@@ -610,8 +611,7 @@ function drawBoard() {
 
     context.textAlign = "right";
     //drawTerritories()
-    drawTerritories2()
-    drawStateLines()
+    
     drawUnits();
     drawActionIcons()
 
