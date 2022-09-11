@@ -603,8 +603,10 @@ function drawBoard() {
 
     
 
-    fontSize = Math.floor(size / 2);
+    fontSize = Math.floor(size / 3);
     context.font = fontSize + "px Arial";
+    context.strokeStyle = 'black';
+    context.lineWidth = Math.floor(fontSize / 6);
 
     context.textAlign = "right";
     //drawTerritories()
@@ -831,6 +833,7 @@ function drawUnit(player, unit) {
     }
 
     context.fillStyle = "white";
+    context.strokeText(unit.health, size * unit.position[0] + size + x_offset, size * unit.position[1] + size + y_offset);
     context.fillText(unit.health, size * unit.position[0] + size + x_offset, size * unit.position[1] + size + y_offset);
     /*
     var img = new Image(size, size);
