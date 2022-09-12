@@ -308,15 +308,16 @@ class Game:
             for p in self.units:
                 #self.units[p].append(Unit(startingspots[p], starters[i]))
                 if i >= realPlayers: #AIs start with trees
-                    rand = random.random()
-                    if random.random() < 0.33:
+                    if random.random() < 0.25:
                         self.units[p].append(self.newUnit(startingspots[p], "town"))
-                    elif random.random() < 0.5:
+                    elif random.random() < 0.25:
                         self.units[p].append(self.newUnit(startingspots[p], "plant base"))
-                    elif random.random() < 0.75:
+                    elif random.random() < 0.33:
                         self.units[p].append(self.newUnit(startingspots[p], "bot fortress"))
-                    else:
+                    elif random.random() < 0.5:
                         self.units[p].append(self.newUnit(startingspots[p], "tree"))
+                    else:
+                        self.units[p].append(self.newUnit(startingspots[p], "mothership"))
                 else:
                     self.units[p].append(self.newUnit(startingspots[p], "town"))
                 i+=1
@@ -770,10 +771,8 @@ class Game:
                             if getattr(par,'maxPopulation',False): #Reduces population of parent
                                 par.population = max(0,par.population-1)
             
-            if 'deathSpawn' in u.abilities:
-                newUnit = self.newUnit(u.position,u.abilities['deathSpawn'],u.UnitID)
-                self.upgradeUnit(newUnit, i)
-                self.units[self.getPlayerfromUnit(u)].append(newUnit)
+            GoodToDeathSpawn = True #Small check used to make sure "deathspawn" is good to go (things preventing it include "convert")
+
             if u in hunterList: #For abilities that the hunters may have.
                 hunter = hunterList[u]
                 print('there is a hunter', hunter.name, hunter)
@@ -792,6 +791,19 @@ class Game:
                         print('It should work')
                         hunter.state = 'move'
                         hunter.stateData = u.position
+                #"convert" means the defeated unit joins the opposing team (potential for broken combos with cross faction units)
+                elif 'convert' in hunter.abilities:
+                    print("philsophy")
+                    newUnit = self.newUnit(u.position,u.name,None, u.score)
+                    self.scores[hunterPlayer] += u.score
+                    self.units[hunterPlayer].append(newUnit)
+
+                    GoodToDeathSpawn = False
+            
+            if GoodToDeathSpawn and 'deathSpawn' in u.abilities:
+                newUnit = self.newUnit(u.position,u.abilities['deathSpawn'],u.UnitID)
+                self.upgradeUnit(newUnit, i)
+                self.units[self.getPlayerfromUnit(u)].append(newUnit)
 
         for u in RemoveList:#more destroy
             print(u, u.name, 'is destroyed')
@@ -987,6 +999,18 @@ class Game:
                             newUnit = self.newUnit(u.stateData[0],u.stateData[1],u.UnitID, score)
                             self.upgradeUnit(newUnit, i)
                             self.units[i].append(newUnit)
+
+                            #"default_transport" means this transporter unit starts with a list of units in its cargo
+                            if 'default_transport' in newUnit.abilities:
+                                #Kind of neglecting score here
+                                newUnit.carrying = []
+                                newUnit.population = len(newUnit.abilities['default_transport'])
+                                for transporteeName in newUnit.abilities['default_transport']:
+                                    #Same default position (though doesn't matter since transported)
+                                    transportee = self.newUnit(u.stateData[0],transporteeName) 
+                                    self.upgradeUnit(transportee, i)
+                                    newUnit.carrying.append(transportee)
+                            
 
                             #"multibuild" tries to build multiple units at once
                             if 'multibuild' in u.abilities:

@@ -66,7 +66,7 @@ function getUnitByID(UnitID) {
     for (let player in gameObject.units) {
         for (let unit of gameObject.units[player]) {
             //console.log(unit)
-            if (unit.UnitID == UnitID) {
+            if (unit.UnitID === UnitID) {
                 return unit;
             }
         }
@@ -78,7 +78,7 @@ function getUnitByIDwithGameObject(specific_gameObject, UnitID) {
     for (let player in specific_gameObject.units) {
         for (let unit of specific_gameObject.units[player]) {
             //console.log(unit)
-            if (unit.UnitID == UnitID) {
+            if (unit.UnitID === UnitID) {
                 return unit;
             }
         }

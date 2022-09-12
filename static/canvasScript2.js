@@ -32,7 +32,9 @@ function replaceColor(imageCanvas, src, dst) {
     context.putImageData(im, 0, 0);
 }
 
-
+function colorHalfBrightness(color){
+    return [Math.floor(color[0]/2),Math.floor(color[1]/2),Math.floor(color[2]/2)]
+}
 
 function createShadow(imageCanvas) {
     let context = imageCanvas.getContext('2d');
@@ -161,6 +163,7 @@ function getUnitImage(player, name) {
         //ctx.drawImage(baseUnitImages[name], 0, 0, size, size);
         ctx.drawImage(baseUnitImages[name], 0, 0, 60, 60);
         replaceColor(unitCanvas, [233, 19, 212], playerColors[player])
+        replaceColor(unitCanvas, [117, 10, 107], colorHalfBrightness(playerColors[player]))
         createShadow(unitCanvas)
 
         unitImages[player][name] = ctx.canvas;
