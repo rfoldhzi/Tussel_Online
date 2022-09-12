@@ -709,19 +709,72 @@ function drawStateLine(unit) { //As in "action state" (draws the line correspond
     }
 
     if (position2 != null) {
-        context.strokeStyle = color;
-        context.lineWidth = size / 4;
+        //Here we define position3, used for the midpoint of the bezier curve
+        let xCenter = (position1[0]+position2[0])/2
+        let yCenter = (position1[1]+position2[1])/2
 
-        context.fillStyle = color;
+        let x = position1[0]
+        let y = position2[1]
+        //This statement is used to switch direction of the curve on every other space
+        if ((position1[0]+position1[1]) % 2 == 0) {
+            x = position2[0]
+            y = position1[1]
+        }
+
+        //If statement checks if pos1 and pos2 are colinear, and if they are range 2 or further apart
+        //If so, add slight curve
+        if ((position1[0] == position2[0] || position1[1] == position2[1]) && Math.abs(position1[0] + position1[1] - position2[0] - position2[1]) > 1) {
+            let mult = 1
+            if ((position1[0]+position1[1]) % 2 == 0) {
+                mult = -1
+            }
+            x = xCenter
+            y = yCenter
+            if (position1[0] == position2[0]) {
+                x += 0.5*mult
+            } else {
+                y += 0.5*mult
+            }
+        }
+
+        let position3 = [(xCenter + x)/2, (yCenter + y)/2]
+        
+        //Black line and sqaure (for outline)
+        context.strokeStyle = "#000000";
+        context.lineWidth = size * .25;
+        context.fillStyle = "#000000";
 
         let halfSize = size / 2; //Used to center the line in the middle of square
 
         context.beginPath();
         context.moveTo(position1[0] * size + x_offset + halfSize, position1[1] * size + y_offset + halfSize);
-        context.lineTo(position2[0] * size + x_offset + halfSize, position2[1] * size + y_offset + halfSize);
+        
+        
+        context.quadraticCurveTo(position3[0] * size + x_offset + halfSize, position3[1] * size + y_offset + halfSize,
+            position2[0] * size + x_offset + halfSize, position2[1] * size + y_offset + halfSize);
         context.stroke();
 
-        context.fillRect(position2[0] * size + x_offset + size / 3, position2[1] * size + y_offset + size / 3, size / 3, size / 3);
+        let boxSize = .33
+
+        context.fillRect(position2[0] * size + x_offset + size * (1 - (boxSize))/2, position2[1] * size + y_offset + size * (1 - (boxSize))/2, size * boxSize, size * boxSize);
+
+        //Colored line and square
+        context.strokeStyle = color;
+        context.lineWidth = size * .21;
+
+        context.fillStyle = color;
+
+        context.beginPath();
+        context.moveTo(position1[0] * size + x_offset + halfSize, position1[1] * size + y_offset + halfSize);
+        //context.lineTo(position2[0] * size + x_offset + halfSize, position2[1] * size + y_offset + halfSize);
+        context.quadraticCurveTo(position3[0] * size + x_offset + halfSize, position3[1] * size + y_offset + halfSize,
+            position2[0] * size + x_offset + halfSize, position2[1] * size + y_offset + halfSize);
+        
+        context.stroke();
+
+        boxSize = boxSize-0.04
+
+        context.fillRect(position2[0] * size + x_offset + size * (1 - (boxSize))/2, position2[1] * size + y_offset + size * (1 - (boxSize))/2, size * boxSize, size * boxSize);
     }
 }
 
