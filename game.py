@@ -835,7 +835,7 @@ class Game:
         
         for i in self.units:#Turn off attack of dead targets
             for u in self.units[i]:
-                if u.state == "attack":
+                if u.state == "attack" or u.state == "heal":
                     target = u.stateData
                     if type(target) == str:
                         target = self.getUnitFromID(target)
@@ -1078,6 +1078,13 @@ class Game:
                     if type(target) == str:
                         target = self.getUnitFromID(target)
                     if checkRange(u, target) > u.range:
+                        u.state = None
+                        u.stateData = None
+                elif u.state == "heal": #Turn off heal of out-of-range and full health targets
+                    target = u.stateData
+                    if type(target) == str:
+                        target = self.getUnitFromID(target)
+                    if checkRange(u, target) > u.range or target.health >= target.maxHealth:
                         u.state = None
                         u.stateData = None
 
