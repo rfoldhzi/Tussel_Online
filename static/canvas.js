@@ -33,10 +33,13 @@ class Button {
         context.fillStyle = this.color;
         context.fillRect(this.x, this.y, this.width, this.height);
         let fontSize = this.height - 2
+        if (this.hasOwnProperty('fontSize')) {
+            fontSize = this.fontSize
+        }
         context.font = fontSize + "px Arial";
         context.fillStyle = this.textColor || "white";
         context.textAlign = "center";
-        context.fillText(this.text, this.x + Math.floor(this.width / 2), this.y + Math.floor(this.height * .8) + 2);
+        context.fillText(this.text, this.x + Math.floor(this.width / 2), this.y + Math.floor((this.height - (this.height-fontSize)/2)*.88));
         if (this.hasOwnProperty('img') && this.img != null) {
             context.drawImage(this.img, this.x, this.y, this.width, this.height);
         }

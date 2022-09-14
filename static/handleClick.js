@@ -347,17 +347,19 @@ function handleClick(xPos,yPos) {
                         continue;
                     }
 
-                    let btnSize = 120;
+                    let btnSize = 150;
                     if (canvas.height > canvas.width && canvas.width*canvas.height > 1000000) {
-                        btnSize = 180
+                        btnSize = 210
                     }
 
-                    heightforResources = btnSize/3;
+                    heightforResources = btnSize*.25;
+                    let text = resource+" +"+selected.resourceGen[resource]
 
-                    let newResourceButton = new Button((btnSize*1.2)*i, resourceBoxHeight + statBoxHeight, btnSize, btnSize/3, resourceColors[resource], resource, resourceButtonClicked);
+                    let newResourceButton = new Button((btnSize*1.2)*i, resourceBoxHeight + statBoxHeight, btnSize, heightforResources, resourceColors[resource], text, resourceButtonClicked);
                     newResourceButton.name = resource
                     newResourceButton.parameters = newResourceButton;
                     newResourceButton.textColor = "black"
+                    newResourceButton.fontSize = heightforResources*.8-2
                     resourceButtons.push(newResourceButton);
                     i++;
                 }

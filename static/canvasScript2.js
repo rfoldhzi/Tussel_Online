@@ -929,6 +929,11 @@ function buildPopup(unit) {
     let attack = UnitDB[unit].attack || 2
     let defense = UnitDB[unit].defense || 2
     let unitType = UnitDB[unit].type || "trooper"
+    let resourceGen = UnitDB[unit].resourceGen || {
+        "gold": 4,
+        "metal": 0,
+        "energy": 0
+    }
     drawStat("health",health,"#CEFFD7")
 
 
@@ -947,6 +952,29 @@ function buildPopup(unit) {
     if ((possibleStates.includes("build") && unitType == 'building') || UnitDB[unit].population != undefined) {
         let population = UnitDB[unit].population || 3
         drawStat("population",population,"#9434EB")
+    }
+
+    //Resource Production
+    if (possibleStates.includes("resources")) {
+        fontSize = boxHeight*.16
+        context.font = fontSize + "px Arial";
+        context.textAlign = "right";
+        
+
+        let resourceWidths = 0
+        for (let resource in resourceGen) {
+            if (resourceGen[resource] <= 0) {
+                continue;
+            }
+            context.fillStyle = resourceColors[resource];
+            context.fillText("+"+resourceGen[resource], boxXoffset + boxWidth*.975-resourceWidths, boxYoffset+boxHeight*.9)
+            resourceWidths += context.measureText(" +"+resourceGen[resource]).width
+        }
+        if (resourceWidths > 0) {
+            context.fillStyle = "#FFF"
+            context.font = Math.floor(fontSize*.7) + "px Arial";//Preserve font size
+            context.fillText("Production:", boxXoffset + boxWidth*.975, boxYoffset+boxHeight*.9-fontSize)
+        }
     }
 }
 
