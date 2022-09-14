@@ -845,7 +845,7 @@ function animateUnit(unit1, unit2, t, specfic_player) {
 
 
 //Draws a popup box describing a unit thats about to be built
-function buildPopup(unit) {
+function buildPopup(unit, player = this_player) {
     ButtonCollection = {}
     createCancelButton()
 
@@ -879,18 +879,22 @@ function buildPopup(unit) {
 
 
     
-    let image = getUnitImage(this_player, unit)
+    let image = getUnitImage(player, unit)
     if (image != null) {
         let multiplier = getMultiplier(unit)
         context.drawImage(image, boxXoffset+boxHeight*(1-multiplier)/2, boxYoffset+boxHeight*(1-multiplier)/2, boxHeight*multiplier, boxHeight*multiplier);
     }
 
+    //Resource costs
     i = 0
     context.font = (boxHeight*.2) + "px Arial";
     context.textAlign = "right";
     let cost = getCost(unit)
     let resourceTextSize = 0
     for (let resource in cost) {
+        if (cost[resource] <= 0) {
+            continue
+        }
         context.fillStyle = resourceColors[resource]
         context.fillText(cost[resource] + " "+resource, boxXoffset+boxWidth*.98, boxYoffset+boxHeight*.2 + i * boxHeight*.2);
         if (i < 2) {

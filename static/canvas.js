@@ -325,6 +325,8 @@ let start_size = 20;
 let this_player = 0;
 let this_game = 0;
 let selected = null;
+let enemySelected = null;
+let enemySelectedPlayer = null;
 
 var context;// = canvas.getContext('2d');
 let fontSize = Math.floor(size / 2);
@@ -377,9 +379,13 @@ function drawActionIcons() {
     context.fillStyle = "#F00"
     context.strokeStyle = 'black';
     context.lineWidth = Math.floor(fontSize / 6);
+    let image = RedX
+    if (enemySelected != null) {
+        image = RedTarget
+    }
 
     for (const position of possibleAttacks) {
-        context.drawImage(RedX, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+        context.drawImage(image, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
         context.strokeText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
         context.fillText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
     }
@@ -545,6 +551,10 @@ function drawTerritories2() {
         selectedX = selected.position[0]
         selectedY = selected.position[1]
     }
+    if (enemySelected != null) {
+        selectedX = enemySelected.position[0]
+        selectedY = enemySelected.position[1]
+    }
     let y = 0
     for (const layer of territoryMap) {
         let x = 0
@@ -598,6 +608,9 @@ function drawUI() {
 
     if (stateDataMode == "build2") {
         buildPopup(selected.stateData[0])
+    }
+    if (enemySelected != null) {
+        buildPopup(enemySelected.name, enemySelectedPlayer)
     }
 }
 

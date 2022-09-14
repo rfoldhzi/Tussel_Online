@@ -74,6 +74,8 @@ function clearSelected() {
     popupTech = null
     stateDataMode = null;
     selected = null;
+    enemySelected = null;
+    enemySelectedPlayer = null;
     moveCircles = []
     transportSpots = []
     dropOffSpots = []
@@ -163,9 +165,11 @@ function researchButtonClicked(btn) {
 }
 
 function cancelButtonClicked(btn) {
-    selected.state = null
-    selected.stateData = null
-    sendToServer(convertToStr(selected,'cancel'))
+    if (selected != null) {
+        selected.state = null
+        selected.stateData = null
+        sendToServer(convertToStr(selected,'cancel'))
+    }
     clearSelected();
     drawBoard();
 }
@@ -254,77 +258,90 @@ function handleClick(xPos,yPos) {
 
     if (x >= 0 && y >= 0 && y<gameObject.height && x< gameObject.width) {
         //if (moveCircles.includes([x,y])) {
-        if (selected != null && selected.possibleStates.includes("research") ) {
-            if (x==selected.position[0] && y == selected.position[1]) {
-                enterResearchMenu()
+        if (selected) {
+            if (selected.possibleStates.includes("research") ) {
+                if (x==selected.position[0] && y == selected.position[1]) {
+                    enterResearchMenu()
+                    return;
+                }
+            }
+            if (JSON.stringify(moveCircles).indexOf(JSON.stringify([x,y])) !== -1) {
+                console.log("clicked on a move")
+                selected.stateData = [x,y]
+                selected.state = 'move'
+                sendToServer(convertToStr(selected,'move',[x,y]))
+                clearSelected();
+                drawBoard();
+                return;
+            }
+            if (JSON.stringify(transportSpots).indexOf(JSON.stringify([x,y])) !== -1) {
+                console.log("clicked on a transport")
+                selected.stateData = [x,y]
+                selected.state = 'move'
+                sendToServer(convertToStr(selected,'move',[x,y]))
+                clearSelected();
+                drawBoard();
+                return;
+            }
+
+            if (JSON.stringify(buildHexes).indexOf(JSON.stringify([x,y])) !== -1) {
+                console.log("clicked on a build")
+                selected.stateData.unshift([x,y])            
+                selected.state = 'build'
+                sendToServer(convertToStr(selected,'build',selected.stateData))
+                clearSelected();
+                drawBoard();
+                return;
+            }
+            if (JSON.stringify(dropOffSpots).indexOf(JSON.stringify([x,y])) !== -1) {
+                console.log("clicked on a transport")
+                selected.stateData.unshift([x,y])            
+                selected.state = 'transport'
+                sendToServer(convertToStr(selected,'transport',selected.stateData))
+                clearSelected();
+                drawBoard();
+                return;
+            }
+
+            if (JSON.stringify(possibleAttacks).indexOf("["+x+","+y) !== -1) {
+                console.log("clicked on a attack")
+                selected.stateData = getAnyUnitFromPos(x,y)      
+                console.log(selected.stateData)    
+                selected.state = 'attack'
+                sendToServer(convertToStr(selected,'attack',selected.stateData))
+                clearSelected();
+                drawBoard();
+                return;
+            }
+            if (JSON.stringify(possibleHeals).indexOf("["+x+","+y) !== -1) {
+                console.log("clicked on a heal")
+                selected.stateData = getUnitFromPos(this_player,x,y)      
+                console.log(selected.stateData)    
+                selected.state = 'heal'
+                sendToServer(convertToStr(selected,'heal',selected.stateData))
+                clearSelected();
+                drawBoard();
                 return;
             }
         }
-        if (JSON.stringify(moveCircles).indexOf(JSON.stringify([x,y])) !== -1) {
-            console.log("clicked on a move")
-            selected.stateData = [x,y]
-            selected.state = 'move'
-            sendToServer(convertToStr(selected,'move',[x,y]))
-            clearSelected();
-            drawBoard();
-            return;
-        }
-        if (JSON.stringify(transportSpots).indexOf(JSON.stringify([x,y])) !== -1) {
-            console.log("clicked on a transport")
-            selected.stateData = [x,y]
-            selected.state = 'move'
-            sendToServer(convertToStr(selected,'move',[x,y]))
-            clearSelected();
-            drawBoard();
-            return;
-        }
 
-        if (JSON.stringify(buildHexes).indexOf(JSON.stringify([x,y])) !== -1) {
-            console.log("clicked on a build")
-            selected.stateData.unshift([x,y])            
-            selected.state = 'build'
-            sendToServer(convertToStr(selected,'build',selected.stateData))
-            clearSelected();
-            drawBoard();
-            return;
-        }
-        if (JSON.stringify(dropOffSpots).indexOf(JSON.stringify([x,y])) !== -1) {
-            console.log("clicked on a transport")
-            selected.stateData.unshift([x,y])            
-            selected.state = 'transport'
-            sendToServer(convertToStr(selected,'transport',selected.stateData))
-            clearSelected();
-            drawBoard();
-            return;
-        }
-
-        if (JSON.stringify(possibleAttacks).indexOf("["+x+","+y) !== -1) {
-            console.log("clicked on a attack")
-            selected.stateData = getAnyUnitFromPos(x,y)      
-            console.log(selected.stateData)    
-            selected.state = 'attack'
-            sendToServer(convertToStr(selected,'attack',selected.stateData))
-            clearSelected();
-            drawBoard();
-            return;
-        }
-        if (JSON.stringify(possibleHeals).indexOf("["+x+","+y) !== -1) {
-            console.log("clicked on a heal")
-            selected.stateData = getUnitFromPos(this_player,x,y)      
-            console.log(selected.stateData)    
-            selected.state = 'heal'
-            sendToServer(convertToStr(selected,'heal',selected.stateData))
-            clearSelected();
-            drawBoard();
-            return;
-        }
 
         if (selected) {
             let newSelected = getUnitFromPos(this_player,x,y);
             clearSelected()
             selected = newSelected
+        } else if (enemySelected) {
+            let newSelected = getUnitFromPos(this_player,x,y);
+            clearSelected()
+            selected = newSelected
+            if (selected == null) {
+                enemySelected = getAnyUnitFromPos(x,y)
+            }
         } else {
             selected = getUnitFromPos(this_player,x,y);
+            if (selected == null) {
+                enemySelected = getAnyUnitFromPos(x,y)
+            }
         }
         if (selected) {
             moveCircles = getMoveCircles(selected);
@@ -441,7 +458,16 @@ function handleClick(xPos,yPos) {
             }
             
         } else {
-            clearSelected()
+            //clearSelected()
+            if (enemySelected) {
+                enemySelectedPlayer = getPlayerfromUnit(enemySelected)
+                if (enemySelectedPlayer != "neutral") {
+                   possibleAttacks = getAttacks(enemySelected, enemySelectedPlayer);
+                }
+                buildPopup(enemySelected.name, enemySelectedPlayer)
+            } else {
+                clearSelected()
+            }
         }
         
     }

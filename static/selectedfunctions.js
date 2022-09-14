@@ -116,7 +116,7 @@ function calculateDamage(attacker, defender) {
     return Math.round((attackPower/(attackPower+defensePower))*attacker.attack*5)
 }
 
-function getAttacks(unit) {
+function getAttacks(unit, player = this_player) {
     if (!unit.possibleStates.includes("attack")) {
         return []
     }
@@ -136,7 +136,7 @@ function getAttacks(unit) {
                     
             }
                 
-            if (goodToAdd && (checkFriendlyPlayer(u, this_player))) {
+            if (goodToAdd && (checkFriendlyPlayer(u, player))) {
                 goodToAdd = false;
             }
             if (goodToAdd) {
