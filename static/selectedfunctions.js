@@ -110,6 +110,12 @@ function getRangeCircles(unit, anyBlock = false, built = false) {
     return spaces
 }
 
+function calculateDamage(attacker, defender) {
+    let attackPower = attacker.attack*(attacker.health/attacker.maxHealth)
+    let defensePower = defender.defense*(defender.health/defender.maxHealth)
+    return Math.round((attackPower/(attackPower+defensePower))*attacker.attack*5)
+}
+
 function getAttacks(unit) {
     if (!unit.possibleStates.includes("attack")) {
         return []
@@ -134,6 +140,8 @@ function getAttacks(unit) {
                 goodToAdd = false;
             }
             if (goodToAdd) {
+                pos.push(calculateDamage(unit,u))
+                console.log("pos",pos)
                 finalSpaces.push(pos)
             }
         }
@@ -164,6 +172,7 @@ function getHeals(unit) {
                 goodToAdd = false
             }
             if (goodToAdd) {
+                pos.push(UnitDB[unit.name].heal || 5)
                 finalSpaces.push(pos)
             }
         }

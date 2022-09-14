@@ -298,7 +298,7 @@ function handleClick(xPos,yPos) {
             return;
         }
 
-        if (JSON.stringify(possibleAttacks).indexOf(JSON.stringify([x,y])) !== -1) {
+        if (JSON.stringify(possibleAttacks).indexOf("["+x+","+y) !== -1) {
             console.log("clicked on a attack")
             selected.stateData = getAnyUnitFromPos(x,y)      
             console.log(selected.stateData)    
@@ -308,7 +308,7 @@ function handleClick(xPos,yPos) {
             drawBoard();
             return;
         }
-        if (JSON.stringify(possibleHeals).indexOf(JSON.stringify([x,y])) !== -1) {
+        if (JSON.stringify(possibleHeals).indexOf("["+x+","+y) !== -1) {
             console.log("clicked on a heal")
             selected.stateData = getUnitFromPos(this_player,x,y)      
             console.log(selected.stateData)    

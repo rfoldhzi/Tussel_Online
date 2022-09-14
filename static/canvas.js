@@ -336,6 +336,8 @@ let OrangeHex = new Image(40, 40)
 OrangeHex.src = '/static/assets/BuildHex.png'
 let RedX = new Image(40, 40)
 RedX.src = '/static/assets/AttackX.png'
+let RedTarget = new Image(40, 40)
+RedTarget.src = '/static/assets/AttackTarget.png'
 let GreenT = new Image(40, 40)
 GreenT.src = '/static/assets/HealT.png'
 let GreenCircle = new Image(40, 40)
@@ -365,13 +367,25 @@ function drawActionIcons() {
         //console.log(position);
         context.drawImage(OrangeHex, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
     }
+
+    context.textAlign = "right";
+    fontSize = Math.floor(size / 3);
+    context.font = fontSize + "px Arial";
+    context.fillStyle = "#F00"
+    context.strokeStyle = 'black';
+    context.lineWidth = Math.floor(fontSize / 6);
+
     for (const position of possibleAttacks) {
-        //console.log(position);
         context.drawImage(RedX, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+        context.strokeText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
+        context.fillText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
     }
+    context.fillStyle = "#0F0"
     for (const position of possibleHeals) {
         //console.log(position);
         context.drawImage(GreenT, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+        context.strokeText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
+        context.fillText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
     }
     for (const position of transportSpots) {
         //console.log(position);
@@ -496,6 +510,15 @@ function drawUnits() {
     }
 }
 
+function drawUnitHealths() {
+    for (const player in gameObject.units) {
+        for (const unit of gameObject.units[player]) {
+            //console.log(unit)
+            drawUnitHealth(player, unit);
+        }
+    }
+}
+
 // Draws colored boxes for territories during animations
 function drawAnimationTerritories() {
     let y = 0
@@ -614,6 +637,7 @@ function drawBoard() {
     
     drawUnits();
     drawActionIcons()
+    drawUnitHealths();
 
     drawClouds()
 
@@ -885,21 +909,15 @@ function drawUnit(player, unit) {
         context.drawImage(img, size * unit.position[0] + x_offset + size * (1 - multiplier) * .5, size * unit.position[1] + y_offset + size * (1 - multiplier) * .5, size * multiplier, size * multiplier);
     }
 
+    //context.fillStyle = "white";
+    //context.strokeText(unit.health, size * unit.position[0] + size + x_offset, size * unit.position[1] + size + y_offset);
+    //context.fillText(unit.health, size * unit.position[0] + size + x_offset, size * unit.position[1] + size + y_offset);
+}
+
+function drawUnitHealth(player, unit) {
     context.fillStyle = "white";
     context.strokeText(unit.health, size * unit.position[0] + size + x_offset, size * unit.position[1] + size + y_offset);
     context.fillText(unit.health, size * unit.position[0] + size + x_offset, size * unit.position[1] + size + y_offset);
-    /*
-    var img = new Image(size, size);
-
-    img.onload = function () {
-        img.height = size;
-        img.setAttribute('crossOrigin', '');
-        img.crossOrigin = "Anonymous";
-        context.drawImage(img, size * x + x_offset, size * y + y_offset, 20, 20);
-        replaceColor(233, 19, 212, 255, 160, 0)
-    };
-    img.src = '/static/assets/soldier.png';
-    */
 }
 
 function drawUnitResources(player, unit) {
