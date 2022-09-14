@@ -322,6 +322,14 @@ class Game:
                     self.units[p].append(self.newUnit(startingspots[p], "town"))
                 i+=1
 
+            self.units["neutral"] = []
+            self.resources["neutral"] = {'gold':20,'metal':0,'energy':0}
+            self.went["neutral"] = True
+            self.tech["neutral"] = []
+            self.scores["neutral"] = 0
+            self.progress["neutral"] = {}
+            self.botmode.append("neutral")
+
     #??? Something to do with JSON stuff
     def generateZippedBytes(self):
         #print(vars(self))
@@ -614,6 +622,12 @@ class Game:
                 except:
                     print("key failed",key)
 
+    def clearNeutralStates(self):
+        if ("neutral" in self.units):
+            for unit in self.units["neutral"]:
+                unit.state = None
+                unit.stateData = None
+
     # Performs EVERYTHING at the end of a round. 
     # Order: AI/Default States, Resources, Attack/Heal, Move, Build, Research, Resource Cap
     def round(self):
@@ -674,8 +688,12 @@ class Game:
         print('stuff')
         #AI = range(len(self.units))
         AI = range(len(self.units)-self.ai,len(self.units))
+        if "neutral" in self.units:
+            AI = range(len(self.units)-self.ai-1,len(self.units)-1)
         if self.allai:
             AI = range(len(self.units))
+            if "neutral" in self.units:
+                AI = range(len(self.units)-1)
         for v in AI:
             Computer.CurrentAI(self,v)
             self.went[v] = True
@@ -683,6 +701,7 @@ class Game:
             Computer.CurrentAI(self,player)
             self.went[player] = True
         setDefaultState(self)
+        self.clearNeutralStates()
         
         #Gain resources
         for i in self.units:
@@ -744,12 +763,36 @@ class Game:
             print(u.name, "took", hurtList[u])
             u.health-=hurtList[u]
         RemoveList = []
+        parent_link_chain_List = []
         for i in self.units:#Destroy units with 0 or less health & set to max health anyone who is over
             for u in self.units[i]:
                 if u.health <= 0:
                     RemoveList.append(u)
+                    #"parent_link" means all children are destroyed when the parent is destroyed
+                    if 'parent_link' in u.abilities: 
+                        parent_link_chain_List.append(u)
                 elif u.health > u.maxHealth:
                     u.health = u.maxHealth
+
+        extraRemoveList = []
+        
+        while len(parent_link_chain_List) > 0:
+            u = parent_link_chain_List[0]
+            parent_link_chain_List.pop(0)
+            player = self.getPlayerfromUnit(u)
+            for u2 in self.units[player]:
+                u2Parent = False
+                if type(u2) == dict: #In case the u2 is a dict
+                    u2Parent = u2["parent"]
+                else:
+                    u2Parent = u2.parent
+                if u2Parent:
+                    if u2Parent == u.UnitID and not(u2 in RemoveList):
+                        extraRemoveList.append(u2)
+                        if 'parent_link' in u2.abilities: 
+                            parent_link_chain_List.append(u2)
+
+        RemoveList += extraRemoveList
 
         for u in RemoveList: # Hunter Events (happens before destroy in case hunter is removed)
             print(u, u.name, 'is destroyed')
@@ -795,10 +838,27 @@ class Game:
                 elif 'convert' in hunter.abilities:
                     print("philsophy")
                     newUnit = self.newUnit(u.position,u.name,None, u.score)
+                    self.upgradeUnit(newUnit, hunterPlayer)
                     self.scores[hunterPlayer] += u.score
                     self.units[hunterPlayer].append(newUnit)
 
                     GoodToDeathSpawn = False
+                #"claimable" means it will spawn a copy of itself, owned by a different player.
+                elif 'claimable' in u.abilities: 
+                    player = self.getPlayerfromUnit(u)
+                    if player == "neutral":
+                        newUnit = self.newUnit(u.position,u.name,None, u.score)
+                        self.upgradeUnit(newUnit, hunterPlayer)
+                        
+                        self.scores[hunterPlayer] += u.score
+                        self.units[hunterPlayer].append(newUnit)
+
+                        GoodToDeathSpawn = False
+                    else:
+                        newUnit = self.newUnit(u.position,u.name,None, u.score)
+                        self.units["neutral"].append(newUnit)
+
+                        GoodToDeathSpawn = False
             
             if GoodToDeathSpawn and 'deathSpawn' in u.abilities:
                 newUnit = self.newUnit(u.position,u.abilities['deathSpawn'],u.UnitID)
@@ -1137,6 +1197,8 @@ class GameMaker(Game):
                 for v2 in v:
                     l.append(v2)
                 for v2 in l:
+                    if v2 == "neutral":
+                        continue
                     v[int(v2)] = v[v2]
                     del(v[v2])
             setattr(self, k, v)

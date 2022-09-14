@@ -255,6 +255,8 @@ def betterRandomMove(game, player,spaces):
 
 
 def CurrentAI(game, player):
+    if player == "neutral":
+        return
     betterActions(game, player)
 
 def randomActions(game, player):
