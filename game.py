@@ -801,26 +801,7 @@ class Game:
 
         RemoveList += extraRemoveList
 
-        for u in RemoveList: # Hunter Events (happens before destroy in case hunter is removed)
-            print(u, u.name, 'is destroyed')
-            if u.parent:
-                par = self.getUnitFromID(u.parent)
-                if par:
-                    if getattr(par,'maxPopulation',False): #Reduces population of parent
-                        par.population = max(0,par.population-1)
-            if hasattr(u, "carrying"):
-                for u2 in u.carrying:
-                    u2Parent = False
-                    if type(u2) == dict: #In case the u2 is a dict
-                        u2Parent = u2["parent"]
-                    else:
-                        u2Parent = u2.parent
-                    if u2Parent:
-                        par = self.getUnitFromID(u2Parent)
-                        if par:
-                            if getattr(par,'maxPopulation',False): #Reduces population of parent
-                                par.population = max(0,par.population-1)
-            
+        for u in RemoveList: # Hunter Events (happens before destroy in case hunter is removed)     
             GoodToDeathSpawn = True #Small check used to make sure "deathspawn" is good to go (things preventing it include "convert")
 
             if u in hunterList: #For abilities that the hunters may have.
