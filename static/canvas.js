@@ -9,6 +9,7 @@ let currentTurn = -1;
 let territoryMap = []
 let territoryNumberCode = []
 let animationInterval = false;
+let animationLastTick = 0
 let animationCounter = -1;
 let animationMax = 30;
 let animationTerritoryMap = [];
@@ -120,7 +121,9 @@ function useNewGameObject(newGameObject) {
     }
     if (currentTurn != -1 && newGameObject.turn > currentTurn) { 
         console.log("entering animation")
-        animationInterval = window.setInterval(drawAnimation, 33);
+        //animationInterval = window.setInterval(drawAnimation, 33);
+        animationInterval = window.requestAnimationFrame(drawAnimation)
+        animationLastTick = performance.now()
         animationCounter = 0
         gameObject2 = newGameObject;
         setAnimateSpeed(gameObject,gameObject2)
@@ -704,10 +707,11 @@ function drawBoard() {
 }
 
 function drawAnimation() {
-    animationCounter += 1
+    animationCounter += (performance.now()-animationLastTick)/30;
     if (animationCounter >= animationMax) {
         animationCounter = -1
-        clearInterval(animationInterval) //Ends animation frame rendering
+        //clearInterval(animationInterval) //Ends animation frame rendering
+        window.cancelAnimationFrame(animationInterval)
         //gameObject = gameObject2
         //gameObject2 = null
         currentTurn = gameObject2.turn
@@ -715,6 +719,8 @@ function drawAnimation() {
         //drawBoard()
         return 
     }
+    animationLastTick = performance.now()
+    animationInterval = window.requestAnimationFrame(drawAnimation)
 
     let t = animationCounter/animationMax
     
