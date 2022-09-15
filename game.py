@@ -63,15 +63,20 @@ def getCount(unitName, playerNum, game):
 def CheckIfGoodToBuild(self, playerNum, u, Grid, pos = False):
     if not pos:
         pos = u.stateData[0]
-    cost = UnitDB[u.stateData[1]]['cost']
+    buildName = None
+    if u.state == "build":
+        buildName = u.stateData[1]
+    elif u.state == "upgrade":
+        buildName = u.stateData
+    cost = UnitDB[buildName]['cost']
 
     #Handles the "costly" ability. The specific "costly" stat is the rate of change per already
     #existing unit. Always rounds down to closest 5
-    if 'abilities' in UnitDB[u.stateData[1]] and 'costly' in UnitDB[u.stateData[1]]['abilities']:
+    if 'abilities' in UnitDB[buildName] and 'costly' in UnitDB[buildName]['abilities']:
         cost = copy.copy(cost)
-        count = getCount(u.stateData[1], playerNum,self)
+        count = getCount(buildName, playerNum,self)
         for v in cost:
-            cost[v] = cost[v]*(UnitDB[u.stateData[1]]['abilities']['costly']**count)//5*5
+            cost[v] = cost[v]*(UnitDB[buildName]['abilities']['costly']**count)//5*5
             
     for v in cost:
         if self.resources[playerNum][v] < cost[v]:#Check each resource
@@ -84,7 +89,7 @@ def CheckIfGoodToBuild(self, playerNum, u, Grid, pos = False):
     if checkRange(u, pos) > u.range:
         print("Too far")
         return False #Can't build out of range
-    t = UnitDB[u.stateData[1]].get('type') or 0
+    t = UnitDB[buildName].get('type') or 0
     if Grid[pos[1]][pos[0]]:#on Water
         if t not in ['aircraft', 'boat']:
             print("Too much water")
@@ -94,9 +99,9 @@ def CheckIfGoodToBuild(self, playerNum, u, Grid, pos = False):
             print("Too land")
             return False #Can't build boat on land
     if t == 'building':#Can't build buildings near enemy buildings
-        Range = UnitDB[u.stateData[1]].get('range') or 1
-        if 'abilities' in UnitDB[u.stateData[1]] and 'closebuild' in UnitDB[u.stateData[1]]['abilities']:
-            Range = UnitDB[u.stateData[1]]['abilities']['closebuild']
+        Range = UnitDB[buildName].get('range') or 1
+        if 'abilities' in UnitDB[buildName] and 'closebuild' in UnitDB[buildName]['abilities']:
+            Range = UnitDB[buildName]['abilities']['closebuild']
         for v in getRangeCircles(self,u,Range,pos, True):
             unit = self.getAnyUnitFromPos(v[0],v[1])
             if unit and unit.type == 'building':
@@ -578,6 +583,8 @@ class Game:
         elif state == 'transport':
             s+= '%s:%s:' % tuple(stateData[0])
             s+= stateData[1]
+        elif state == 'upgrade':
+            s+= stateData
         return s
     
     #Sets the turn of the current game and saves it to states file
@@ -1005,8 +1012,9 @@ class Game:
                         u.state = None
                         u.stateData = None
 
+        UpgradeRemoveList = []
 
-        #Build
+        #Build and Upgrade
         for i in self.units:
             for u in self.units[i]:
                 if u.state == "build":#State data is list [0] is pos, [1] is name
@@ -1089,6 +1097,38 @@ class Game:
                             
                             u.state = None
                             u.stateData = None
+                elif u.state == "upgrade":
+                    affordable = CheckIfGoodToBuild(self, i, u, Grid, pos = u.position)
+                    if not affordable:
+                        cost = UnitDB[u.stateData]['cost']
+                        #"costly" increases cost of unit based on how many the player already owns
+                        if 'abilities' in UnitDB[u.stateData] and 'costly' in UnitDB[u.stateData]['abilities']:
+                            cost = copy.copy(cost)
+                            count = getCount(u.stateData, i,self)
+                            for v in cost:
+                                cost[v] = int(cost[v]*(UnitDB[u.stateData]['abilities']['costly']**count)//5*5)
+
+                        score = 0
+                        for v in cost:#player loses resources
+                            self.resources[i][v] -= cost[v]
+                            score += cost[v] #Awards points for each cost when building
+                        
+                        self.scores[i] += score
+
+                        newUnit = self.newUnit(u.position,u.stateData, u.parent, score + u.score)
+                        newUnit.UnitID = u.UnitID
+                        if getattr(u,'maxPopulation',False):
+                            newUnit.population = u.population
+                        newUnit.health = newUnit.maxHealth - (u.maxHealth - u.health)
+                        self.upgradeUnit(newUnit, i)
+                        self.units[i].append(newUnit)
+
+                        UpgradeRemoveList.append(u)
+                        
+
+        for u in UpgradeRemoveList:
+            player = self.getPlayerfromUnit(u)
+            self.units[player].remove(u)
 
         #Research
         for playerNum in self.units:

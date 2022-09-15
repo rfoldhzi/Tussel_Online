@@ -156,6 +156,14 @@ function resourceButtonClicked(btn) {
     drawBoard();
 }
 
+function upgradeButtonClicked(btn) {
+    selected.state = "upgrade"
+    selected.stateData = btn.name
+    sendToServer(convertToStr(selected,'upgrade',btn.name))
+    clearSelected();
+    drawBoard();
+}
+
 function researchButtonClicked(btn) {
     selected.state = "research"
     selected.stateData = btn.name
@@ -381,15 +389,16 @@ function handleClick(xPos,yPos) {
                     i++;
                 }
             }
-            if (selected.possibleStates.includes("build")) {
+            if (selected.possibleStates.includes("build") || selected.possibleStates.includes("upgrade")) {
                 let possibleBuilds = selected.possiblebuilds || UnitDB[selected.name]['possibleBuilds'] || []
+                let possibleUpgrades = selected.possibleUpgrades || UnitDB[selected.name]['possibleUpgrades'] || []
                 
                 let btnSize = 50
                 if (canvas.height > canvas.width && canvas.width*canvas.height > 1000000) {
                     btnSize = 120
                 }
 
-                let btnCount = possibleBuilds.length
+                let btnCount = possibleBuilds.length + possibleUpgrades.length
                 let combinedHeight = btnCount*btnSize + (btnCount-1)*btnSize*.2
                 let btnHeightStart = Math.floor(canvas.height*.5 - combinedHeight/2) 
                 if (btnHeightStart < resourceBoxHeight + statBoxHeight + heightforResources) {
@@ -419,6 +428,23 @@ function handleClick(xPos,yPos) {
                     newBuildButton.name = unitName
                     newBuildButton.parameters = newBuildButton;
                     newBuildButton.addImage(getUnitImage(this_player, unitName));
+                    buildButtons.push(newBuildButton);
+                    i++;
+                }
+                for (let upgradeName of possibleUpgrades) {
+
+                    let color = "#ffa200"
+                    if (selected.state == "upgrade" && selected.stateData == upgradeName) {
+                        color = "#7d4aff"
+                    } else if (checkIfAffordable(upgradeName))  {
+                        color = "#EEEEEE"
+                    }
+
+                    
+                    let newBuildButton = new Button(0, btnHeightStart + (btnSize * 1.2)*i, btnSize, btnSize, color, "", upgradeButtonClicked);
+                    newBuildButton.name = upgradeName
+                    newBuildButton.parameters = newBuildButton;
+                    newBuildButton.addImage(getUnitImage(this_player, upgradeName));
                     buildButtons.push(newBuildButton);
                     i++;
                 }

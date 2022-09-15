@@ -245,6 +245,8 @@ function convertToStr(u, state, stateData) {
     } else if (state == 'transport') {
         s += stateData[0][0] + ':' + stateData[0][1] + ":"
         s += stateData[1]
+    } else if (state == 'upgrade') {
+        s += stateData
     }
     return s
 }
