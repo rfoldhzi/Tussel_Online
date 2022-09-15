@@ -449,6 +449,34 @@ function drawResources() {
     context.fillStyle = "#00FFFF";
     context.fillText(gameObject.resources[this_player]["energy"] + " + " + newResources["energy"], canvas.width * .8, resourceBoxHeight - 5);
 }
+
+function drawAnimatedResources(g1,g2,t) {
+
+    let newResources = {}
+    let lerpedResources = {}
+
+    for (let resource in g1.resources[this_player]) {
+        newResources[resource] = g2.resources[this_player][resource] - g1.resources[this_player][resource]
+        lerpedResources[resource] = Math.floor(Lerp(g1.resources[this_player][resource], g2.resources[this_player][resource], t))
+    }
+
+    if (canvas.height > canvas.width) {
+        resourceBoxHeight = Math.floor(canvas.height / 36) + 6
+    }
+
+    context.fillStyle = "#505050";
+    context.fillRect(0, 0, canvas.width, resourceBoxHeight);
+
+    context.textAlign = "center";
+    context.font = (resourceBoxHeight - 2) + "px Arial";
+    context.fillStyle = "#FFFF00";
+    context.fillText(lerpedResources["gold"] + " + " + newResources["gold"], canvas.width * .2, resourceBoxHeight - 5);
+    context.fillStyle = "#DDDDDD";
+    context.fillText(lerpedResources["metal"] + " + " + newResources["metal"], canvas.width * .5, resourceBoxHeight - 5);
+    context.fillStyle = "#00FFFF";
+    context.fillText(lerpedResources["energy"] + " + " + newResources["energy"], canvas.width * .8, resourceBoxHeight - 5);
+}
+
 function drawStats() {
 
     if (selected == null) {
@@ -695,6 +723,7 @@ function drawAnimation() {
     }
     drawTerritories2()
     animateBoard(gameObject,gameObject2,t)
+    drawAnimatedResources(gameObject,gameObject2,t)
     //drawClouds()
 }
 

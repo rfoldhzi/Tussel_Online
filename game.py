@@ -1099,7 +1099,7 @@ class Game:
                             u.stateData = None
                 elif u.state == "upgrade":
                     affordable = CheckIfGoodToBuild(self, i, u, Grid, pos = u.position)
-                    if not affordable:
+                    if affordable:
                         cost = UnitDB[u.stateData]['cost']
                         #"costly" increases cost of unit based on how many the player already owns
                         if 'abilities' in UnitDB[u.stateData] and 'costly' in UnitDB[u.stateData]['abilities']:
