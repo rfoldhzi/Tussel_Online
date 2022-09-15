@@ -200,6 +200,9 @@ function loadGame2() {
             return
         }
 
+        if (outOfDate) {
+            return
+        }
         if (this_player in states) {
             for (let key in states[this_player]) {
                 setState(key + ":"+states[this_player][key])
