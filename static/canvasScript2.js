@@ -769,12 +769,42 @@ function Lerp(a,b,t) {
 }
 
 function drawLerpedImage(img,x1,y1,x2,y2,t, multiplier) {
+    let xCenter = (x1+x2)/2
+    let yCenter = (y1+y2)/2
+
+    let x3 = x1
+    let y3 = y2
+    //This statement is used to switch direction of the curve on every other space
+    if ((x1+x2) % 2 == 0) {
+        x3 = x2
+        y3 = y1
+    }
+
+    if ((x1 == x2 || y1 == y2) && Math.abs(x1 + y1 - x2 - y2) > 1) {
+        let mult = 1
+        if ((x1+x2) % 2 == 0) {
+            mult = -1
+        }
+        x3 = xCenter
+        y3 = yCenter
+        if (x1 == x2) {
+            x3 += 0.5*mult
+        } else {
+            y3 += 0.5*mult
+        }
+    }
+
+    x3 = (xCenter + x3)/2
+    y3 = (yCenter + y3)/2
+
     let startX = size * x1 + x_offset + size * (1 - multiplier) * .5
     let startY = size * y1 + y_offset + size * (1 - multiplier) * .5
+    let midX = size * x3 + x_offset + size * (1 - multiplier) * .5
+    let midY = size * y3 + y_offset + size * (1 - multiplier) * .5
     let endX = size * x2 + x_offset + size * (1 - multiplier) * .5
     let endY = size * y2 + y_offset + size * (1 - multiplier) * .5
-    let actual_X = Lerp(startX,endX,t)
-    let actual_Y = Lerp(startY,endY,t)
+    let actual_X = Lerp(Lerp(startX,midX,t),Lerp(midX,endX,t), t)
+    let actual_Y = Lerp(Lerp(startY,midY,t),Lerp(midY,endY,t), t)
     context.drawImage(img, actual_X, actual_Y, size * multiplier, size * multiplier);
 }
 
