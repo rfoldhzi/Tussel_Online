@@ -626,6 +626,12 @@ function drawStateLines() {
     }
 }
 
+function drawStateLinesAnimation() {
+    for (const unit of gameObject.units[this_player]) {
+        drawStateLine(unit);
+    }
+}
+
 function drawUI() {
     //Gui is rendered below
     drawResources()
@@ -722,6 +728,7 @@ function drawAnimation() {
         }
     }
     drawTerritories2()
+    drawStateLinesAnimation()
     animateBoard(gameObject,gameObject2,t)
     drawAnimatedResources(gameObject,gameObject2,t)
     //drawClouds()
