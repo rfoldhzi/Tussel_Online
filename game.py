@@ -544,6 +544,8 @@ class Game:
             for p in self.went:
                 self.went[p] = False
             self.round()
+        else:
+            self.addIndicatorsToStateFile()
     
     # Checks if the player is alive. 
     # Potential Bug: I don't think deleting these is a good idea. I'm commenting it out for now
@@ -603,6 +605,7 @@ class Game:
                 #data["refresh"] = text
 
                 data["turn"] = self.turn
+                data["went"] = self.went
                 for playerNum in self.units:
                     data[str(playerNum)] = {}
                     for unit in self.units[playerNum]:

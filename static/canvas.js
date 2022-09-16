@@ -8,6 +8,9 @@ let outOfDate = false;
 let currentTurn = -1;
 let territoryMap = []
 let territoryNumberCode = []
+let states = {};
+let counter = 0;
+let doneState = "notDone";
 let animationInterval = false;
 let animationLastTick = 0
 let animationCounter = -1;
@@ -99,6 +102,10 @@ function endTurn() {
         */
     }
     httpGetAsync(location.protocol+"//" + window.location.host + "/done/"+this_game+"/"+this_player, callback);
+    if (states.went != undefined) {
+        states.went[this_player] = true
+    }
+    regularlyScheduledDrawBoard()
 }
 
 
@@ -144,7 +151,7 @@ function useNewGameObject(newGameObject) {
     organizeTechTrees()
     initilizeTechOffsets()
     updateCloudCover()
-    drawBoard()
+    regularlyScheduledDrawBoard()
 }
 
 function loadGame() {
@@ -747,6 +754,50 @@ var intervalID = window.setInterval(myCallback, 2000);
 
 function myCallback() {
     loadGame2()//drawBoard();
+}
+
+var ticker = window.setInterval(regularlyScheduledDrawBoard, 1000);
+
+//Triggered every second. Primary use is to make the done button flash
+//when every other player is ready, and this_player is not. 
+function regularlyScheduledDrawBoard() {
+    counter += 1
+    if (states.went != undefined) {
+        let selfDone = states.went[this_player]
+        if (selfDone) {
+            doneState = "done"
+        } else {
+            doneState = "notDone"
+            let everyoneElseDone = true
+            for (let player in states.went) {
+                if (player == this_player) {
+                    continue
+                }
+                if (states.went[player] == false) {
+                    everyoneElseDone = false
+                    break
+                }
+            }
+            //"counter % 2 == 0" is used to make it alternate between the two states
+            if (everyoneElseDone && counter % 2 == 0) {
+                doneState = "hurry"
+            }
+        }
+        //Update Button Color
+        if ("done" in ButtonCollection) {
+            if (doneState == "notDone") { //Blue
+                ButtonCollection["done"].color = "#1188FF"
+                ButtonCollection["done"].textColor = "#FFFFFF"
+            } else if (doneState == "done") { //Gray
+                ButtonCollection["done"].color = "#AAAAAA"
+                ButtonCollection["done"].textColor = "#FFFFFF"
+            } else if (doneState == "hurry") { //Inverted white and blue
+                ButtonCollection["done"].textColor = "#1188FF"
+                ButtonCollection["done"].color = "#FFFFFF"
+            }
+        }
+    }
+    drawBoard();
 }
 
 function replaceColor2(srcR, srcG, srcB, dstR, dstG, dstB) {

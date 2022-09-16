@@ -36,7 +36,17 @@ function defaultButtonMenu() {
         } else {
             doneButton = new Button(canvas.width - 160, canvas.height - 60, 140, 50, "#AAAAAA", "Done", endTurn);
         }
+        //Change done button color based on how is already ready
+        if (doneState == "notDone") { 
+            doneButton.color = "#1188FF" //Blue
+        } else if (doneState == "done") {
+            doneButton.color = "#AAAAAA" //Grayed
+        } else if (doneState == "hurry") {
+            doneButton.textColor = "#1188FF" //Inverted white and blue
+            doneButton.color = "#FFFFFF"
+        }
         ButtonCollection["done"] = doneButton
+
     }
     if (!("logout" in ButtonCollection)) {
         if (canvas.height > canvas.width && canvas.width * canvas.height > 1000000) {
