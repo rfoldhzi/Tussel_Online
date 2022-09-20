@@ -1001,6 +1001,10 @@ function buildPopup(unit, player = this_player) {
         drawStat("population",population,"#9434EB")
     }
 
+    if (UnitDB[unit].supplies != undefined) {
+        drawStat("supplies",UnitDB[unit].supplies,"#FF0")
+    }
+
     //Resource Production
     if (possibleStates.includes("resources")) {
         fontSize = boxHeight*.16

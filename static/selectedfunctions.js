@@ -180,6 +180,35 @@ function getHeals(unit) {
     return finalSpaces;
 }
 
+function getResupplies(unit) {
+    if (!unit.possibleStates.includes("resupply")) {
+        return []
+    }
+    if (unit.maxSupplies != undefined && unit.supplies === 0) { //Can't resupply if you have no supplies
+        return []
+    }
+    let spaces = getRangeCircles(unit, true)
+    let finalSpaces = []
+    for (let pos of spaces) {
+        u = getUnitFromPos(this_player, pos[0],pos[1])
+        if (u != null) {
+            goodToAdd = true
+            if (u == unit) {
+                goodToAdd = false
+            }
+            if (u.maxSupplies == undefined || u.supplies >= u.maxSupplies) {
+                goodToAdd = false
+            }
+            if (goodToAdd) {
+                pos.push(u.supplies+"/"+u.maxSupplies)
+                finalSpaces.push(pos)
+            }
+        }
+    }
+    return finalSpaces;
+}
+
+
 function getTransportCircles(unit) {
     if (!(unit.possibleStates.includes('move'))) {
         return [];

@@ -86,6 +86,10 @@ def CheckIfGoodToBuild(self, playerNum, u, Grid, pos = False):
         if u.population >= u.maxPopulation:
             print("Too populated")
             return False #Max popultion reached
+    if getattr(u,'maxSupplies',False):
+        if u.supplies <= 0:
+            print("Too few supplies")
+            return False #Doesn't have any supplies remaining
     if checkRange(u, pos) > u.range:
         print("Too far")
         return False #Can't build out of range
@@ -193,6 +197,9 @@ class Unit:
         if ('build' in self.possibleStates and self.type == 'building') or UnitDB[name].get('population'):
             self.population = 0
             self.maxPopulation = UnitDB[name].get('population') or 3
+        if UnitDB[name].get('supplies'):
+            self.supplies = UnitDB[name].get('supplies')
+            self.maxSupplies = UnitDB[name].get('supplies')
 
 class Encoder(JSONEncoder):
         def default(self, o):
@@ -587,6 +594,11 @@ class Game:
             s+= stateData[1]
         elif state == 'upgrade':
             s+= stateData
+        elif state == 'resupply':
+            if type(stateData) == str:  #Sometimes stateData is still the unitID, could be a problem
+                s+= stateData
+            else:   
+                s+= stateData.UnitID
         return s
     
     #Sets the turn of the current game and saves it to states file
@@ -639,7 +651,7 @@ class Game:
                 unit.stateData = None
 
     # Performs EVERYTHING at the end of a round. 
-    # Order: AI/Default States, Resources, Attack/Heal, Move, Build, Research, Resource Cap
+    # Order: Buff Units, AI/Default States, Resources, Resupply, Attack/Heal, Move, Build/Upgrade, Research, Resource Cap, Debuff units 
     def round(self):
         """
         grid = methods.intToList(self.intGrid, self.width)
@@ -719,6 +731,34 @@ class Game:
                 print("checking", vars(u))
                 if u.state == "resources":#stateData is the type of resource generate
                     self.resources[i][u.stateData] += u.resourceGen[u.stateData]
+        
+        #Resupply
+        for i in self.units:
+            for u in self.units[i]:
+                if u.state == "resupply" and u.stateData: #stateData is target of resupply
+                    goodToSupply = True
+                    target = u.stateData
+                    if type(target) == str:
+                        target = self.getUnitFromID(target)
+
+                    if goodToSupply and checkRange(u, target) <= u.range:#Check if in range
+                        if not getattr(target,'maxSupplies',False): #skip if target doesn't take supplies
+                            continue
+                        if getattr(u,'maxSupplies',False): #transfer supplies if both have max amounts
+                            suppliesTransfered = min(target.maxSupplies - target.supplies, u.supplies)
+                            u.supplies -= suppliesTransfered
+                            target.supplies += suppliesTransfered
+                        else:
+                            target.supplies = target.maxSupplies
+                        if target.supplies == target.maxSupplies:
+                            u.state = None
+                            u.stateData = None
+                        else:
+                            if getattr(u,'maxSupplies',False):
+                                if u.supplies <= 0:
+                                    u.state = None
+                                    u.stateData = None
+        
         #Attack
         hurtList = {} #List for units that are hurt by attacks
         hunterList = {} #List for units that are doing the attacking
@@ -886,7 +926,7 @@ class Game:
         
         for i in self.units:#Turn off attack of dead targets
             for u in self.units[i]:
-                if u.state == "attack" or u.state == "heal":
+                if u.state == "attack" or u.state == "heal" or u.state == "resupply":
                     target = u.stateData
                     if type(target) == str:
                         target = self.getUnitFromID(target)
@@ -1031,6 +1071,8 @@ class Game:
                         if affordable:
                             if getattr(u,'maxPopulation',False): #increase population
                                 u.population += 1
+                            if getattr(u,'maxSupplies',False): #decrease supplies
+                                u.supplies -= 1
                             cost = UnitDB[u.stateData[1]]['cost']
                             #"costly" increases cost of unit based on how many the player already owns
                             if 'abilities' in UnitDB[u.stateData[1]] and 'costly' in UnitDB[u.stateData[1]]['abilities']:
@@ -1075,6 +1117,8 @@ class Game:
                                             BlockedSpaces.append(pos)
                                             if getattr(u,'maxPopulation',False):
                                                 u.population += 1
+                                            if getattr(u,'maxSupplies',False):
+                                                u.supplies -= 1
                                             break
                                         else:
                                             tiles.remove(pos)
@@ -1101,8 +1145,10 @@ class Game:
 
                         newUnit = self.newUnit(u.position,u.stateData, u.parent, score + u.score)
                         newUnit.UnitID = u.UnitID
-                        if getattr(u,'maxPopulation',False):
+                        if getattr(u,'maxPopulation',False) and getattr(newUnit,'maxPopulation',False):
                             newUnit.population = u.population
+                        if getattr(u,'maxSupplies',False) and getattr(newUnit,'maxSupplies',False):
+                            newUnit.supplies = newUnit.maxSupplies - (u.maxSupplies - u.supplies)
                         newUnit.health = newUnit.maxHealth - (u.maxHealth - u.health)
                         self.upgradeUnit(newUnit, i)
                         self.units[i].append(newUnit)
@@ -1169,6 +1215,13 @@ class Game:
                     if type(target) == str:
                         target = self.getUnitFromID(target)
                     if checkRange(u, target) > u.range or target.health >= target.maxHealth:
+                        u.state = None
+                        u.stateData = None
+                elif u.state == "resupply": #Turn off resupply of out-of-range and fully supplied targets
+                    target = u.stateData
+                    if type(target) == str:
+                        target = self.getUnitFromID(target)
+                    if checkRange(u, target) > u.range or (getattr(target, "maxSupplies",False) and target.supplies >= target.maxSupplies):
                         u.state = None
                         u.stateData = None
 

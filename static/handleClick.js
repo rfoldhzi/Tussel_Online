@@ -8,6 +8,7 @@ let buildButtons = []
 let resourceButtons = []
 let possibleAttacks = []
 let possibleHeals = []
+let possibleResupplies = []
 let stateDataMode = null;
 let effectiveResources = {}
 let researchOffsetXStored = 0
@@ -94,6 +95,7 @@ function clearSelected() {
     resourceButtons = []
     possibleAttacks = []
     possibleHeals = []
+    possibleResupplies = []
     defaultButtonMenu()
 }
 
@@ -121,6 +123,7 @@ function buildButtonClicked(btn) {
     resourceButtons = []
     possibleAttacks = []
     possibleHeals = []
+    possibleResupplies = []
     buildHexes = getRangeCircles(selected, false, btn.name)
 
     for (let btn of buildButtons) {
@@ -154,6 +157,7 @@ function transportButtonClicked(btn) {
     resourceButtons = []
     possibleAttacks = []
     possibleHeals = []
+    possibleResupplies = []
     dropOffSpots = getRangeCircles(selected, false, btn.name)
     drawBoard();
 }
@@ -341,6 +345,16 @@ function handleClick(xPos,yPos) {
                 drawBoard();
                 return;
             }
+            if (JSON.stringify(possibleResupplies).indexOf("["+x+","+y) !== -1) {
+                console.log("clicked on a resupply")
+                selected.stateData = getUnitFromPos(this_player,x,y)      
+                console.log(selected.stateData)    
+                selected.state = 'resupply'
+                sendToServer(convertToStr(selected,'resupply',selected.stateData))
+                clearSelected();
+                drawBoard();
+                return;
+            }
         }
 
 
@@ -366,6 +380,7 @@ function handleClick(xPos,yPos) {
             transportSpots = getTransportCircles(selected);
             possibleAttacks = getAttacks(selected);
             possibleHeals = getHeals(selected)
+            possibleResupplies = getResupplies(selected)
             buildButtons = [];
             resourceButtons = [];
             let heightforResources = 0;

@@ -189,8 +189,10 @@ function setState(data) {
     } else if (state == 'transport') {
         state = null
         stateData = null
+    } else if (state == 'resupply') {
+        stateData = getUnitByID(split[2])
     }
-    
+
     unit.state = state
     unit.stateData = stateData
 }
@@ -260,6 +262,8 @@ function convertToStr(u, state, stateData) {
         s += stateData[1]
     } else if (state == 'upgrade') {
         s += stateData
+    } else if (state == 'resupply') {
+        s += stateData.UnitID
     }
     return s
 }
@@ -364,6 +368,8 @@ let GreenCircle = new Image(40, 40)
 GreenCircle.src = '/static/assets/TransportCircle.png'
 let Beaker = new Image(40, 40)
 Beaker.src = '/static/assets/Beaker.png'
+let YellowPentagon = new Image(40, 40)
+YellowPentagon.src = '/static/assets/SupplyPentagon.png'
 
 let statLogos = {
     "attack":new Image(20, 20),
@@ -372,6 +378,7 @@ let statLogos = {
     "population":new Image(20, 20),
     "range":new Image(20, 20),
     "speed":new Image(20, 20),
+    "supplies":new Image(20, 20),
 }
 
 for (let key in statLogos) {
@@ -408,6 +415,13 @@ function drawActionIcons() {
     for (const position of possibleHeals) {
         //console.log(position);
         context.drawImage(GreenT, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+        context.strokeText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
+        context.fillText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
+    }
+    context.fillStyle = "#FF0"
+    for (const position of possibleResupplies) {
+        //console.log(position);
+        context.drawImage(YellowPentagon, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
         context.strokeText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
         context.fillText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
     }
@@ -502,7 +516,7 @@ function drawStats() {
     context.fillStyle = "#202020";
     context.fillRect(0, resourceBoxHeight, canvas.width, statBoxHeight);
 
-    let statCount = 6
+    let statCount = 7
     let currentStatCount = 0
     if (!selected.possibleStates.includes("attack")) {
         statCount -= 1
@@ -511,6 +525,9 @@ function drawStats() {
         statCount -= 1
     }
     if (selected.population == undefined) {
+        statCount -= 1
+    }
+    if (selected.maxSupplies == undefined) {
         statCount -= 1
     }
 
@@ -544,6 +561,10 @@ function drawStats() {
 
     if (selected.population != undefined) {
         drawStat("population",selected.population + "/" + selected.maxPopulation,"#9434EB")
+    }
+
+    if (selected.maxSupplies != undefined) {
+        drawStat("supplies",selected.supplies + "/" + selected.maxSupplies,"#FF0")
     }
 
     return
@@ -844,6 +865,9 @@ function drawStateLine(unit) { //As in "action state" (draws the line correspond
     } else if (unit.state == "transport") {
         position2 = unit.stateData[0]
         color = "#32E632"
+    } else if (unit.state == "resupply") {
+        position2 = unit.stateData.position
+        color = "#FFFF00"
     }
 
     if (position2 != null) {
