@@ -377,6 +377,29 @@ def findStartSpotsFromMap(MAP):
     print("START SPOTS", startSpots)
     return startSpots
 
+def findNeutralUnitsFromMap(MAP):
+    im = Image.open(MAP)    
+    pix = im.load()
+    width = im.size[0]
+    height = im.size[1]
+    grid = []
+
+    neutralUnits = []
+    
+    for x in range(width):
+        for y in range(height):
+            pixel = pix[x,y]
+            if pixel == (255,255,0,255):
+                neutralUnits.append(["town", [x,y]])
+            elif pixel == (255,255,150,255):
+                neutralUnits.append(["outpost", [x,y]])
+            elif pixel == (255,100,0,255):
+                neutralUnits.append(["city", [x,y]])
+            elif pixel == (255,0,255,255):
+                neutralUnits.append(["metropolis", [x,y]])    
+
+    return neutralUnits
+
 def getAICountFromMap(MAP):
     im = Image.open(MAP)    
     pix = im.load()

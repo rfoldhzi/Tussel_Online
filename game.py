@@ -282,10 +282,13 @@ class Game:
             Grid = methods.intToList(self.intGrid, self.width)
             print('units',self.units)
 
+            neutralUnits = []
+
             if self.map == "generated":
                 startingspots = methods.findStartSpots(Grid, len(self.units))
             else:
                 startingspots = methods.findStartSpotsFromMap("maps/%s" % self.map)
+                neutralUnits = methods.findNeutralUnitsFromMap("maps/%s" % self.map)
 
             del(self.map)
             
@@ -341,6 +344,10 @@ class Game:
             self.scores["neutral"] = 0
             self.progress["neutral"] = {}
             self.botmode.append("neutral")
+
+            for unitAndPos in neutralUnits:
+                # unitAndPos[0] is a unit, unitAndPos[1] is the position
+                self.units["neutral"].append(self.newUnit(unitAndPos[1], unitAndPos[0]))
 
     #??? Something to do with JSON stuff
     def generateZippedBytes(self):
