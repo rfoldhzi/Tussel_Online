@@ -138,6 +138,9 @@ function ConvertImageToBlackAndWhite(imageCanvas) {
 }
 
 function getUnitImage(player, name) {
+    if (UnitDB[name].baseUnit != undefined) {
+        name = UnitDB[name].baseUnit
+    }
     if (!(player in unitImages)) {
         unitImages[player] = {};
     }
@@ -373,6 +376,11 @@ function getEffectiveResources(unitToIgnore) {
             resources[unit.stateData] += unit.resourceGen[unit.stateData]
         } else if (unit.state == "build") {
             cost = getCost(unit.stateData[1])
+            for (let r in cost) {
+                resources[r] -= cost[r]
+            }
+        } else if (unit.state == "upgrade") {
+            cost = getCost(unit.stateData)
             for (let r in cost) {
                 resources[r] -= cost[r]
             }

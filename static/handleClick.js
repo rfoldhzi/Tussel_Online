@@ -444,6 +444,8 @@ function handleClick(xPos,yPos) {
                         color = "#6464FF"
                     } else if (selected.maxPopulation && selected.maxPopulation <= selected.population) {
                         color = "#777777"
+                    } else if (selected.maxSupplies && selected.supplies <=0) {
+                        color = "#FF0"
                     } else if (checkIfAffordable(unitName))  {
                         color = "#EEEEEE"
                     }
@@ -458,11 +460,11 @@ function handleClick(xPos,yPos) {
                 }
                 for (let upgradeName of possibleUpgrades) {
 
-                    let color = "#ffa200"
+                    let color = "#755724"
                     if (selected.state == "upgrade" && selected.stateData == upgradeName) {
-                        color = "#7d4aff"
+                        color = "#7842ff"
                     } else if (checkIfAffordable(upgradeName))  {
-                        color = "#EEEEEE"
+                        color = "#ffa200"
                     }
 
                     

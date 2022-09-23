@@ -82,17 +82,18 @@ def CheckIfGoodToBuild(self, playerNum, u, Grid, pos = False):
         if self.resources[playerNum][v] < cost[v]:#Check each resource
             print("Too expensive")
             return False #If too expensive, ignore build
-    if getattr(u,'maxPopulation',False):
-        if u.population >= u.maxPopulation:
-            print("Too populated")
-            return False #Max popultion reached
-    if getattr(u,'maxSupplies',False):
-        if u.supplies <= 0:
-            print("Too few supplies")
-            return False #Doesn't have any supplies remaining
-    if checkRange(u, pos) > u.range:
-        print("Too far")
-        return False #Can't build out of range
+    if u.state == "build":
+        if getattr(u,'maxPopulation',False):
+            if u.population >= u.maxPopulation:
+                print("Too populated")
+                return False #Max popultion reached
+        if getattr(u,'maxSupplies',False):
+            if u.supplies <= 0:
+                print("Too few supplies")
+                return False #Doesn't have any supplies remaining
+        if checkRange(u, pos) > u.range:
+            print("Too far")
+            return False #Can't build out of range
     t = UnitDB[buildName].get('type') or 0
     if Grid[pos[1]][pos[0]]:#on Water
         if t not in ['aircraft', 'boat']:
