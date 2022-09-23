@@ -108,6 +108,21 @@ function endTurn() {
     regularlyScheduledDrawBoard()
 }
 
+function getUnitDB() {
+    callback = function (responseText) {
+        jsonText = responseText;
+        UnitDB = JSON.parse(jsonText)
+    }
+    httpGetAsync(location.protocol+"//" + window.location.host + "/UnitDB/", callback);
+}
+
+function getTechDB() {
+    callback = function (responseText) {
+        jsonText = responseText;
+        TechDB = JSON.parse(jsonText)
+    }
+    httpGetAsync(location.protocol+"//" + window.location.host + "/TechDB/", callback);
+}
 
 //Sets up a new gameObject
 function useNewGameObject(newGameObject) {
@@ -1299,6 +1314,8 @@ let touch_move = function (event) {
 
 
 document.addEventListener('DOMContentLoaded', function () {
+    getUnitDB()
+    getTechDB()
 
     if (document.querySelector('meta[name="player_id"]')){
         this_player = parseInt(document.querySelector('meta[name="player_id"]').content)

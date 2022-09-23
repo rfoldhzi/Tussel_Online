@@ -8,8 +8,9 @@ from flask import (
     request
 )
 from game import Game, GameMaker
-import game
+import game, UnitDB
 from os import walk
+import json
 
 from wtforms import (
     StringField,
@@ -320,3 +321,16 @@ def newGame():
     return render_template("newGameForm.html",
         form=form,
         )
+
+class Encoder(json.JSONEncoder):
+    def default(self, o):
+        #Posible thing to do is is find all units with attack as their state and change statedata to unitID
+        return o.__dict__
+
+@app.route('/UnitDB/', strict_slashes=False)
+def getUnitDB():
+    return json.dumps(UnitDB.UnitDB, indent=0, cls=Encoder)
+
+@app.route('/TechDB/', strict_slashes=False)
+def getTechDB():
+    return json.dumps(UnitDB.TechDB, indent=0, cls=Encoder)

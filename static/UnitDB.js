@@ -1,4 +1,4 @@
-const UnitDB = {
+let UnitDB = {
     'soldier':{
         'cost': {'gold':20},
     },
@@ -1302,7 +1302,7 @@ const UnitDB = {
     },
 }
 
-const TechDB = {
+let TechDB = {
     //RED
     'bionics':{
         'cost': 20,
