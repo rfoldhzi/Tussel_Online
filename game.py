@@ -188,7 +188,7 @@ class Unit:
             self.score = score
         UnitID += 1
         self.resourceGen = UnitDB[name].get('resourceGen') or {
-            "gold": 4,
+            "gold": 2,
             "metal": 0,
             "energy": 0
             }
@@ -235,7 +235,7 @@ class Game:
     def addPlayer(self):
         p = len(self.units)
         self.units[p] = []
-        self.resources[p] = {'gold':20,'metal':0,'energy':0}
+        self.resources[p] = {'gold':100,'metal':200,'energy':0}
         self.went[p] = False
         self.tech[p] = []
         self.scores[p] = 0
@@ -336,6 +336,16 @@ class Game:
                         self.units[p].append(self.newUnit(startingspots[p], "mothership"))
                 else:
                     self.units[p].append(self.newUnit(startingspots[p], "town"))
+                    spaces = getRangeCircles(self, self.units[p][0])
+                    random.shuffle(spaces)
+                    for i in range(2):
+                        water = True
+                        while water:
+                            water = Grid[spaces[0][1]][spaces[0][0]]
+                            if water:
+                                spaces.pop(0)
+                        self.units[p].append(self.newUnit(spaces[0], "soldier"))
+                        spaces.pop(0)
                 i+=1
 
             self.units["neutral"] = []

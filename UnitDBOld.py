@@ -3,7 +3,7 @@ UnitDB = {
         'cost': {'gold':20},
     },
     'scout':{
-        'cost': {'gold':50},
+        'cost': {'gold':30},
         'speed':2,
         'defense':1
     },
@@ -21,9 +21,9 @@ UnitDB = {
         'cost': {'gold':20,'metal':10},
         'possibleBuilds': [],
         'possibleStates': ['move','attack','build'],
-        'supplies': 2,
         'health': 15,
         'defense':3,
+        'supplies':3,
     },
     'sniper':{
         'cost': {'gold':125,'metal':20},
@@ -58,12 +58,12 @@ UnitDB = {
         'abilities':{'buff':['attack', 1.5]},
     },
     'bot':{
-        'cost': {'metal':25,'energy':5},
+        'cost': {'metal':25},
         'type': 'bot',
         'resourceGen':{
-            "gold": 5,
-            "metal": 5,
-            "energy": 5
+            "gold": 1,
+            "metal": 1,
+            "energy": 1
         }
     },
     'minibot':{
@@ -77,258 +77,91 @@ UnitDB = {
             "gold": 0,
             "metal": 0,
             "energy": 0
-        },
-        "size":0.75,
+        }
     },
     'mech':{
         'cost': {'gold':20,'metal':80,'energy':10},
         'possibleBuilds': ['minibot'],
-        'possibleStates': ['move','attack', 'build'],
+        'possibleStates': ['move','attack','resources', 'build'],
         'type': 'vehicle',
         'health': 15,
         'defense': 3,
         'supplies':2,
-        'resourceGen':{"gold": 0,}
+        'resourceGen':{
+            "gold": 4,
+            "metal": 5,
+            "energy": 0
+        }
     },
-    'outpost':{
-        'cost': {'gold':50, 'metal':50, 'energy':50},
-        'possibleBuilds': ['radar tower','house','supply depot'],
-        'possibleUpgrades': ['outpost ii'],
-        'possibleStates': ['resources', 'build','upgrade'],
+    'town':{
+        'cost': {'gold':150, 'metal':150, 'energy':150},
+        'possibleBuilds': ['soldier', 'construction worker','miner', 'electric engineer'],
+        'possibleStates': ['resources', 'build','research'],
         'type': 'building',
-        'health': 10,
-        'population':1,
-        'abilities':{'claimable':0,'parent_link':0},
+        'health': 50,
+        'population':4,
+        'abilities':{'costly':1.75},
         'resourceGen':{
             "gold": 10,
             "metal": 10,
             "energy": 10
-        },
-        "size":1,
+        }
     },
-    'outpost ii':{
-        'cost': {'gold':50, 'metal':50, 'energy':50},
-        'possibleBuilds': ['radar tower','house','supply depot','factory','mine','power plant'],
-        'possibleUpgrades': ['outpost iii'],
-        'possibleStates': ['resources', 'build','upgrade'],
-        'type': 'building',
-        'health': 15,
-        'population':2,
-        'abilities':{'claimable':0,'parent_link':0},
-        'resourceGen':{
-            "gold": 12,
-            "metal": 12,
-            "energy": 12
-        },
-        "size":1,
-        "baseUnit":"outpost"
-    },
-    'outpost iii':{
-        'cost': {'gold':75, 'metal':75, 'energy':75},
-        'possibleBuilds': ['radar tower','house','supply depot','factory','mine','power plant','turret'],
+    'metropolis':{
+        'cost': {'gold':250, 'metal':250, 'energy':250},
+        #'possibleBuilds': ['soldier','heavy','construction worker','miner', 'electric engineer','medic', 'agent'],
+        'possibleBuilds': ['hall of heroes'],
         'possibleStates': ['resources', 'build'],
         'type': 'building',
-        'health': 20,
-        'population':3,
-        'abilities':{'claimable':0,'parent_link':0},
-        'resourceGen':{
-            "gold": 15,
-            "metal": 15,
-            "energy": 15
-        },
-        "size":1,
-        "baseUnit":"outpost"
-    },
-    'town':{
-        'cost': {'gold':100, 'metal':100, 'energy':100},
-        'possibleBuilds': ['barracks','factory','mine','power plant'],
-        'possibleUpgrades': ['town ii'],
-        'possibleStates': ['resources', 'build','upgrade'],
-        'type': 'building',
-        'health': 30,
-        'population':4,
-        'abilities':{'claimable':0,'parent_link':0},
+        'health': 75,
+        'population':5,
+        'abilities':{'costly':2},
         'resourceGen':{
             "gold": 25,
             "metal": 25,
             "energy": 25
-        },
-        "size":1,
-    },
-    'town ii':{
-        'cost': {'gold':50, 'metal':50, 'energy':50},
-        'possibleBuilds': ['barracks','factory','mine','power plant','turret','docks','supply depot'],
-        'possibleUpgrades': ['town iii'],
-        'possibleStates': ['resources', 'build','upgrade','research'],
-        'type': 'building',
-        'health': 35,
-        'population':5,
-        'abilities':{'claimable':0,'parent_link':0},
-        'resourceGen':{
-            "gold": 28,
-            "metal": 28,
-            "energy": 28
-        },
-        "size":1,
-        "baseUnit":"town"
-    },
-    'town iii':{
-        'cost': {'gold':100, 'metal':100, 'energy':100},
-        'possibleBuilds': ['barracks','factory','mine','power plant','turret','docks','supply depot','tank factory','house'],
-        'possibleStates': ['resources', 'build','research'],
-        'type': 'building',
-        'health': 40,
-        'population':6,
-        'abilities':{'claimable':0,'parent_link':0},
-        'resourceGen':{
-            "gold": 30,
-            "metal": 30,
-            "energy": 30
-        },
-        "size":1,
-        "baseUnit":"town"
-    },
-    'city':{
-        'cost': {'gold':200, 'metal':200, 'energy':200},
-        'possibleBuilds': ['barracks','factory','mine','power plant','turret','docks','supply depot','tank factory','house'],
-        'possibleUpgrades': ['military city', 'civilian city'],
-        'possibleStates': ['resources', 'build','upgrade','research'],
-        'type': 'building',
-        'health': 30,
-        'population':5,
-        'abilities':{'claimable':0,'parent_link':0},
-        'resourceGen':{
-            "gold": 30,
-            "metal": 30,
-            "energy": 30
-        },
-        "size":1,
-    },
-    'military city':{
-        'cost': {'gold':100, 'metal':100, 'energy':100},
-        'possibleBuilds': ['barracks','turret','docks','supply depot','tank factory','fort','anti air turret'],
-        'possibleStates': ['resources', 'build'],
-        'type': 'building',
-        'health': 50,
-        'population':5,
-        'defense':4,
-        'abilities':{'claimable':0,'parent_link':0},
-        'resourceGen':{
-            "gold": 30,
-            "metal": 30,
-            "energy": 30
-        },
-        "size":1,
-        "baseUnit":"city"
-    },
-    'civilian city':{
-        'cost': {'gold':100, 'metal':100, 'energy':100},
-        'possibleBuilds': ['factory','mine','power plant','supply depot','house','workshop','hospital','research center'],
-        'possibleStates': ['resources', 'build','research'],
-        'type': 'building',
-        'health': 30,
-        'population':6,
-        'defense':4,
-        'abilities':{'claimable':0,'parent_link':0},
-        'resourceGen':{
-            "gold": 40,
-            "metal": 40,
-            "energy": 40
-        },
-        "size":1,
-        "baseUnit":"city"
-    },
-    'metropolis':{
-        'cost': {'gold':250, 'metal':250, 'energy':250},
-        'possibleBuilds': ['tank factory','turret','workshop','research center'],
-        'possibleUpgrades': ['metropolis ii'],
-        'possibleStates': ['resources', 'build','upgrade','research'],
-        'type': 'building',
-        'health': 75,
-        'population':6,
-        'abilities':{'claimable':0,'parent_link':0},
-        'resourceGen':{
-            "gold": 50,
-            "metal": 50,
-            "energy": 50
-        },
-        "size":1.1,
-    },
-    'metropolis ii':{
-        'cost': {'gold':250, 'metal':250, 'energy':250},
-        'possibleBuilds': ['tank factory','turret','workshop','research center','hall of heroes','experimental facility'],
-        'possibleUpgrades': ['metropolis iii'],
-        'possibleStates': ['resources', 'build','upgrade','research'],
-        'type': 'building',
-        'health': 85,
-        'population':7,
-        'abilities':{'claimable':0,'parent_link':0},
-        'resourceGen':{
-            "gold": 60,
-            "metal": 60,
-            "energy": 60
-        },
-        "size":1.1,
-        "baseUnit":"metropolis"
-    },
-    'metropolis iii':{
-        'cost': {'gold':400, 'metal':400, 'energy':400},
-        'possibleBuilds': ['tank factory','turret','workshop','research center','hall of heroes','experimental facility','shield generator','metropolis expansion'],
-        'possibleStates': ['resources', 'build','research'],
-        'type': 'building',
-        'health': 100,
-        'population':8,
-        'abilities':{'claimable':0,'parent_link':0},
-        'resourceGen':{
-            "gold": 75,
-            "metal": 75,
-            "energy": 75
-        },
-        "size":1.1,
-        "baseUnit":"metropolis"
+        }
     },
     'metropolis expansion':{
-        'cost': {'gold':100, 'metal':100, 'energy':100},
-        'possibleBuilds': ['factory','mine','power plant','supply depot','house','barracks','turret','workshop'],
-        'possibleStates': ['resources', 'build','research'],
+        'cost': {'gold':150, 'metal':150, 'energy':150},
+        #'possibleBuilds': ['soldier','heavy','construction worker','miner', 'electric engineer','medic', 'agent'],
+        'possibleBuilds': ['hall of heroes'],
+        'possibleStates': ['resources', 'build'],
         'type': 'building',
-        'health': 100,
-        'population':8,
-        'abilities':{'claimable':0,'parent_link':0},
+        'health': 30,
+        'population':5,
+        'abilities':{'costly':1.5},
         'resourceGen':{
-            "gold": 75,
-            "metal": 75,
-            "energy": 75
-        },
-        "size":1,
-        "baseUnit":"metropolis"
+            "gold": 10,
+            "metal": 10,
+            "energy": 10
+        }
     },
     'construction worker':{
-        'cost': {'gold':200},
-        'possibleUpgrades': ['barracks','factory','turret','docks','supply depot'],
-        'possibleStates': ['move','heal', 'upgrade'],
-        'abilities':{'onlyHeal':['building']},
+        'cost': {'gold':20},
+        'possibleBuilds': ['town','barracks','turret','factory','tank factory','docks','wall','radar tower','workshop'],
+        'possibleStates': ['move','resources', 'build'],
         'resourceGen':{
-            "gold": 0,
-            "metal": 0,
+            "gold": 4,
+            "metal": 8,
             "energy": 0
         }
     },
     'crane':{
-        'cost': {'gold':200, 'metal':100},
-        'possibleUpgrades': ['barracks','turret','docks','supply depot','tank factory','house'],
-        'possibleStates': ['move','resources', 'upgrade'],
+        'cost': {'gold':10, 'metal':50, 'energy':10},
+        'possibleBuilds': ['town','factory','tank factory','research center','docks','fort','hospital'],
+        'possibleStates': ['move','resources', 'build'],
         'type': 'vehicle',
         'health':20,
         'defense':3,
         'resourceGen':{
             "gold": 0,
-            "metal": 3,
+            "metal": 8,
             "energy": 0
         }
     },
     'mechanic':{
-        'cost': {'gold':150, 'metal':40},
+        'cost': {'gold':60, 'energy':5},
         'possibleBuilds': ['bot'],
         'possibleStates': ['move','resources', 'build', 'heal'],
         'supplies':2,
@@ -336,28 +169,30 @@ UnitDB = {
         'resourceGen':{
             "gold": 0,
             "metal": 0,
-            "energy": 2
+            "energy": 5
         }
     },
     'miner':{
-        'cost': {'gold':100},
-        'possibleUpgrades': ['mine'],
-        'possibleStates': ['move','resources', 'upgrade'],
+        'cost': {'gold':20},
+        'possibleBuilds': ['mine'],
+        'possibleStates': ['move','resources', 'build'],
         'resourceGen':{
-            "gold": 2,
-            "metal": 0,
+            "gold": 10,
+            "metal": 8,
             "energy": 0
         }
     },
     'mine':{
-        'cost': {'metal':50},
+        'cost': {'gold':20, 'metal':50},
         'possibleStates': ['resources'],
         'type': 'building',
-        'health': 10,
+        'health': 15,
         'defense': 1,
-        #'abilities':{'costly':1.5},
+        'abilities':{'costly':1.5},
         'resourceGen':{
-            "gold": 5,
+            "gold": 30,
+            "metal": 10,
+            "energy": 0
         }
     },
     'mine shaft':{
@@ -426,7 +261,7 @@ UnitDB = {
         }
     },
     'fort':{
-        'cost': {'gold':100 ,'metal':250},
+        'cost': {'gold':100 ,'metal':250, 'energy':100},
         'possibleStates': ['attack','build'],
         'possibleBuilds': ['soldier', 'jeep','medic'],
         'type': 'building',
@@ -440,30 +275,17 @@ UnitDB = {
         }
     },
     'electric engineer':{
-        'cost': {'gold':100},
-        'possibleUpgrades': ['power plant','nuclear plant'],
-        'possibleStates': ['move','resources', 'upgrade'],
-        'resourceGen':{
-            "gold": 0,
-            "metal": 0,
-            "energy": 2
-        }
-    },
-    'power plant':{
-        'cost': {'metal':50},
-        'possibleStates': ['resources'],
-        'type': 'building',
-        'health': 10,
-        'defense': 1,
-        #'abilities':{'costly':1.5},
+        'cost': {'gold':20},
+        'possibleBuilds': ['power plant','nuclear plant'],
+        'possibleStates': ['move','resources', 'build'],
         'resourceGen':{
             "gold": 0,
             "metal": 0,
             "energy": 5
         }
     },
-    'nuclear plant':{
-        'cost': {'metal':50, 'energy': 50},
+    'power plant':{
+        'cost': {'gold':10, 'metal':50, 'energy': 20},
         'possibleStates': ['resources'],
         'type': 'building',
         'health': 15,
@@ -472,19 +294,32 @@ UnitDB = {
         'resourceGen':{
             "gold": 10,
             "metal": 0,
-            "energy": 10
+            "energy": 20
+        }
+    },
+    'nuclear plant':{
+        'cost': {'gold':100, 'metal':50, 'energy': 50},
+        'possibleStates': ['resources'],
+        'type': 'building',
+        'health': 20,
+        'defense': 1,
+        'abilities':{'costly':1.75},
+        'resourceGen':{
+            "gold": 10,
+            "metal": 0,
+            "energy": 40
         }
     },
     'factory':{
-        'cost': {'metal':50},
-        #'possibleBuilds': ['bot','minibot'],
-        'possibleStates': ['resources'],
+        'cost': {'gold':20, 'metal':50, 'energy':10},
+        'possibleBuilds': ['bot','minibot'],
+        'possibleStates': ['resources', 'build'],
         'type': 'building',
-        'health': 10,
-        #'abilities':{'costly':1.5},
+        'health': 15,
+        'abilities':{'costly':1.5},
         'resourceGen':{
             "gold": 0,
-            "metal": 5,
+            "metal": 30,
             "energy": 0
         }
     },
@@ -498,12 +333,12 @@ UnitDB = {
         'abilities':{'costly':1.3},
         'resourceGen':{
             "gold": 0,
-            "metal": 2,
-            "energy": 0
+            "metal": 8,
+            "energy": 5
         }
     },
     'hospital':{
-        'cost': {'gold':50, 'metal':50},
+        'cost': {'gold':80, 'metal':50, 'energy':20},
         'possibleBuilds': ['medic'],
         'possibleStates': ['build','heal'],
         'type': 'building',
@@ -517,63 +352,33 @@ UnitDB = {
         }
     },
     'barracks':{
-        'cost': {'metal':50},
+        'cost': {'gold':100, 'metal':10},
         #'possibleBuilds': ['soldier','scout','heavy','defender','sniper','rocket','brute','medic'],
         'possibleBuilds': ['soldier','scout','heavy','medic'],
         'possibleStates': ['build'],
         'type': 'building',
         'health': 15,
-        'abilities':{'costly':1.5},
+        'abilities':{'costly':1.2},
         'resourceGen':{
             "gold": 0,
         }
-    },
-    'house':{
-        'cost': {'metal':150},
-        'possibleBuilds': ['construction worker','miner','electric engineer'],
-        'possibleStates': ['build'],
-        'type': 'building',
-        'population': 2,
-        'health': 10,
-        'abilities':{'costly':1.5},
-        'resourceGen':{
-            "gold": 0,
-        }
-    },
-    'supply depot':{
-        'cost': {'metal':50},
-        'possibleBuilds': ['truck'],
-        'possibleStates': ['build','resupply'],
-        'type': 'building',
-        'population': 2,
-        'health': 15,
-        'resourceGen':{
-            "gold": 0,
-        }
-    },
-    'truck':{
-        'cost': {'gold':40, 'metal':40},
-        'possibleStates': ['move','resupply'],
-        'type': 'vehicle',
-        'speed':2,
-        'health':10,
-        'supplies':5,
-        'resourceGen':{"gold": 0}
     },
     'tank factory':{
-        'cost': {'metal':100},
+        'cost': {'gold':150, 'metal':50, 'energy':10},
         #'possibleBuilds': ['tank','heavy tank','artillery','jeep','crane','mobile fortress'],
         'possibleBuilds': ['tank','jeep','crane'],
-        'possibleStates': ['build'],
+        'possibleStates': ['resources', 'build'],
         'type': 'building',
         'health': 20,
         'abilities':{'costly':1.5},
         'resourceGen':{
-            "gold": 0
+            "gold": 0,
+            "metal": 10,
+            "energy": 0
         }
     },
     'tank':{
-        'cost': {'gold':70, 'metal':70},
+        'cost': {'gold':70, 'metal':100, 'energy':20},
         'possibleStates': ['move','attack'],
         'type': 'vehicle',
         'health':20,
@@ -581,7 +386,7 @@ UnitDB = {
         'resourceGen':{"gold": 0}
     },
     'heavy tank':{
-        'cost': {'gold':70, 'metal':150},
+        'cost': {'gold':100, 'metal':200, 'energy':50},
         'possibleStates': ['move','attack'],
         'type': 'vehicle',
         'health':25,
@@ -590,7 +395,7 @@ UnitDB = {
         'resourceGen':{"gold": 0}
     },
     'artillery':{
-        'cost': {'gold':250, 'metal':70},
+        'cost': {'gold':120, 'metal':150, 'energy':50},
         'possibleStates': ['move','attack'],
         'type': 'vehicle',
         'attack':3,
@@ -600,7 +405,7 @@ UnitDB = {
         'abilities':{'onlyHit':['building']},
     },
     'jeep':{
-        'cost': {'gold':40, 'metal':40},
+        'cost': {'gold':20, 'metal':40, 'energy':20},
         'possibleStates': ['move','attack','transport'],
         'type': 'vehicle',
         'speed':2,
@@ -617,15 +422,15 @@ UnitDB = {
         'health': 25,
         'defense': 3,
         'population':3,
-        'supplies': 5,
+        'supplies':5,
         'resourceGen':{
-            "gold": 2,
-            "metal": 4,
+            "gold": 20,
+            "metal": 40,
             "energy": 0
         }
     },
     'airport':{
-        'cost': {'gold':50, 'metal':200},
+        'cost': {'gold':200, 'metal':70, 'energy':20},
         #'possibleBuilds': ['plane','helicopter','bomber'],
         'possibleBuilds': ['plane'],
         'possibleStates': ['resources', 'build'],
@@ -633,7 +438,7 @@ UnitDB = {
         'health': 15,
         'abilities':{'costly':1.25},
         'resourceGen':{
-            "metal": 0,
+            "metal": 20,
         }
     },
     'plane':{
@@ -702,7 +507,7 @@ UnitDB = {
         'defense':1,
         'abilities':{'costly':1.2},
         'resourceGen':{
-            "gold": 0,
+            "gold": 10,
         }
     },
     'boat':{
@@ -764,7 +569,7 @@ UnitDB = {
         'health': 25,
         'defense': 3.5,
         'population':2,
-        'supplies':5,
+        'supplies':4,
         'resourceGen':{
             "gold": 0
         }
@@ -814,7 +619,7 @@ UnitDB = {
         }
     },
     'research center':{
-        'cost': {'metal':50, 'energy':100},
+        'cost': {'gold':100, 'metal':100, 'energy':100},
         'possibleBuilds': [],
         'possibleStates': ['resources', 'build', 'research'],
         'health':15,
@@ -857,6 +662,7 @@ UnitDB = {
         'attack': 4,
         'defense': 4,
         'population':2,
+        'supplies':8,
         'resourceGen':{
             "gold": 0
         }
@@ -1029,8 +835,7 @@ UnitDB = {
             "gold": 10,
             "metal": 10,
             "energy": 5
-        },
-        "size":1,
+        }
     },
     'hyena':{
         'cost': {'metal':10},
@@ -1104,14 +909,13 @@ UnitDB = {
         'possibleStates': ['resources', 'build'],
         'type': 'building',
         'health': 50,
-	    'defense': 3,
+	'defense': 3,
         'population':4,
         'resourceGen':{
             "gold": 0,
             "metal": 20,
             "energy": 20
-        },
-        "size":1,
+        }
     },
     'servitor':{
         'cost': {'gold':0, 'metal':40, 'energy':40},
@@ -1200,8 +1004,7 @@ UnitDB = {
         'abilities':{'deathSpawn':'mad plant base'},
         'resourceGen':{
             "energy": 10
-        },
-        "size":1,
+        }
     },
     'mad plant base':{
         'cost': {'gold':0},
@@ -1214,8 +1017,7 @@ UnitDB = {
         'abilities':{'multibuild':1},
         'resourceGen':{
             "energy": 0
-        },
-        "size":1,
+        }
     },
     'seed':{
         'cost': {'energy':0},
@@ -1254,8 +1056,7 @@ UnitDB = {
             "gold": 20,
             "metal": 20,
             "energy": 0
-        },
-        "size":.75,
+        }
     },
     'mad walking roots':{
         'cost': {'gold':0},
@@ -1263,8 +1064,7 @@ UnitDB = {
         'population':3,
         'resourceGen':{
             "gold": 0
-        },
-        "size":.75,
+        }
     },
     'flower':{
         'cost': {'gold':15},
@@ -1274,14 +1074,12 @@ UnitDB = {
         'abilities':{'deathSpawn':'mad flower'},
         'resourceGen':{
             "metal": 1
-        },
-        "size":.7,
+        }
     },
     'mad flower':{
         'cost': {'gold':0},
         'possibleStates': ['attack'],
         'type': 'building',
-        "size":.7,
     },
     'plant house':{
         'cost': {'metal':30},
@@ -1376,8 +1174,7 @@ UnitDB = {
         'resourceGen':{
             "energy": 20, 
             "metal": 10, 
-        },
-        "size":1,
+        }
     },
 
     'alien transport':{
