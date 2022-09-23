@@ -4,6 +4,6 @@ mode = "clear" # sight, poly, halo, clear
 ai = 2
 allai = False
 players = 3
-Map = "plymouth" # "random", "generated" or specific name (e.g. "lakes")
+Map = "trifold" # "random", "generated" or specific name (e.g. "lakes")
 mapType = "any" # "regular", "any" or "small"
 AltPictures = False

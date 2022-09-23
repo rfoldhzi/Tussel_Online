@@ -15,11 +15,12 @@ const playerColors = {
     "5":[125, 43, 255], //Purple
     "6":[255, 255, 64], //Yellow
     "7":[255, 0, 221], //Pink
-    "8":[217, 217, 217], //White
+    "8":[230, 230, 230], //White
     "9":[82, 255, 168], //Cyan
     "10":[138, 63, 21], //Brown
     "11":[194, 145, 81], //Tan
-    "neutral":[40,40,40] //Black
+    "neutral":[40,40,40], //Black
+    "rebel":[150,150,150] //Gray
 };
 const resourceColors = {
     "gold": "#DDDD00",

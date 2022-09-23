@@ -170,6 +170,21 @@ UnitDB = {
         "size":1,
         "baseUnit":"outpost"
     },
+    'rebel town':{
+        'cost': {'gold':100, 'metal':100, 'energy':100},
+        'possibleBuilds': ['barracks','factory','mine','soldier','brute'],
+        'possibleStates': ['resources', 'build'],
+        'type': 'building',
+        'health': 30,
+        'population':6,
+        'abilities':{'reclaimable':'town','parent_link':0},
+        'resourceGen':{
+            "gold": 25,
+            "metal": 25,
+            "energy": 25
+        },
+        "size":1,
+    },
     'town':{
         'cost': {'gold':100, 'metal':100, 'energy':100},
         'possibleBuilds': ['barracks','factory','mine','power plant'],
@@ -268,6 +283,21 @@ UnitDB = {
         },
         "size":1,
         "baseUnit":"city"
+    },
+    'rebel metropolis':{
+        'cost': {'gold':250, 'metal':250, 'energy':250},
+        'possibleBuilds': ['barracks','tank factory','factory','mine','soldier','brute','sniper','turret'],
+        'possibleStates': ['resources', 'build',],
+        'type': 'building',
+        'health': 40,
+        'population':10,
+        'abilities':{'reclaimable':'metropolis','parent_link':0},
+        'resourceGen':{
+            "gold": 50,
+            "metal": 50,
+            "energy": 50
+        },
+        "size":1.1,
     },
     'metropolis':{
         'cost': {'gold':250, 'metal':250, 'energy':250},

@@ -400,6 +400,25 @@ def findNeutralUnitsFromMap(MAP):
 
     return neutralUnits
 
+def findRebelUnitsFromMap(MAP):
+    im = Image.open(MAP)    
+    pix = im.load()
+    width = im.size[0]
+    height = im.size[1]
+    grid = []
+
+    rebelUnits = []
+    
+    for x in range(width):
+        for y in range(height):
+            pixel = pix[x,y]
+            if pixel == (0,0,0,255):
+                rebelUnits.append(["rebel town", [x,y]]) 
+            elif pixel == (50,50,50,255):
+                rebelUnits.append(["rebel metropolis", [x,y]]) 
+
+    return rebelUnits
+
 def getAICountFromMap(MAP):
     im = Image.open(MAP)    
     pix = im.load()

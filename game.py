@@ -284,12 +284,14 @@ class Game:
             print('units',self.units)
 
             neutralUnits = []
+            rebelUnits = []
 
             if self.map == "generated":
                 startingspots = methods.findStartSpots(Grid, len(self.units))
             else:
                 startingspots = methods.findStartSpotsFromMap("maps/%s" % self.map)
                 neutralUnits = methods.findNeutralUnitsFromMap("maps/%s" % self.map)
+                rebelUnits = methods.findRebelUnitsFromMap("maps/%s" % self.map)
 
             del(self.map)
             
@@ -356,9 +358,22 @@ class Game:
             self.progress["neutral"] = {}
             self.botmode.append("neutral")
 
+            self.units["rebel"] = []
+            self.resources["rebel"] = {'gold':100,'metal':200,'energy':0}
+            self.went["rebel"] = True
+            self.tech["rebel"] = []
+            self.scores["rebel"] = 0
+            self.progress["rebel"] = {}
+            self.botmode.append("rebel")
+
             for unitAndPos in neutralUnits:
                 # unitAndPos[0] is a unit, unitAndPos[1] is the position
                 self.units["neutral"].append(self.newUnit(unitAndPos[1], unitAndPos[0]))
+            
+            for unitAndPos in rebelUnits:
+                # unitAndPos[0] is a unit, unitAndPos[1] is the position
+                self.units["rebel"].append(self.newUnit(unitAndPos[1], unitAndPos[0]))
+
 
     #??? Something to do with JSON stuff
     def generateZippedBytes(self):
@@ -733,11 +748,11 @@ class Game:
         #AI = range(len(self.units))
         AI = range(len(self.units)-self.ai,len(self.units))
         if "neutral" in self.units:
-            AI = range(len(self.units)-self.ai-1,len(self.units)-1)
+            AI = range(len(self.units)-self.ai-2,len(self.units)-2)
         if self.allai:
             AI = range(len(self.units))
             if "neutral" in self.units:
-                AI = range(len(self.units)-1)
+                AI = range(len(self.units)-2)
         for v in AI:
             Computer.CurrentAI(self,v)
             self.went[v] = True
@@ -909,6 +924,22 @@ class Game:
                         GoodToDeathSpawn = False
                     else:
                         newUnit = self.newUnit(u.position,u.name,None, u.score)
+                        self.units["neutral"].append(newUnit)
+
+                        GoodToDeathSpawn = False
+                #"reclaimable" means it will spawn a certain unit, owned by a different player.
+                elif 'reclaimable' in u.abilities: 
+                    player = self.getPlayerfromUnit(u)
+                    if player == "neutral":
+                        newUnit = self.newUnit(u.position,u.abilities['reclaimable'],None, u.score)
+                        self.upgradeUnit(newUnit, hunterPlayer)
+                        
+                        self.scores[hunterPlayer] += u.score
+                        self.units[hunterPlayer].append(newUnit)
+
+                        GoodToDeathSpawn = False
+                    else:
+                        newUnit = self.newUnit(u.position,u.abilities['reclaimable'],None, u.score)
                         self.units["neutral"].append(newUnit)
 
                         GoodToDeathSpawn = False
@@ -1296,7 +1327,7 @@ class GameMaker(Game):
                 for v2 in v:
                     l.append(v2)
                 for v2 in l:
-                    if v2 == "neutral":
+                    if v2 == "neutral" or v2 == "rebel":
                         continue
                     v[int(v2)] = v[v2]
                     del(v[v2])
