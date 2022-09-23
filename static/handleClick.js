@@ -416,7 +416,7 @@ function handleClick(xPos,yPos) {
             }
             if (selected.possibleStates.includes("build") || selected.possibleStates.includes("upgrade")) {
                 let possibleBuilds = selected.possiblebuilds || UnitDB[selected.name]['possibleBuilds'] || []
-                let possibleUpgrades = selected.possibleUpgrades || UnitDB[selected.name]['possibleUpgrades'] || []
+                let possibleUpgrades = selected.possibleupgrades || UnitDB[selected.name]['possibleUpgrades'] || []
                 
                 let btnSize = 50
                 if (canvas.height > canvas.width && canvas.width*canvas.height > 1000000) {

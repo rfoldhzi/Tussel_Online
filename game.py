@@ -495,6 +495,10 @@ class Game:
                 unit.possiblebuilds = list(UnitDB[unit.name].get('possibleBuilds')) or []
             if v[2] in unit.possiblebuilds:
                 unit.possiblebuilds.remove(v[2])#[2] is what was lost
+        elif currentAbility == 'unlock upgrade' and v[1] == unit.name:#[1] is builder
+            if not getattr(unit, 'possibleupgrades', False):
+                unit.possibleupgrades = list(UnitDB[unit.name].get('possibleUpgrades')) or []
+            unit.possibleupgrades.append(v[2])#[2] is what was unlocked
         elif currentAbility == 'stat' and v[1] == unit.name:#v[1] is unit
             print('nwe unit')
             print('we are in the belly of the beaast: stat changes', v)

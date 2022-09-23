@@ -1377,11 +1377,11 @@ function techPopupBox(tech) {
                 image = currentTechImages["question"]
                 context.drawImage(image, xPos, yPos, boxHeight*.3/numberOfSubtechs2, boxHeight*.3/numberOfSubtechs2);
                 context.fillStyle = "#0009"
-                context.fillRect(xPos, yPos, boxHeight*.3/numberOfSubtechs, boxHeight*.3/numberOfSubtechs);
+                context.fillRect(xPos, yPos, boxHeight*.3/numberOfSubtechs2, boxHeight*.3/numberOfSubtechs2);
             } else {
                 context.drawImage(image, xPos, yPos, boxHeight*.3/numberOfSubtechs2, boxHeight*.3/numberOfSubtechs2);
                 context.fillStyle = "#0009"
-                context.fillRect(xPos, yPos, boxHeight*.3/numberOfSubtechs, boxHeight*.3/numberOfSubtechs);
+                context.fillRect(xPos, yPos, boxHeight*.3/numberOfSubtechs2, boxHeight*.3/numberOfSubtechs2);
             }
             i += 1
         }
