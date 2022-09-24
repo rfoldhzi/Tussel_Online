@@ -564,6 +564,8 @@ class Game:
             state = None
             stateData = None
 
+        if state != None and stateData == None:
+            return
 
         player2 = self.getPlayerfromUnit(unit)
         for u in self.units[player2]:

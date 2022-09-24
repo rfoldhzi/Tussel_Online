@@ -855,6 +855,9 @@ function replaceColor2(srcR, srcG, srcB, dstR, dstG, dstB) {
 }
 
 function drawStateLine(unit) { //As in "action state" (draws the line corresponding to a units action)
+    if (unit.state == null || unit.stateData == null) {
+        return
+    }
     let position1 = unit.position
     let position2 = null
     let color = "#FFFFFF"
