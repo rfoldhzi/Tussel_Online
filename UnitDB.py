@@ -12,9 +12,7 @@ UnitDB = {
         'health': 12,
         'attack':3,
         'resourceGen':{
-            "gold": 8,
-            "metal": 0,
-            "energy": 0
+            "gold": 2
         }
     },
     'defender':{
@@ -755,24 +753,26 @@ UnitDB = {
     'helicopter':{
         'cost': {'gold':100, 'metal':50, 'energy':20},
         #'possibleBuilds': ['soldier','construction worker'],
-        'possibleStates': ['move','attack','transport'],
+        'possibleStates': ['move','attack','transport','resupply'],
         'type': 'aircraft',
         'speed':2,
         'defense':1,
         'attack':1.5,
         'population':1,
+        'supplies':1,
         'abilities':{'transport':['trooper','bot']},
         'resourceGen':{"gold": 0}
     },
     'chinook':{
         'cost': {'gold':100, 'metal':100, 'energy':20},
         #'possibleBuilds': ['tank','crane','heavy'],
-        'possibleStates': ['move','attack','transport'],
+        'possibleStates': ['move','attack','transport','resupply'],
         'type': 'aircraft',
         'speed':2,
         'defense':1.5,
         'attack':2,
         'population':2,
+        'supplies':2,
         'abilities':{'transport':['trooper','bot','vehicle']},
         'resourceGen':{"gold": 0}
     },
@@ -2164,14 +2164,14 @@ TechDB = {
         'cost': 20,
         'time': 1,
         'ability': [],
-        'unlocks': ['more','defensive recruitment'],
+        'unlocks': ['tougher', 'defenders'],
         'deny': ['offensive tactics'],
     },
     'more':{
         'cost': 20,
         'time': 2,
         'ability': [['stat', 'barracks', 'maxPopulation', 1]],
-        'unlocks': ['tougher','defenders'],
+        'unlocks': [],
     },
     'defenders':{
         'cost': 20,
@@ -2195,7 +2195,7 @@ TechDB = {
         'cost': 20,
         'time': 4,
         'ability': [['typeStat', 'trooper', 'defense', 0.5]],
-        'unlocks': ['commanding presence', 'anti air'],
+        'unlocks': ['more', 'defensive recruitment'],
     },
     'rockets':{
         'cost': 20,
