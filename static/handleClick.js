@@ -74,6 +74,8 @@ function flipBoardVariables() {
 
 function enterResearchMenu() {
     stateDataMode = "research"
+    defaultButtonMenu()
+    createCancelButton()
     flipBoardVariables()
     drawBoard()
 }
@@ -423,20 +425,36 @@ function handleClick(xPos,yPos) {
                     btnSize = 120
                 }
 
+                //For labels above and below build and upgrade buttons
+                let buttonLabelSize = btnSize * .5
+                if (possibleBuilds.length > 0 && possibleUpgrades.length > 0) {
+                    buttonLabelSize *= 2
+                }
+
                 let btnCount = possibleBuilds.length + possibleUpgrades.length
-                let combinedHeight = btnCount*btnSize + (btnCount-1)*btnSize*.2
+                let combinedHeight = btnCount*btnSize + (btnCount-1)*btnSize*.2 + buttonLabelSize
                 let btnHeightStart = Math.floor(canvas.height*.5 - combinedHeight/2) 
                 if (btnHeightStart < resourceBoxHeight + statBoxHeight + heightforResources) {
                     while (btnHeightStart < resourceBoxHeight + statBoxHeight + heightforResources && btnSize > 20) {
                         btnSize -= 10
-                        combinedHeight = btnCount*btnSize + (btnCount-1)*btnSize*.2
+                        combinedHeight = btnCount*btnSize + (btnCount-1)*btnSize*.2 + buttonLabelSize
                         btnHeightStart = Math.floor(canvas.height*.5 - combinedHeight/2)
                     }
                 }
 
+                let currentButtonHeight = 0
+
+                if (possibleBuilds.length > 0) {
+                    ButtonCollection["Build Label"] = new Button(0, btnHeightStart + currentButtonHeight, btnSize, btnSize*.4, "#000", "Build", function(){});
+                    currentButtonHeight += btnSize * 0.5;
+                } else if (possibleUpgrades.length > 0) {
+                    ButtonCollection["Upgrade Label"] = new Button(0, btnHeightStart + currentButtonHeight, btnSize, btnSize*.4, "#000", "Upgrade", function(){});
+                    currentButtonHeight += btnSize * 0.5;
+                }
+
                 effectiveResources = getEffectiveResources(selected) //Store in global variable
 
-                let i = 0
+                //let i = 0
                 for (let unitName of possibleBuilds) {
 
                     let color = "#EE5555"
@@ -451,12 +469,14 @@ function handleClick(xPos,yPos) {
                     }
 
                     
-                    let newBuildButton = new Button(0, btnHeightStart + (btnSize * 1.2)*i, btnSize, btnSize, color, "", buildButtonClicked);
+                    //let newBuildButton = new Button(0, btnHeightStart + (btnSize * 1.2)*i, btnSize, btnSize, color, "", buildButtonClicked);
+                    let newBuildButton = new Button(0, btnHeightStart + currentButtonHeight, btnSize, btnSize, color, "", buildButtonClicked);
                     newBuildButton.name = unitName
                     newBuildButton.parameters = newBuildButton;
                     newBuildButton.addImage(getUnitImage(this_player, unitName));
                     buildButtons.push(newBuildButton);
-                    i++;
+                    //i++;
+                    currentButtonHeight += btnSize * 1.2;
                 }
                 for (let upgradeName of possibleUpgrades) {
 
@@ -468,12 +488,23 @@ function handleClick(xPos,yPos) {
                     }
 
                     
-                    let newBuildButton = new Button(0, btnHeightStart + (btnSize * 1.2)*i, btnSize, btnSize, color, "", upgradeButtonClicked);
+                    //let newBuildButton = new Button(0, btnHeightStart + (btnSize * 1.2)*i, btnSize, btnSize, color, "", upgradeButtonClicked);
+                    let newBuildButton = new Button(0, btnHeightStart + currentButtonHeight, btnSize, btnSize, color, "", upgradeButtonClicked);
                     newBuildButton.name = upgradeName
                     newBuildButton.parameters = newBuildButton;
                     newBuildButton.addImage(getUnitImage(this_player, upgradeName));
                     buildButtons.push(newBuildButton);
-                    i++;
+                    //i++;
+                    currentButtonHeight += btnSize * 1.2;
+                }
+
+                //We do this at the end so that it renders at the bottom, below all the build buttons
+                if (possibleBuilds.length > 0 && possibleUpgrades.length > 0) {
+                    currentButtonHeight -= btnSize * 0.1;
+                    UpgradeLabel = new Button(0, btnHeightStart + currentButtonHeight, btnSize, btnSize*.4, "#C50", "Upgrade", function(){});
+                    UpgradeLabel.fontSize = btnSize * .25
+                    ButtonCollection["Upgrade Label"] = UpgradeLabel
+                    
                 }
             }
 
@@ -485,28 +516,44 @@ function handleClick(xPos,yPos) {
                     btnSize = 120
                 }
 
+
+                //For labels above and below buidld and upgrade buttons
+                let buttonLabelSize = btnSize * .5
+
                 let btnCount = possibleBuilds.length
-                let combinedHeight = btnCount*btnSize + (btnCount-1)*btnSize*.2
+                let combinedHeight = btnCount*btnSize + (btnCount-1)*btnSize*.2 + buttonLabelSize
                 let btnHeightStart = Math.floor(canvas.height*.5 - combinedHeight/2) 
                 if (btnHeightStart < resourceBoxHeight + statBoxHeight + heightforResources) {
                     while (btnHeightStart < resourceBoxHeight + statBoxHeight + heightforResources && btnSize > 20) {
                         btnSize -= 10
-                        combinedHeight = btnCount*btnSize + (btnCount-1)*btnSize*.2
+                        combinedHeight = btnCount*btnSize + (btnCount-1)*btnSize*.2 + buttonLabelSize
                         btnHeightStart = Math.floor(canvas.height*.5 - combinedHeight/2)
                     }
                 }
-                let i = 0
+
+                let currentButtonHeight = 0
+
+                if (possibleBuilds.length > 0) {
+                    TransportLabel = new Button(0, btnHeightStart + currentButtonHeight, btnSize, btnSize*.4, "#090", "Transport", function(){});
+                    TransportLabel.fontSize = btnSize * .23
+                    ButtonCollection["Transport Label"] = TransportLabel
+                    currentButtonHeight += btnSize * 0.5;
+                }
+
+                //let i = 0
                 for (let unit of possibleBuilds) {
                     let unitName = unit.name
                     let color = "#32E632"
 
                     
-                    let newBuildButton = new Button(0, btnHeightStart + (btnSize * 1.2)*i, btnSize, btnSize, color, "", transportButtonClicked);
+                    //let newBuildButton = new Button(0, btnHeightStart + (btnSize * 1.2)*i, btnSize, btnSize, color, "", transportButtonClicked);
+                    let newBuildButton = new Button(0, btnHeightStart + currentButtonHeight, btnSize, btnSize, color, "", transportButtonClicked);
                     newBuildButton.name = unitName
                     newBuildButton.parameters = newBuildButton;
                     newBuildButton.addImage(getUnitImage(this_player, unitName));
                     buildButtons.push(newBuildButton);
-                    i++;
+                    //i++;
+                    currentButtonHeight += (btnSize * 1.2)
                 }
             }
             
