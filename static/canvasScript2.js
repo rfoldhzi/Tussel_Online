@@ -986,7 +986,7 @@ function buildPopup(unit, player = this_player) {
     let defense = UnitDB[unit].defense || 2
     let unitType = UnitDB[unit].type || "trooper"
     let resourceGen = UnitDB[unit].resourceGen || {
-        "gold": 4,
+        "gold": 2,
         "metal": 0,
         "energy": 0
     }

@@ -41,7 +41,7 @@ UnitDB = {
     },
     'brute':{
         'cost': {'gold':50},
-        'health': 30,
+        'health': 20,
         'defense':1,
     },
     'medic':{
@@ -66,16 +66,16 @@ UnitDB = {
         'health': 5,
 	    'defense': 1,
         'resourceGen':{
-            "energy": 5
+            "energy": 2
         }
     },
     'bot':{
         'cost': {'metal':25,'energy':5},
         'type': 'bot',
         'resourceGen':{
-            "gold": 5,
-            "metal": 5,
-            "energy": 5
+            "gold": 1,
+            "metal": 1,
+            "energy": 1
         }
     },
     'minibot':{
@@ -93,7 +93,7 @@ UnitDB = {
         "size":0.75,
     },
     'megabot':{
-        'cost': {'gold':20,'metal':70,'energy':50},
+        'cost': {'metal':70,'energy':50},
         'possibleBuilds': ['minibot'],
         'possibleStates': ['move','attack','resources', 'build'],
         'type': 'bot',
@@ -109,7 +109,7 @@ UnitDB = {
         }
     },
     'mech':{
-        'cost': {'gold':20,'metal':80,'energy':10},
+        'cost': {'metal':80,'energy':10},
         'possibleBuilds': ['minibot'],
         'possibleStates': ['move','attack', 'build'],
         'type': 'vehicle',
@@ -349,18 +349,17 @@ UnitDB = {
     'metropolis expansion':{
         'cost': {'gold':100, 'metal':100, 'energy':100},
         'possibleBuilds': ['factory','mine','power plant','supply depot','house','barracks','turret','workshop'],
-        'possibleStates': ['resources', 'build','research'],
+        'possibleStates': ['resources', 'build'],
         'type': 'building',
-        'health': 100,
-        'population':8,
-        'abilities':{'claimable':0,'parent_link':0},
+        'health': 20,
+        'population':3,
+        'abilities':{'parent_link':0},
         'resourceGen':{
-            "gold": 75,
-            "metal": 75,
-            "energy": 75
+            "gold": 10,
+            "metal": 10,
+            "energy": 10
         },
         "size":1,
-        "baseUnit":"metropolis"
     },
     'construction worker':{
         'cost': {'gold':200},
@@ -410,7 +409,7 @@ UnitDB = {
         }
     },
     'mine':{
-        'cost': {'metal':50},
+        'cost': {'metal':25},
         'possibleStates': ['resources'],
         'type': 'building',
         'health': 10,
@@ -519,7 +518,7 @@ UnitDB = {
         }
     },
     'power plant':{
-        'cost': {'metal':50},
+        'cost': {'metal':25},
         'possibleStates': ['resources'],
         'type': 'building',
         'health': 10,
@@ -545,7 +544,7 @@ UnitDB = {
         }
     },
     'factory':{
-        'cost': {'metal':50},
+        'cost': {'metal':25},
         #'possibleBuilds': ['bot','minibot'],
         'possibleStates': ['resources'],
         'type': 'building',
@@ -558,7 +557,7 @@ UnitDB = {
         }
     },
     'workshop':{
-        'cost': {'gold':10, 'metal':100, 'energy':10},
+        'cost': {'metal':100, 'energy':25},
         'possibleBuilds': ['bot','mechanic','mech', 'blob'],
         'possibleStates': ['resources', 'build'],
         'type': 'building',
@@ -1014,13 +1013,14 @@ UnitDB = {
         }
     },
     'blob':{
-        'cost': {'energy':20},
+        'cost': {'energy':25},
         'possibleBuilds': ['blob'],
-        'possibleStates': ['move','attack','resources', 'build'],
+        'possibleStates': ['move','attack','build'],
         'attack':1,
         'defense':1,
         'population':1,
         'supplies':1,
+        'abilities':{'costly':1.25},
         'resourceGen':{
             "gold": 0,
             "metal": 0,
@@ -1049,30 +1049,30 @@ UnitDB = {
     'research center':{
         'cost': {'metal':50, 'energy':100},
         'possibleBuilds': [],
-        'possibleStates': ['resources', 'build', 'research'],
+        'possibleStates': ['build', 'research'],
         'health':15,
         'type': 'building',
         'population':2,
         'abilities':{'costly':1.4},
         'resourceGen':{
-            "energy": 10
+            "energy": 5
         }
     },
     'experimental facility':{
         'cost': {'gold':200, 'metal':100, 'energy':200},
         #'possibleBuilds': ['sonic cannon', 'ultrabot', 'invinsa tank'],
         'possibleBuilds': [],
-        'possibleStates': ['resources', 'build'],
+        'possibleStates': ['build'],
         'type': 'building',
         'defense': 1,
         'population':2,
         'abilities':{'costly':1.5},
         'resourceGen':{
-            "energy": 40
+            "energy": 10
         }
     },
     'sonic cannon':{
-        'cost': {'gold':100, 'metal':250, 'energy':500},
+        'cost': {'gold':50, 'metal':125, 'energy':250},
         'possibleStates': ['move','attack'],
         'type': 'vehicle',
         'health':5,
@@ -1082,7 +1082,7 @@ UnitDB = {
         'resourceGen':{"gold": 0}
     },
     'ultrabot':{
-        'cost': {'gold':500,'metal':100,'energy':250},
+        'cost': {'gold':250,'metal':50,'energy':125},
         'possibleStates': ['move','attack','build'],
         'possibleBuilds': ['bot','minibot'],
         'type': 'vehicle',
@@ -1095,7 +1095,7 @@ UnitDB = {
         }
     },
     'invinsa tank':{
-        'cost': {'gold':250, 'metal':500, 'energy':100},
+        'cost': {'gold':125, 'metal':250, 'energy':50},
         'possibleStates': ['move','attack'],
         'type': 'vehicle',
         'health':30,
@@ -1116,13 +1116,13 @@ UnitDB = {
         }
     },
     'the hunter':{
-        'cost': {'gold':200,'metal':50},
+        'cost': {'gold':300,'metal':50},
         'attack':4,
         'defense':1,
         'range':4,
         'abilities':{'onlyHit':['trooper', 'bot', 'monster']},
         'resourceGen':{
-            "gold": 8
+            "gold": 4
         }
     },
     'king blob':{
@@ -1198,7 +1198,7 @@ UnitDB = {
         'defense':4,
         'abilities':{'charge':0},
         'resourceGen':{
-            "gold": 10
+            "gold": 4
         },
     },
     'calvary':{
@@ -1212,7 +1212,7 @@ UnitDB = {
         'possibleStates': ['move','attack','resources', 'build'],
         'population':3,
         'resourceGen':{
-            "gold": 8,
+            "gold": 4,
             "metal": 0,
             "energy": 0,
         }
@@ -1238,7 +1238,7 @@ UnitDB = {
         'resourceGen':{"gold": 0}
     },
     'missile':{
-        'cost': {'metal':30, 'energy':5},
+        'cost': {'metal':20, 'energy':5},
         'possibleStates': ['move','attack'],
         'type': 'aircraft',
         'health':3,
