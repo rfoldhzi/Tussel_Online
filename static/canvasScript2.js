@@ -190,6 +190,13 @@ function ConvertImageToBlackAndWhite(imageCanvas) {
     context.putImageData(im, 0, 0);
 }
 
+function getOutlinedUnitImage(player, name) {
+    if (UnitDB[name].baseUnit != undefined) {
+        name = UnitDB[name].baseUnit
+    }
+    return highlightUnitImages[player][name]
+}
+
 function getUnitImage(player, name) {
     if (UnitDB[name].baseUnit != undefined) {
         name = UnitDB[name].baseUnit

@@ -1425,7 +1425,7 @@ UnitDB = {
     'bot destroyer':{
         'cost': {'gold':0, 'metal':200, 'energy':200},
         'possibleStates': ['move', 'attack'],
-        'type': 'aircraft',
+        'type': 'boat',
         'health': 25,
 	    'attack': 3.5,
 	    'defense': 3.5,

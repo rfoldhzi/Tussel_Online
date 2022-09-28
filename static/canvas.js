@@ -1147,7 +1147,7 @@ function drawUnit(player, unit) {
     if (img != null) {
         //Outline unit if they still need to be given an action
         if (player == this_player && actionableUnits.indexOf(unit.UnitID) != -1){//checkActionable(unit)) {
-            img = highlightUnitImages[player][unit.name]
+            img = getOutlinedUnitImage(player, unit.name)
         }
 
 
