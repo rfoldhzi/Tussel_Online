@@ -99,6 +99,7 @@ function clearSelected() {
     possibleHeals = []
     possibleResupplies = []
     defaultButtonMenu()
+    refreshActionableUnits()
 }
 
 function createCancelButton() {
@@ -236,7 +237,7 @@ function checkWhatCouldBeClicked(xPos,yPos) {
 
 function handleClick(xPos,yPos) {
     console.log("handling")
-
+    refreshActionableUnits()
     
 
     for (let key in ButtonCollection) {

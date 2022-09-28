@@ -4,6 +4,7 @@ function thing() {
 
 let baseUnitImages = {};
 let unitImages = {};
+let highlightUnitImages = {}; //Unit images with a white shadow
 //const playerColors = [[201, 59, 54, 255], [0, 195, 255], [255, 136, 0, 255], [41, 61, 148],
 //[128, 242, 46], [169, 88, 245], [255, 255, 64], [18, 252, 104]]
 const playerColors = {
@@ -82,6 +83,57 @@ function createShadow(imageCanvas) {
     context.putImageData(im, 0, 0);
 }
 
+//Black outline around unit (ignoreing where there is already black), then fading white
+function createWhiteShadow(imageCanvas) {
+    let context = imageCanvas.getContext('2d');
+    let im = context.getImageData(0, 0, imageCanvas.width, imageCanvas.height);
+    const pixelsToCheck = [4,-4,imageCanvas.width*4,imageCanvas.width*-4];
+    const pixelsToCheck2 = [8,-8];
+
+    //Black outline (except around already present black)
+    outer : for (var i = 0; i < im.data.length; i += 4) {
+        if (im.data[i + 3] == 0) {
+            if (im.data[i + 3 + 4] == 255 || im.data[i + 3 - 4] == 255
+                || im.data[i + 3 + imageCanvas.width*4] == 255 || im.data[i + 3 - imageCanvas.width*4] == 255) {
+                    for (let n of pixelsToCheck) {
+                        if (im.data[i + n + 3] == 255 && im.data[i + n] <= 30 && im.data[i + 1 + n] <= 30 && im.data[i + 2 + n] <= 30) {
+                            continue outer //if next to any black, don't create outline. Go to next pixel
+                        }
+                    }
+                    
+                    im.data[i + 3] = 254
+                }
+        }
+    }
+
+    //white shadow
+    for (var i = 0; i < im.data.length; i += 4) {
+        if (im.data[i + 3] == 0) {
+            //Inner white shadow
+            if (im.data[i + 3 + 4] >= 254 || im.data[i + 3 - 4] >= 254
+                || im.data[i + 3 + imageCanvas.width*4] >= 254 || im.data[i + 3 - imageCanvas.width*4] >= 254) {
+                
+                im.data[i + 0] = 255
+                im.data[i + 1] = 255
+                im.data[i + 2] = 255
+                im.data[i + 3] = 250
+            
+            
+            } else if (im.data[i + 3 + 8] >= 254 || im.data[i + 3 - 8] >= 254
+                || im.data[i + 3 + imageCanvas.width*8] >= 254 || im.data[i + 3 - imageCanvas.width*8] >= 254) {
+                
+                //Outer white shadow
+                im.data[i + 0] = 255
+                im.data[i + 1] = 255
+                im.data[i + 2] = 255
+                im.data[i + 3] = 80
+                
+            } 
+        }
+    }
+    context.putImageData(im, 0, 0);
+}
+
 function invertTechImage(imageCanvas) {
     let context = imageCanvas.getContext('2d');
     let im = context.getImageData(0, 0, imageCanvas.width, imageCanvas.height);
@@ -144,6 +196,7 @@ function getUnitImage(player, name) {
     }
     if (!(player in unitImages)) {
         unitImages[player] = {};
+        highlightUnitImages[player] = {}
     }
     if (!(name in unitImages[player])) {
         if (!(name in baseUnitImages)) {
@@ -157,7 +210,12 @@ function getUnitImage(player, name) {
                 baseUnitImages[name] = img;
 
                 console.log("recieved image " + name);
-                unitImages = [];
+                //unitImages = [];
+                for (const player2 in unitImages) {
+                    if (name in unitImages[player2]) {
+                        delete unitImages[player2][name]
+                    }
+                }
                 drawBoard();
             }
             baseUnitImages[name] = null;
@@ -184,6 +242,24 @@ function getUnitImage(player, name) {
         createShadow(unitCanvas)
 
         unitImages[player][name] = ctx.canvas;
+        if (player == this_player) {
+
+            let highlightCanvas = document.createElement('canvas');
+            highlightCanvas.setAttribute('width', 60);
+            highlightCanvas.setAttribute('height', 60);
+
+            let ctx2 = highlightCanvas.getContext('2d');
+            ctx2.imageSmoothingEnabled = false;
+            ctx2.drawImage(baseUnitImages[name], 0, 0, 60, 60);
+
+            replaceColor(highlightCanvas, [233, 19, 212], playerColors[player])
+            replaceColor(highlightCanvas, [117, 10, 107], colorHalfBrightness(playerColors[player]))
+            createWhiteShadow(highlightCanvas)
+
+            //ctx2.drawImage(unitCanvas, 0, 0);
+
+            highlightUnitImages[player][name] = ctx2.canvas;
+        }
     };
 
     return unitImages[player][name];

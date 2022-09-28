@@ -16,6 +16,8 @@ let animationLastTick = 0
 let animationCounter = -1;
 let animationMax = 30;
 let animationTerritoryMap = [];
+let actionableUnits = [] //List of unit ID's of units who still need to be commanded
+let cheapestTech = 20 //The cost of the cheapest tech you can research
 
 class Button {
     constructor(x, y, width, height, color, text, func, ...parameters) {
@@ -162,6 +164,7 @@ function useNewGameObject(newGameObject) {
         selected = newSelected
     }
     console.log("reinit stuff")
+    refreshActionableUnits()
     determineTerritories()
     organizeTechTrees()
     initilizeTechOffsets()
@@ -232,7 +235,7 @@ function loadGame2() {
                 setState(key + ":"+states[this_player][key])
             }
         }
-        
+        refreshActionableUnits()
 
         drawBoard()
     }
@@ -1041,6 +1044,87 @@ function drawTerritory(player, unit) {
     context.fillRect(unit.position[0] * size + x_offset, unit.position[1] * size + y_offset, size, size);
 }
 
+//Checks to see if there is a viable action that can be taken
+function checkActionable(unit) {
+    if (unit.state == null || unit.state == "cancel" || (unit.state == "resources" && unit.possibleStates.length > 1)) {
+        if ((unit.state == null || unit.state == "cancel") && unit.possibleStates.includes("resources")) {
+            return true
+        }
+        if (unit.possibleStates.includes("build")) {
+            if (!(unit.maxPopulation && unit.maxPopulation <= unit.population) && !(unit.maxSupplies && unit.supplies <= 0)) {
+                let possibleBuilds = unit.possiblebuilds || UnitDB[unit.name]['possibleBuilds'] || []
+                for (let unitName of possibleBuilds) {
+                    if (checkIfAffordable(unitName)) {
+                        return true
+                    }
+                }
+            }
+        }
+        if (unit.possibleStates.includes("move")) {
+            if (getMoveCircles(unit).length > 0) {
+                return true
+            }
+        }
+        if (unit.possibleStates.includes("attack")) {
+            if (getAttacks(unit).length > 0) {
+                return true
+            }
+        }
+        if (unit.possibleStates.includes("heal")) {
+            if (getHeals(unit).length > 0) {
+                return true
+            }
+        }
+        if (unit.possibleStates.includes("research")) {
+            if (effectiveResources["energy"] >= cheapestTech) {
+                return true
+            }
+        }
+        if (unit.possibleStates.includes("resupply")) {
+            if (getResupplies(unit).length > 0) {
+                return true
+            }
+        }
+        if (unit.possibleStates.includes("upgrade")) { 
+            let possibleUpgrades = unit.possibleupgrades || UnitDB[unit.name]['possibleUpgrades'] || []
+            for (let upgradeName of possibleUpgrades) {
+                
+                if (checkIfAffordable(upgradeName)) {
+                    return true
+                }
+            }
+        }
+        if (unit.possibleStates.includes("transport")) { 
+            if (unit.carrying != undefined && unit.carrying.length > 0) {
+                return true
+            }
+        }
+        //return true
+    }
+    return false
+}
+
+function setCheapestTech() {
+    cheapestTech = 2000
+    for (const tech of currentTechMenu) {
+        if (TechDB[tech]["cost"] < cheapestTech) {
+            cheapestTech = TechDB[tech]["cost"]
+        }
+    }
+}
+
+function refreshActionableUnits() {
+    setCheapestTech()
+    actionableUnits = []
+    for (let unit of gameObject.units[this_player]) {
+        effectiveResources = getEffectiveResources(unit)
+        if (checkActionable(unit)) {
+            actionableUnits.push(unit.UnitID)
+        }
+    }
+}
+
+
 //Get unit image size multiplier based on unit type (or specified size)
 function getMultiplier(unitName, unitType = -1) {
     if (unitType == -1) {
@@ -1061,6 +1145,12 @@ function drawUnit(player, unit) {
     let img = getUnitImage(player, unit.name);
 
     if (img != null) {
+        //Outline unit if they still need to be given an action
+        if (player == this_player && actionableUnits.indexOf(unit.UnitID) != -1){//checkActionable(unit)) {
+            img = highlightUnitImages[player][unit.name]
+        }
+
+
         let multiplier = getMultiplier(unit.name, unit.type);
         context.drawImage(img, size * unit.position[0] + x_offset + size * (1 - multiplier) * .5, size * unit.position[1] + y_offset + size * (1 - multiplier) * .5, size * multiplier, size * multiplier);
     }
