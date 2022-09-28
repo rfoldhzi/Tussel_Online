@@ -10,6 +10,7 @@ let possibleAttacks = []
 let possibleHeals = []
 let possibleResupplies = []
 let stateDataMode = null;
+let tempStateData = null;
 let effectiveResources = {}
 let researchOffsetXStored = 0
 let researchOffsetYStored = 0
@@ -86,6 +87,7 @@ function clearSelected() {
     }
     popupTech = null
     stateDataMode = null;
+    tempStateData = null;
     selected = null;
     enemySelected = null;
     enemySelectedPlayer = null;
@@ -115,7 +117,8 @@ function createCancelButton() {
 
 function buildButtonClicked(btn) {
     console.log("building: "+btn.name);
-    selected.stateData = [btn.name]
+    //selected.stateData = [btn.name]
+    tempStateData = btn.name
     stateDataMode = 'build2'
     buildPopup(btn.name)
 
@@ -151,7 +154,8 @@ function buildButtonClicked(btn) {
 function transportButtonClicked(btn) {
     console.log("transporting: "+btn.name);
     btn.color = "#00FFCC";
-    selected.stateData = [btn.name]
+    //selected.stateData = [btn.name]
+    tempStateData = btn.name
     stateDataMode = 'transport2'
     moveCircles = []
     transportSpots = []
@@ -311,7 +315,8 @@ function handleClick(xPos,yPos) {
 
             if (JSON.stringify(buildHexes).indexOf(JSON.stringify([x,y])) !== -1) {
                 console.log("clicked on a build")
-                selected.stateData.unshift([x,y])            
+                //selected.stateData.unshift([x,y])     
+                selected.stateData = [[x,y],tempStateData]       
                 selected.state = 'build'
                 sendToServer(convertToStr(selected,'build',selected.stateData))
                 clearSelected();
@@ -320,7 +325,8 @@ function handleClick(xPos,yPos) {
             }
             if (JSON.stringify(dropOffSpots).indexOf(JSON.stringify([x,y])) !== -1) {
                 console.log("clicked on a transport")
-                selected.stateData.unshift([x,y])            
+                //selected.stateData.unshift([x,y])     
+                selected.stateData = [[x,y],tempStateData]          
                 selected.state = 'transport'
                 sendToServer(convertToStr(selected,'transport',selected.stateData))
                 clearSelected();

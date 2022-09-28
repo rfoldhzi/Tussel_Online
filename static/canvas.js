@@ -695,7 +695,7 @@ function drawUI() {
     }
 
     if (stateDataMode == "build2") {
-        buildPopup(selected.stateData[0])
+        buildPopup(tempStateData)
     }
     if (enemySelected != null) {
         buildPopup(enemySelected.name, enemySelectedPlayer)
