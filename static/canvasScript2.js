@@ -1272,6 +1272,7 @@ function drawLinesHelper(key, d, treeXOffset, treeYOffset) {
                 Math.floor((y2*mult + 0.5) * (techSize + 1) + 1 + extraY + y_offset),
             );
             context.stroke();
+            d[subTech].shift();
         }
     }
 }
