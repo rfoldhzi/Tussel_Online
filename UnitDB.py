@@ -730,7 +730,7 @@ UnitDB = {
         'cost': {'gold':50, 'metal':200},
         #'possibleBuilds': ['plane','helicopter','bomber'],
         'possibleBuilds': ['plane'],
-        'possibleStates': ['resources', 'build'],
+        'possibleStates': ['build'],
         'type': 'building',
         'health': 15,
         'abilities':{'costly':1.25},
@@ -1020,7 +1020,7 @@ UnitDB = {
         'defense':1,
         'population':1,
         'supplies':1,
-        'abilities':{'costly':1.25},
+        'abilities':{'costly':1.2},
         'resourceGen':{
             "gold": 0,
             "metal": 0,
@@ -1034,7 +1034,7 @@ UnitDB = {
         'resourceGen':{
             "gold": 0,
             "metal": 0,
-            "energy": 3
+            "energy": 2
         }
     },
     'agent':{
@@ -1769,8 +1769,10 @@ TechDB = {
         'cost': 20,
         'time': 1,
         #'ability': [['unlock build', 'agent', 'experimental facility']],
-        'ability': [['unlock build', 'metropolis', 'experimental facility']],
+        #'ability': [['unlock build', 'metropolis', 'experimental facility']],
+        'ability': [['unlock upgrade', 'crane', 'experimental facility']],
         'unlocks': ['sonic cannon','ultrabot','invinsa tank'],
+        'text': "Unlocks the Experimental Facility at the Crane.",
         'quote':"For all those expirments that you're doing",
     },
     'sonic cannon':{
@@ -1898,7 +1900,7 @@ TechDB = {
         'ability': [['stat', 'ultrabot', 'attack', 0.5],
 		   ['stat', 'ultrabot', 'defense', 0.5]],
         'unlocks': [],
-        'quote':"Infectors tkae advantage of the many, so we had to make a singular warrior that matches their might",
+        'quote':"Infectors take advantage of the many, so we had to make a singular warrior that matches their might",
     },
     'army builder':{
         'cost': 40,
@@ -1916,38 +1918,6 @@ TechDB = {
 		   ['stat', 'minibot', 'attack', 1]],
         'unlocks': [],
         'quote':"The ancient war can fianlly be ended with this true power",
-    },
-    'harder':{
-        'cost': 20,
-        'time': 2,
-        'ability': [['stat', 'ultrabot', 'defense', 1]],
-        'unlocks': [],
-        'deny': ['better','faster','stronger'],
-        'quote':"HARDER better faster stronger",
-    },
-    'better':{
-        'cost': 20,
-        'time': 3,
-        'ability': [['stat', 'ultrabot', 'range', 1]],
-        'unlocks': [],
-        'deny': ['harder','faster','stronger'],
-        'quote':"harder BETTER faster stronger",
-    },
-    'faster':{
-        'cost': 20,
-        'time': 3,
-        'ability': [['stat', 'ultrabot', 'speed', 1]],
-        'unlocks': [],
-        'deny': ['better','harder','stronger'],
-        'quote':"harder better FASTER stronger",
-    },
-    'stronger':{
-        'cost': 20,
-        'time': 2,
-        'ability': [['stat', 'ultrabot', 'attack', 0.5]],
-        'unlocks': [],
-        'deny': ['better','faster','harder'],
-        'quote':"harder better faster STRONGER",
     },
     'tough skin':{
         'cost': 20,
@@ -2567,7 +2537,10 @@ TechDB = {
         'time': 2,
         'ability': [['unlock upgrade', 'crane', 'airport'],
                     ['unlock build', 'metropolis', 'airport'],
+                    ['unlock build', 'metropolis ii', 'airport'],
+                    ['unlock build', 'metropolis iii', 'airport'],
                     ['unlock build', 'military city', 'airport']],
+        'text':"Unlocks the Airport at the Crane, Metropolis, and Military City.",
         'unlocks': ['helicopter','water launch','rapid launch','super sonic speed'],
     },
     'helicopter':{
@@ -2651,10 +2624,12 @@ TechDB = {
         'unlocks': ['the city', 'miscellaneous upgrades'],
     },
     'the city':{
-        'cost': 50,
+        'cost': 20,
         'time': 1,
-        'ability': [['unlock build', 'crane', 'metropolis']],
-        'unlocks': ['bionics','city planning','time travel'],
+        'ability': [],
+        'unlocks': ['bionics','time travel'],
+        #'ability': [['unlock build', 'crane', 'metropolis']],
+        #'unlocks': ['bionics','city planning','time travel'],
     },
     'city planning':{
         'cost': 5,
@@ -2782,6 +2757,7 @@ TechDB = {
         'time': 7,
         'ability': [['unlock build', 'crane', 'shield generator']],
         'unlocks': [],
+        'text': "Unlocks the Shield Generator at the Crane.",
     },
     'further dectection':{
         'cost': 20,

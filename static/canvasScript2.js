@@ -1324,6 +1324,9 @@ function titleCase(str) {
 
 //Generates a description for a tech
 function techTextGenerator(tech) {
+    if (TechDB[tech].text != undefined) {
+        return TechDB[tech].text;
+    }
     let text = ""
     for (let ability of TechDB[tech].ability) {
         if (ability[0] == "unlock build") {
@@ -1595,7 +1598,8 @@ function researchMenu() {
     //let size = Math.floor(techSize)
     techSize = size
 
-    currentTechButtons = {}
+    //currentTechButtons = {}
+    currentTechButtons = []
     /*
     let w = Math.ceil(Math.sqrt(techs.length))
     if (w == 0) {
@@ -1725,7 +1729,8 @@ function researchMenu() {
                 button.foreground = "#000000BB"
             }
 
-            currentTechButtons[t] = button
+            //currentTechButtons[t] = button
+            currentTechButtons.push(button)
             button.render()
 
             if (TechDB[t]['time'] > 1 && !gameObject.tech[this_player].includes(t)) {

@@ -1231,6 +1231,18 @@ let mouse_move = function (event) {
         if (stateDataMode == "research") {
             let mouseX = parseInt(event.clientX);
             let mouseY = parseInt(event.clientY);
+            for (let btn of currentTechButtons) {
+                if (btn.isMouseHovering(mouseX,mouseY)) {
+                    //currentTechButtons[CurrentTechHover].img = currentTechImages[CurrentTechHover]
+                    CurrentTechHover = btn.name;
+                    console.log("current hover", CurrentTechHover)
+                    //currentTechButtons[CurrentTechHover].img = currentTechImagesInverted[CurrentTechHover]
+                    redrawResearch = true //Used to trigger update for research menu
+                    drawBoard()
+                    return
+                }
+            }
+            /*
             for (let key in currentTechButtons) {
                 if (currentTechButtons[key].isMouseHovering(mouseX,mouseY)) {
                     //currentTechButtons[CurrentTechHover].img = currentTechImages[CurrentTechHover]
@@ -1242,6 +1254,7 @@ let mouse_move = function (event) {
                     return
                 }
             }
+            */
             redrawResearch = true
             CurrentTechHover = null;
             drawBoard()
