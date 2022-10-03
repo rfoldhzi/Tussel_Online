@@ -827,6 +827,32 @@ function determineTerritories() {
     numberMap()
 }
 
+//Determine which units are buffed, buff them, and add their ID's to to buffedUnits
+function determineBuffedUnits() {
+    buffedUnits = {}
+    for (const player in gameObject.units) {
+        for (const unit of gameObject.units[player]) {
+            if ("buff" in unit.abilities) {
+                targetStat = unit.abilities['buff'][0]
+                multiplier = unit.abilities['buff'][1]
+                tiles = getRangeCircles(unit, anyBlock = true, built = false, sp = 1, )
+                for (const pos of tiles) {
+                    unit2 = getUnitFromPos(player,pos[0],pos[1])
+                    if (unit2 && unit2 != unit) {
+                        if (!(targetStat in buffedUnits)) {
+                            buffedUnits[targetStat] = []
+                        }
+                        buffedUnits[targetStat].push(unit2.UnitID)
+                        if (unit2[targetStat] !== undefined) {
+                            unit2[targetStat] *= multiplier
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 function animateBoard(g1, g2, t) {
     for (const player in g1.units) {
         for (const unit1 of g1.units[player]) {
@@ -936,6 +962,13 @@ function animateUnit(unit1, unit2, t, specfic_player) {
     }
     if (defaultAnimation) {
         context.drawImage(img, size * unit.position[0] + x_offset + size * (1 - multiplier) * .5, size * unit.position[1] + y_offset + size * (1 - multiplier) * .5, size * multiplier, size * multiplier);
+        //Draw "Aura" buff effects
+        for (const targetStat in buffedUnits) {
+            if (buffedUnits[targetStat].includes((unit.UnitID))) {
+                context.drawImage(buffImages[targetStat], size * unit.position[0] + x_offset + size * (1 - multiplier) * .5, size * unit.position[1] + y_offset + size * (1 - multiplier) * .5, size * multiplier, size * multiplier);
+            }
+        }
+        
         //State square
         //Lerped health
         let healthText = unit.health

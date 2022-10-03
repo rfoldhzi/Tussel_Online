@@ -8,6 +8,7 @@ let outOfDate = false;
 let currentTurn = -1;
 let territoryMap = []
 let territoryNumberCode = []
+let buffedUnits = {}; //Each key is a stat, containing a list of Unit ID's that need a buffed image displayed on them
 let states = {};
 let counter = 0;
 let doneState = "notDone";
@@ -166,6 +167,7 @@ function useNewGameObject(newGameObject) {
     console.log("reinit stuff")
     refreshActionableUnits()
     determineTerritories()
+    determineBuffedUnits()
     organizeTechTrees()
     initilizeTechOffsets()
     updateCloudCover()
@@ -388,6 +390,15 @@ let Beaker = new Image(40, 40)
 Beaker.src = '/static/assets/Beaker.png'
 let YellowPentagon = new Image(40, 40)
 YellowPentagon.src = '/static/assets/SupplyPentagon.png'
+
+let buffImages = {
+    "attack": new Image(40,40),
+    "defense": new Image(40,40),
+}
+
+for (let key in buffImages) {
+    buffImages[key].src = '/static/assets/buffEffects/'+key+'.png'
+}
 
 let statLogos = {
     "attack":new Image(20, 20),
@@ -1153,6 +1164,12 @@ function drawUnit(player, unit) {
 
         let multiplier = getMultiplier(unit.name, unit.type);
         context.drawImage(img, size * unit.position[0] + x_offset + size * (1 - multiplier) * .5, size * unit.position[1] + y_offset + size * (1 - multiplier) * .5, size * multiplier, size * multiplier);
+        //Draw "Aura" buff effects
+        for (const targetStat in buffedUnits) {
+            if (buffedUnits[targetStat].includes((unit.UnitID))) {
+                context.drawImage(buffImages[targetStat], size * unit.position[0] + x_offset + size * (1 - multiplier) * .5, size * unit.position[1] + y_offset + size * (1 - multiplier) * .5, size * multiplier, size * multiplier);
+            }
+        }
     }
 
     //context.fillStyle = "white";

@@ -75,8 +75,8 @@ function getMoveCircles(unit) {
     return spaces;
 }
 
-function getRangeCircles(unit, anyBlock = false, built = false) {
-    let sp = unit.range
+function getRangeCircles(unit, anyBlock = false, built = false, sp = unit.range) {
+    //let sp = unit.range
     let spaces = []
     for (let x = unit.position[0]-sp; x < unit.position[0]+1+sp; x++) {
         for (let y = unit.position[1]-sp; y < unit.position[1]+1+sp; y++) {
