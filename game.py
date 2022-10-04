@@ -801,6 +801,19 @@ class Game:
         #Attack
         hurtList = {} #List for units that are hurt by attacks
         hunterList = {} #List for units that are doing the attacking
+
+        #Damaging Conditions
+        for i in self.units:
+            for u in self.units[i]:
+                if hasattr(u,"conditions"):
+                    if "burn" in u.conditions:
+                        if not (u in hurtList): 
+                            hurtList[u] = 0
+                        hurtList[u] += 2
+                        u.conditions["burn"]["length"] -= 1
+                        if u.conditions["burn"]["length"] <= 0:
+                            del u.conditions["burn"]
+
         for i in self.units:
             for u in self.units[i]:
                 if u.state == "attack" and u.stateData: #stateData is target of attack
@@ -819,6 +832,19 @@ class Game:
                             hunterList[target] = u
                         print("HURT",u.name, damageCalc(u, target), target.name)
                         hurtList[target] += damageCalc(u, target)
+
+                        if 'attackCondition' in u.abilities: # "attackCondition" means a condition is applied when an attack is performed
+                            # u.abilities['attackCondition'][0] is condition name
+                            # u.abilities['attackCondition'][1] is condition length
+                            Condition = u.abilities["attackCondition"][0]
+                            Length = u.abilities["attackCondition"][1]
+                            if not hasattr(target,"conditions"):
+                                target.conditions = {}
+                            if Condition in target.conditions:
+                                target.conditions[Condition] = {"length":Length + target.conditions[Condition]["length"]}
+                            else:
+                                target.conditions[Condition] = {"length":Length}
+                        
                 if 'decay' in u.abilities: # "decays" means unit takes damage every round equal to the ability's amount
                     if not (u in hurtList): 
                         hurtList[u] = 0
