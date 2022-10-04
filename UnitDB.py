@@ -1249,6 +1249,66 @@ UnitDB = {
         'abilities':{'kamikaze':0,'decay':1},
         'resourceGen':{"gold": 0}
     },
+    'fire missile':{
+        'cost': {'metal':20, 'energy':15},
+        'possibleStates': ['move','attack'],
+        'type': 'aircraft',
+        'health':3,
+        'speed':2,
+        'range':1,
+        'attack':2,
+        'defense':1,
+        'abilities':{'kamikaze':0,'decay':1,'attackCondition':["burn",5]},
+        'resourceGen':{"gold": 0}
+    },
+    '3':{
+        'cost': {'energy':1000},
+        'possibleStates': ['move','attack','build','resources','research','heal','upgrade','resupply'],
+        'possibleBuilds': ['bot','fire missile'],
+        'possibleUpgrades': ['3 v2'],
+        'supplies':20,
+        'heal':5,
+        'population':8,
+        'abilities':{'multibuild':1,'convert':0,'deathSpawn':'3s helicopter','fast research':2,'parent_link':0, 'buff':['speed', 2]},
+        'resourceGen':{"energy": 50}
+    },
+    '3 v2':{
+        'cost': {'energy':1500},
+        'possibleStates': ['move','attack','build','resources','research','heal','resupply'],
+        'possibleBuilds': ['bot','fire missile'],
+        'health': 20,
+        'attack': 3,
+        'defense': 3,
+        'speed': 2,
+        'supplies':30,
+        'heal':10,
+        'population':16,
+        'abilities':{'multibuild':2,'convert':0,'deathSpawn':'3s helicopter','fast research':3,'parent_link':0, 'buff':['speed', 2]},
+        'resourceGen':{"energy": 100},
+        "baseUnit":"3"
+    },
+    '3 weakened':{
+        'cost': {'energy':500},
+        'possibleStates': ['move','attack','build','resupply','upgrade'],
+        'possibleUpgrades': ['3'],
+        'possibleBuilds': ['bot'],
+        'supplies':5,
+        'population':4,
+        'abilities':{'convert':0,'parent_link':0},
+        'resourceGen':{"energy": 0},
+        "baseUnit":"3"
+    },
+    '3s helicopter':{
+        'cost': {'gold':50, 'metal':150, 'energy':50},
+        'possibleStates': ['move','attack','transport','resupply'],
+        'type': 'aircraft',
+        'speed':2,
+        'defense':3.5,
+        'population':1,
+        'supplies':2,
+        'abilities':{'transport':['trooper','bot'],'default_transport':['3 weakened']},
+    },
+
 
     #Wild Life Faction
     'tree':{

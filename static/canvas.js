@@ -394,6 +394,7 @@ YellowPentagon.src = '/static/assets/SupplyPentagon.png'
 let buffImages = {
     "attack": new Image(40,40),
     "defense": new Image(40,40),
+    "speed": new Image(40,40),
 }
 
 for (let key in buffImages) {

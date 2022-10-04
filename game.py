@@ -975,6 +975,18 @@ class Game:
             if GoodToDeathSpawn and 'deathSpawn' in u.abilities:
                 newUnit = self.newUnit(u.position,u.abilities['deathSpawn'],u.UnitID)
                 self.upgradeUnit(newUnit, i)
+
+                #"default_transport" means this transporter unit starts with a list of units in its cargo
+                if 'default_transport' in newUnit.abilities:
+                    #Kind of neglecting score here
+                    newUnit.carrying = []
+                    newUnit.population = len(newUnit.abilities['default_transport'])
+                    for transporteeName in newUnit.abilities['default_transport']:
+                        #Same default position (though doesn't matter since transported)
+                        transportee = self.newUnit(newUnit.position,transporteeName) 
+                        self.upgradeUnit(transportee, i)
+                        newUnit.carrying.append(transportee)
+
                 self.units[self.getPlayerfromUnit(u)].append(newUnit)
 
         for u in RemoveList:#more destroy
