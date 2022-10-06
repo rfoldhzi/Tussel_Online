@@ -1323,12 +1323,12 @@ function drawLines(tree, treeXOffset, treeYOffset) {
 
 
 //Writes text as a dictionary (from stackoverflow)
-function wrapText(context, text, x, y, maxWidth, fontSize, fontFace){
+function wrapText(context, text, x, y, maxWidth, fontSize, fontFace, italicsBold = ""){
     var words = text.split(' ');
     var line = '';
     var lineHeight=fontSize;
   
-    context.font = fontSize + "px " + fontFace;
+    context.font = italicsBold + " " + fontSize + "px " + fontFace;
   
     for(var n = 0; n < words.length; n++) {
       var testLine = line + words[n] + ' ';
@@ -1511,8 +1511,18 @@ function techPopupBox(tech) {
     //Paragraph
     context.fillStyle = "white"
     context.textAlign = "left";
-    wrapText(context,techTextGenerator(tech), boxXoffset+boxWidth*.04 + boxHeight*.3, boxYoffset+boxHeight*.33, boxWidth*.96 - boxHeight*.3, boxHeight*.10, "Arial");
+    let endOfParagraph = wrapText(context,techTextGenerator(tech), boxXoffset+boxWidth*.04 + boxHeight*.3, boxYoffset+boxHeight*.33, boxWidth*.96 - boxHeight*.3, boxHeight*.10, "Arial");
+    
+    
 
+    //Flavor
+    if (TechDB[tech].quote != undefined) {
+        context.fillStyle = "#CCC"
+        context.textAlign = "right";
+        let y = endOfParagraph + boxHeight*.15
+        wrapText(context,TechDB[tech].quote, boxXoffset+boxWidth*.96, y, boxWidth*.96 - 2*boxHeight*.3, boxHeight*.06, "Arial", "italic");
+    }
+    
     context.font = (boxHeight*.15) + "px Arial";
 
     //"Research" button
