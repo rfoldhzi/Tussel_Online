@@ -385,6 +385,7 @@ function handleClick(xPos,yPos) {
             }
         }
         if (selected) {
+            continueShowingAnimations = false;
             moveCircles = getMoveCircles(selected);
             transportSpots = getTransportCircles(selected);
             possibleAttacks = getAttacks(selected);
@@ -567,6 +568,7 @@ function handleClick(xPos,yPos) {
         } else {
             //clearSelected()
             if (enemySelected) {
+                continueShowingAnimations = false;
                 enemySelectedPlayer = getPlayerfromUnit(enemySelected)
                 if (enemySelectedPlayer != "neutral") {
                    possibleAttacks = getAttacks(enemySelected, enemySelectedPlayer);

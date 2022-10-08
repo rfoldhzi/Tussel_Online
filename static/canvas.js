@@ -19,6 +19,8 @@ let animationMax = 30;
 let animationTerritoryMap = [];
 let actionableUnits = [] //List of unit ID's of units who still need to be commanded
 let cheapestTech = 20 //The cost of the cheapest tech you can research
+let animationTechs = []; // The techs which have made progress from one round to the next
+let continueShowingAnimations = false; //This is for whether or not to draw animation Techs Progress after animations have finished
 
 class Button {
     constructor(x, y, width, height, color, text, func, ...parameters) {
@@ -153,6 +155,7 @@ function useNewGameObject(newGameObject) {
         gameObject2 = newGameObject;
         setAnimateSpeed(gameObject,gameObject2)
         determineAnimationTerritories(gameObject,gameObject2)
+        determineAnimationTechs(gameObject,gameObject2)
         return
     }
     gameObject = newGameObject;
@@ -712,6 +715,10 @@ function drawUI() {
     if (enemySelected != null) {
         buildPopup(enemySelected.name, enemySelectedPlayer)
     }
+
+    if (continueShowingAnimations) { //Tech porgress continues to show after animatinons end, until unit is selected.
+        drawAnimatedTechs(1)
+    }
 }
 
 function drawBoard() {
@@ -777,6 +784,8 @@ function drawAnimation() {
         //gameObject2 = null
         currentTurn = gameObject2.turn
         useNewGameObject(gameObject2)
+
+
         //drawBoard()
         return 
     }
@@ -798,6 +807,7 @@ function drawAnimation() {
     drawStateLinesAnimation()
     animateBoard(gameObject,gameObject2,t)
     drawAnimatedResources(gameObject,gameObject2,t)
+    drawAnimatedTechs(t)
     //drawClouds()
 }
 

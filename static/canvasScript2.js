@@ -655,6 +655,7 @@ function setAnimateSpeed(g1, g2) {
 
 let directions = {1:[0,-1], 4:[1,0], 16:[0,1], 64:[-1,0]}
 
+//For territories: claim territories with 3 friendly troops adjacent
 function claim3s() {
     for (let y = 0; y < gameObject.height; y++) {
         for (let x = 0; x < gameObject.width; x++) {
@@ -692,6 +693,8 @@ function claim3s() {
         }
     }
 }
+
+//For territories: claim territories with 2 friendly troops across from one another
 function claimAcross() {
     for (let y = 0; y < gameObject.height; y++) {
         for (let x = 0; x < gameObject.width; x++) {
@@ -718,6 +721,7 @@ function claimAcross() {
     }
 }
 
+//For territories: create number map based on powers of twos showing where territory edges should go
 function numberMap() {
     for (let y = 0; y < gameObject.height; y++) {
         for (let x = 0; x < gameObject.width; x++) {
@@ -924,6 +928,133 @@ function drawLerpedImage(img,x1,y1,x2,y2,t, multiplier) {
     let actual_X = Lerp(Lerp(startX,midX,t),Lerp(midX,endX,t), t)
     let actual_Y = Lerp(Lerp(startY,midY,t),Lerp(midY,endY,t), t)
     context.drawImage(img, actual_X, actual_Y, size * multiplier, size * multiplier);
+}
+
+//Draws a animated tech icon thats shaded based on how much progress you've made
+function drawShadedAnimationTech(tech, x,y,size, t1, t2) {
+    let t = Math.max(0, Math.min(t1/t2, 1))
+
+    if (t >= 1) {
+        context.fillStyle = "#FFF";
+        context.fillRect(x-size*.06, y-size*.06, size*1.12, size*1.12);
+    }
+
+    if (currentTechImages[tech] != null) {
+        context.imageSmoothingEnabled = false;
+        context.drawImage(currentTechImages[tech], x, y, size, size);
+        context.imageSmoothingEnabled = true;
+    } else {
+        context.fillStyle = "#444";
+        context.fillRect(x, y, size, size);
+    }
+
+
+    console.log(t)
+    context.fillStyle = '#000B';
+    context.beginPath();
+    context.moveTo(x + size/2, y); //Top Center
+
+    //context.lineTo(x + size/2, y); //Center
+
+    if (t > 0.875) {
+        context.lineTo(x + (Math.tan(t*2*Math.PI)+1)*size/2, y); //Center leftish Math.tan()
+    } else {
+        context.lineTo(x, y); //Top left
+        if (t > 0.625) {
+            context.lineTo(x, y + (Math.tan((t-.75)*2*Math.PI)-1)*size/-2); //Left Math.tan()
+        } else { //Center leftish Math.tan()
+            context.lineTo(x, y + size); //Bottom left
+            if (t > 0.375) {
+                context.lineTo(x + (Math.tan((t-.5)*2*Math.PI)-1)*size/-2, y + size); //Bottom Math.tan()
+            } else {
+                context.lineTo(x + size, y + size); //Bottom Right
+                if (t > 0.125) {
+                    console.log("The ", Math.PI,(t-.25)*2*Math.PI,(t-.25)*2*Math.PI,Math.tan((t-.25)*2*Math.PI)+1)
+                    context.lineTo(x + size, y + (Math.tan((t-.25)*2*Math.PI)+1)*size/2); //Left Math.tan()
+                } else {
+                    context.lineTo(x + size, y); //Top Right
+                    if (t > 0) {
+                        context.lineTo(x + (Math.tan(t*2*Math.PI)+1)*size/2, y);
+                    } else {
+                        context.lineTo(x + size/2, y);
+                    }
+                }
+            }
+        }
+    }
+    context.lineTo(x + size/2, y+ size/2); //Center
+    context.closePath();
+    context.fill();
+}
+
+//Determines which techs have made progress from one round to the next
+function determineAnimationTechs(g1, g2) {
+    continueShowingAnimations = true
+    animationTechs = [] // Each element is list, index 0 is tech, 1 and 2 and the time of g1 and g2
+    let animationTechsNamesOnly = [] // Since animationTechs is a list of lists, we can't check if tech is in animationTechs
+    for (let tech in g1.progress[this_player]) {
+        if (tech in g2.progress[this_player]) {
+            if (g1.progress[this_player][tech] < g2.progress[this_player][tech]) { //Progress increased, but not done
+                animationTechs.push([tech, g1.progress[this_player][tech], g2.progress[this_player][tech]])
+                animationTechsNamesOnly.push(tech)
+            }
+        } else {
+            if (g2.tech[this_player].includes(tech)) { // Progressed increased and is done
+                animationTechs.push([tech, g1.progress[this_player][tech], TechDB[tech].time])
+                animationTechsNamesOnly.push(tech)
+            }
+        }
+    }
+    for (let tech in g2.progress[this_player]) {
+        if (!(animationTechsNamesOnly.includes(tech))) {
+            if (!(tech in g1.progress[this_player])) { // Started progress
+                animationTechs.push([tech, 0, g2.progress[this_player][tech]])
+                animationTechsNamesOnly.push(tech)
+            }
+        }
+    }
+    for (let tech of g2.tech[this_player]) {
+        if (!(animationTechsNamesOnly.includes(tech))) {
+            if (!g1.tech[this_player].includes(tech)) { // Went from no progress to complete in single turn
+                animationTechs.push([tech, 0, TechDB[tech].time])
+                animationTechsNamesOnly.push(tech)
+            }
+        }
+    }
+}
+
+//Given t (the percent of the current animation), draws all tech progress for this round
+function drawAnimatedTechs(t) {
+
+    if (animationTechs.length <= 0) {
+        return
+    }
+
+    let btnSize = 50
+    if (canvas.height > canvas.width && canvas.width*canvas.height > 1000000) { //Iphone
+        btnSize = 120
+    }
+
+    let btnCount = animationTechs.length
+    let combinedHeight = btnCount*btnSize + (btnCount-1)*btnSize*.2
+    let btnHeightStart = Math.floor(canvas.height*.5 - combinedHeight/2) 
+    if (btnHeightStart < resourceBoxHeight) {
+        while (btnHeightStart < resourceBoxHeight && btnSize > 20) {
+            btnSize -= 10
+            combinedHeight = btnCount*btnSize + (btnCount-1)*btnSize*.2
+            btnHeightStart = Math.floor(canvas.height*.5 - combinedHeight/2)
+        }
+    }
+    let currentButtonHeight = 0
+    for (let techAndTime of animationTechs) {
+        //techAndTime[0] is tech
+        //techAndTime[1] is progess in g1
+        //techAndTime[2] is progress in g2
+        drawShadedAnimationTech(techAndTime[0], 0,btnHeightStart + currentButtonHeight,btnSize, Lerp(techAndTime[1],techAndTime[2], t), TechDB[techAndTime[0]].time)
+
+        currentButtonHeight += (btnSize * 1.2)
+    }
+
 }
 
 function animateUnit(unit1, unit2, t, specfic_player) {
