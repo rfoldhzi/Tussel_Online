@@ -287,6 +287,8 @@ class Game:
                 self.intGrid[i] = int(self.intGrid[i])
             print(type(self.intGrid), type(self.intGrid[0]))
 
+            realPlayers = len(self.units)
+
             self.started = True
             if len(self.units) < self.targetPlayers:
                 self.ai += self.targetPlayers - len(self.units)
@@ -321,7 +323,6 @@ class Game:
                 for i in range(len(self.intGrid)):
                     self.intGrid[i] = int(self.intGrid[i])
 
-            realPlayers = len(self.units) - self.ai
             playerStartingSpots = startingspots[:realPlayers]
             aiStartingSpots = startingspots[realPlayers:]
 
@@ -353,7 +354,7 @@ class Game:
                     self.units[p].append(self.newUnit(startingspots[p], "town"))
                     spaces = getRangeCircles(self, self.units[p][0])
                     random.shuffle(spaces)
-                    for i in range(2):
+                    for _ in range(2):
                         water = True
                         while water:
                             water = Grid[spaces[0][1]][spaces[0][0]]
