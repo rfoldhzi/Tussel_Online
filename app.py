@@ -90,7 +90,7 @@ class login_form(FlaskForm):
 class create_game_form(FlaskForm):
     player_count = StringField(validators=[Optional(), Length(1, 2)])
     cloud_mode = StringField(validators=[Optional(), Length(1, 8)])
-    mapType = StringField(validators=[Optional(), Length(1, 8)])
+    mapType = StringField(validators=[Optional(), Length(1, 30)])
     game_id = StringField(validators=[Optional(), Length(1, 8)])
     players = StringField(validators=[Optional(), Length(1, 64)])
 
@@ -293,6 +293,8 @@ def newGame():
             CurrentGame = Game(form.game_id.data)
             if form.cloud_mode.data:
                 CurrentGame.mode = form.cloud_mode.data.lower()
+            if form.mapType.data:
+                CurrentGame.wantedMap = form.mapType.data.lower()
             for i in range(x):
                 CurrentGame.addPlayer()
 

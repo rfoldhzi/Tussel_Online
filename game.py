@@ -248,6 +248,19 @@ class Game:
         if not self.started:
 
             possibleMaps = os.listdir('maps')
+
+            # Add to possibleMaps all the maps that are in directories
+            for i in range(len(possibleMaps)):
+                if os.path.isdir(os.path.join('maps', possibleMaps[i])):
+                    newMaps = os.listdir(os.path.join('maps', possibleMaps[i]))
+                    for Map in newMaps:
+                        possibleMaps.append(os.path.join(possibleMaps[i], Map))
+
+            specificMap = getattr(self, "wantedMap", False) or settings.Map
+            if hasattr(self, "wantedMap"):
+                del (self.wantedMap)
+            print("specific map", specificMap, "%s.png" % specificMap in possibleMaps)
+            print("possibleMaps", possibleMaps)
         
             if settings.Map == "generated":
                 self.map = "generated"
@@ -256,8 +269,8 @@ class Game:
                 self.targetPlayers = 0
                 grid = methods.newGrid(self.width,self.height)
                 grid = methods.makeAreas(grid)
-            elif "%s.png" % settings.Map in possibleMaps:
-                self.map = "%s.png" % settings.Map
+            elif "%s.png" % specificMap in possibleMaps:
+                self.map = "%s.png" % specificMap
                 self.width,self.height = methods.getWidthAndHeight("maps/%s" % self.map)
                 self.ai = methods.getAICountFromMap("maps/%s" % self.map)
                 self.targetPlayers = methods.getPlayerCountFromMap("maps/%s" % self.map)
