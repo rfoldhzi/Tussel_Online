@@ -423,9 +423,38 @@ function drawActionIcons() {
         //console.log(position);
         context.drawImage(BlueCircle, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
     }
-    for (const position of buildHexes) {
-        //console.log(position);
-        context.drawImage(OrangeHex, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+    if (selected != null && "multibuild" in selected.abilities) {
+        // Show many "stacked" icons when a unit has multibuild
+        let buildCount = selected.abilities.multibuild + 1
+        //Limited by supplies
+        if (selected.supplies !== undefined && selected.supplies < buildCount) {
+            buildCount = selected.supplies
+        }
+        //Limited by population
+        if (selected.population !== undefined && selected.maxPopulation - selected.population < buildCount) {
+            buildCount = selected.maxPopulation - selected.population
+        }
+        //Can't be less than 1
+        if (buildCount <= 1) {
+            buildCount = 1
+        }
+        let smallSize = size * Math.pow(0.8, buildCount-1)
+        let shift = (size - smallSize)/(buildCount - 1)
+        //If it's one, its just like normal
+        if (buildCount == 1) {
+            smallSize = size
+            shift = 0
+        }
+        for (const position of buildHexes) {
+            for (let i = 0; i<buildCount; i++) {
+                context.drawImage(OrangeHex, size * position[0] + x_offset + shift*i, size * position[1] + y_offset + shift*i, smallSize, smallSize);
+            }
+        }
+    } else {
+        for (const position of buildHexes) {
+            //console.log(position);
+            context.drawImage(OrangeHex, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+        }
     }
 
     context.textAlign = "right";
