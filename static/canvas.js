@@ -399,6 +399,8 @@ let CloakArrow = new Image(40, 40)
 CloakArrow.src = '/static/assets/CloakArrow.png'
 let DecloakArrow = new Image(40, 40)
 DecloakArrow.src = '/static/assets/DecloakArrow.png'
+let UpgradeArrow = new Image(40, 40)
+UpgradeArrow.src = '/static/assets/UpgradeArrow.png'
 
 let buffImages = {
     "attack": new Image(40,40),
@@ -1242,15 +1244,21 @@ function drawUnitHealth(player, unit) {
 
 function drawUnitResources(player, unit) {
     if (unit.state == "resources") {
-        context.fillStyle = resourceColors[unit.stateData];
+        context.fillStyle = "#000";
         context.fillRect(size * unit.position[0] + x_offset + size * (1 - 0.2) * .1, size * unit.position[1] + y_offset + size * (1 - 0.2) * .9, size*.2, size*.2);
+        context.fillStyle = resourceColors[unit.stateData];
+        context.fillRect(size * unit.position[0] + x_offset + size * (1 - 0.2) * .11, size * unit.position[1] + y_offset + size * (1 - 0.2) * .91, size*.18, size*.18);
+    } else if (unit.state == "research") { // Research icon in bottom left corner
+        context.drawImage(Beaker, size * unit.position[0] + x_offset + size * (1 - 0.3) * .1, size * unit.position[1] + y_offset + size * (1 - 0.3) * .9, size*.3, size*.3);
+    } else if (unit.state == "upgrade") { // Research icon in bottom left corner
+        context.drawImage(UpgradeArrow, size * unit.position[0] + x_offset + size * (1 - 0.3) * .1, size * unit.position[1] + y_offset + size * (1 - 0.3) * .9, size*.3, size*.3);
     } else if (unit.state == "cloak") { // Cloak icon in bottom left corner
         let image = CloakArrow
         if (unit.cloaked != undefined) {
             image = DecloakArrow
         }
         context.drawImage(image, size * unit.position[0] + x_offset + size * (1 - 0.3) * .1, size * unit.position[1] + y_offset + size * (1 - 0.3) * .9, size*.3, size*.3);
-    }
+    } 
 }
 
 
