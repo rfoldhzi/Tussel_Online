@@ -193,6 +193,15 @@ function researchButtonClicked(btn) {
     drawBoard();
 }
 
+//Set selected's action to "cloak" and send to server
+function cloakCommand() {
+    selected.state = "cloak"
+    selected.stateData = null
+    sendToServer(convertToStr(selected,'cloak',null))
+    clearSelected();
+    drawBoard();
+}
+
 function cancelButtonClicked(btn) {
     if (selected != null) {
         selected.state = null
@@ -291,6 +300,12 @@ function handleClick(xPos,yPos) {
             if (selected.possibleStates.includes("research") ) {
                 if (x==selected.position[0] && y == selected.position[1]) {
                     enterResearchMenu()
+                    return;
+                }
+            }
+            if (selected.possibleStates.includes("cloak") ) { //If clicked on cloak button on top of selected unit
+                if (x==selected.position[0] && y == selected.position[1]) {
+                    cloakCommand()
                     return;
                 }
             }
@@ -466,7 +481,9 @@ function handleClick(xPos,yPos) {
                 for (let unitName of possibleBuilds) {
 
                     let color = "#EE5555"
-                    if (selected.state == "build" && selected.stateData[1] == unitName) {
+                    if (selected.cloaked != undefined) { //Show Navy background if cloaked
+                        color = "#00278F"
+                    } else if (selected.state == "build" && selected.stateData[1] == unitName) {
                         color = "#6464FF"
                     } else if (selected.maxPopulation && selected.maxPopulation <= selected.population) {
                         color = "#777777"
@@ -489,7 +506,9 @@ function handleClick(xPos,yPos) {
                 for (let upgradeName of possibleUpgrades) {
 
                     let color = "#755724"
-                    if (selected.state == "upgrade" && selected.stateData == upgradeName) {
+                    if (selected.cloaked != undefined) { //Show Navy background if cloaked
+                        color = "#00278F"
+                    } else if (selected.state == "upgrade" && selected.stateData == upgradeName) {
                         color = "#7842ff"
                     } else if (checkIfAffordable(upgradeName))  {
                         color = "#ffa200"
@@ -553,6 +572,9 @@ function handleClick(xPos,yPos) {
                     let unitName = unit.name
                     let color = "#32E632"
 
+                    if (selected.cloaked != undefined) { //Show Navy background if cloaked
+                        color = "#00278F"
+                    }
                     
                     //let newBuildButton = new Button(0, btnHeightStart + (btnSize * 1.2)*i, btnSize, btnSize, color, "", transportButtonClicked);
                     let newBuildButton = new Button(0, btnHeightStart + currentButtonHeight, btnSize, btnSize, color, "", transportButtonClicked);

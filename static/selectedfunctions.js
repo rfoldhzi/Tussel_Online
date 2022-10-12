@@ -120,6 +120,9 @@ function getAttacks(unit, player = this_player) {
     if (!unit.possibleStates.includes("attack")) {
         return []
     }
+    if (unit.cloaked != undefined) { // Can't attack if cloaked
+        return []
+    }
     let spaces = getRangeCircles(unit, true)
     let finalSpaces = []
     for (let pos of spaces) {
@@ -153,6 +156,9 @@ function getHeals(unit) {
     if (!unit.possibleStates.includes("heal")) {
         return []
     }
+    if (unit.cloaked != undefined) { //Can't heal if cloaked
+        return []
+    }
     let spaces = getRangeCircles(unit, true)
     let finalSpaces = []
     for (let pos of spaces) {
@@ -182,6 +188,9 @@ function getHeals(unit) {
 
 function getResupplies(unit) {
     if (!unit.possibleStates.includes("resupply")) {
+        return []
+    }
+    if (unit.cloaked != undefined) { // Can't resupply if cloaked
         return []
     }
     if (unit.maxSupplies != undefined && unit.supplies === 0) { //Can't resupply if you have no supplies

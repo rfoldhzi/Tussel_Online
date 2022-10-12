@@ -153,6 +153,7 @@ function useNewGameObject(newGameObject) {
         animationLastTick = performance.now()
         animationCounter = 0
         gameObject2 = newGameObject;
+        removeCloakedUnits(gameObject2)
         setAnimateSpeed(gameObject,gameObject2)
         determineAnimationTerritories(gameObject,gameObject2)
         determineAnimationTechs(gameObject,gameObject2)
@@ -169,6 +170,7 @@ function useNewGameObject(newGameObject) {
     }
     console.log("reinit stuff")
     refreshActionableUnits()
+    removeCloakedUnits(gameObject)
     determineTerritories()
     determineBuffedUnits()
     organizeTechTrees()
@@ -393,6 +395,10 @@ let Beaker = new Image(40, 40)
 Beaker.src = '/static/assets/Beaker.png'
 let YellowPentagon = new Image(40, 40)
 YellowPentagon.src = '/static/assets/SupplyPentagon.png'
+let CloakArrow = new Image(40, 40)
+CloakArrow.src = '/static/assets/CloakArrow.png'
+let DecloakArrow = new Image(40, 40)
+DecloakArrow.src = '/static/assets/DecloakArrow.png'
 
 let buffImages = {
     "attack": new Image(40,40),
@@ -498,6 +504,14 @@ function drawActionIcons() {
     if (selected != null) {
         if (selected.possibleStates.includes("research") && stateDataMode == null) {
             context.drawImage(Beaker, size * selected.position[0] + x_offset, size * selected.position[1] + y_offset, size, size);
+        }
+        // Cloak button on top of selected unit
+        if (selected.possibleStates.includes("cloak") && stateDataMode == null) {
+            let image = CloakArrow
+            if (selected.cloaked != undefined) {
+                image = DecloakArrow
+            }
+            context.drawImage(image, size * selected.position[0] + x_offset, size * selected.position[1] + y_offset, size, size);
         }
     }
 }
@@ -1201,9 +1215,12 @@ function drawUnit(player, unit) {
             img = getOutlinedUnitImage(player, unit.name)
         }
 
-
+        if (unit.cloaked != undefined) { // Make cloaked units slightly invisible to show that they are cloaked
+            context.globalAlpha = 0.5
+        }
         let multiplier = getMultiplier(unit.name, unit.type);
         context.drawImage(img, size * unit.position[0] + x_offset + size * (1 - multiplier) * .5, size * unit.position[1] + y_offset + size * (1 - multiplier) * .5, size * multiplier, size * multiplier);
+        context.globalAlpha = 1
         //Draw "Aura" buff effects
         for (const targetStat in buffedUnits) {
             if (buffedUnits[targetStat].includes((unit.UnitID))) {
@@ -1227,6 +1244,12 @@ function drawUnitResources(player, unit) {
     if (unit.state == "resources") {
         context.fillStyle = resourceColors[unit.stateData];
         context.fillRect(size * unit.position[0] + x_offset + size * (1 - 0.2) * .1, size * unit.position[1] + y_offset + size * (1 - 0.2) * .9, size*.2, size*.2);
+    } else if (unit.state == "cloak") { // Cloak icon in bottom left corner
+        let image = CloakArrow
+        if (unit.cloaked != undefined) {
+            image = DecloakArrow
+        }
+        context.drawImage(image, size * unit.position[0] + x_offset + size * (1 - 0.3) * .1, size * unit.position[1] + y_offset + size * (1 - 0.3) * .9, size*.3, size*.3);
     }
 }
 

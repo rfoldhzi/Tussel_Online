@@ -857,6 +857,24 @@ function determineBuffedUnits() {
     }
 }
 
+// DELETES units that are cloaked on enemy team on this client
+function removeCloakedUnits(specific_gameObject) {
+    for (const player in specific_gameObject.units) {
+        if (player == this_player) {
+            continue
+        }
+        let unitsToRemove = []
+        for (const unit of specific_gameObject.units[player]) {
+            if (unit.cloaked != undefined) {
+                unitsToRemove.push(unit)
+            }
+        }
+        for (let unit of unitsToRemove) {
+            specific_gameObject.units[player].splice(specific_gameObject.units[player].indexOf(unit), 1)
+        }
+    }
+}
+
 function animateBoard(g1, g2, t) {
     for (const player in g1.units) {
         for (const unit1 of g1.units[player]) {

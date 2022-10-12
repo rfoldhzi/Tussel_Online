@@ -903,7 +903,7 @@ UnitDB = {
     },
     'submarine':{
         'cost': {'gold':50, 'metal':50,'energy':50},
-        'possibleStates': ['move','attack'],
+        'possibleStates': ['move','attack','cloak'],
         'type': 'boat',
         'attack': 3.5,
         'resourceGen':{"gold": 0},
@@ -1164,7 +1164,7 @@ UnitDB = {
     },
     'ninja':{
         'cost': {'gold':200,'metal':10},
-        'possibleStates': ['move','attack'],
+        'possibleStates': ['move','attack','cloak'],
         'attack':3.5,
         'defense':2,
         'speed':2,
@@ -1274,7 +1274,7 @@ UnitDB = {
     },
     '3 v2':{
         'cost': {'energy':1500},
-        'possibleStates': ['move','attack','build','resources','research','heal','resupply'],
+        'possibleStates': ['move','attack','build','resources','research','heal','resupply','cloak'],
         'possibleBuilds': ['bot','fire missile'],
         'health': 20,
         'attack': 3,
