@@ -704,7 +704,7 @@ class Game:
                 unit.stateData = None
 
     # Performs EVERYTHING at the end of a round. 
-    # Order: Buff Units, AI/Default States, Resources, Resupply, Attack/Heal, Move, Build/Upgrade, Research, Resource Cap, Debuff units 
+    # Order: Buff Units, AI/Default States, Resources, Resupply, Attack/Heal, Move, Build/Upgrade, Cloak, Research, Resource Cap, Debuff units 
     def round(self):
         """
         grid = methods.intToList(self.intGrid, self.width)
@@ -777,6 +777,32 @@ class Game:
             self.went[player] = True
         setDefaultState(self)
         self.clearNeutralStates()
+
+        #Restrictions on actions
+        cloakRestrictedActions = ("move", "cloak")
+        positionsOfCloakedUnits = []
+        for i in self.units:
+            for u in self.units[i]:
+                if hasattr(u, "cloaked"):
+                    positionsOfCloakedUnits.append(u.position)
+                    if not (u.state in cloakRestrictedActions):
+                        u.state = None
+                        u.stateData = None
+
+        if len(positionsOfCloakedUnits) > 0:
+            for player in self.units:
+                for u in self.units[i]:
+                    if 'detect' in u.abilities: #"detect" allows units to see cloaked units
+                        for pos in getRangeCircles(self,u,ignore = True):
+                            if pos in positionsOfCloakedUnits:
+                                cloakedUnit = self.getAnyUnitFromPos(pos[0],pos[1])
+                                if hasattr(cloakedUnit, "detectedBy"):
+                                    cloakedUnit.detectedBy.append(player)
+                                else:
+                                    cloakedUnit.detectedBy = [player]
+
+        #Check for attacks on cloaked units
+
         
         #Gain resources
         for i in self.units:
@@ -839,6 +865,13 @@ class Game:
                     if 'onlyHit' in u.abilities: 
                         if not (target.type in u.abilities['onlyHit']):
                             goodToAttack = False
+                    if hasattr(target, "cloaked"):
+                        if hasattr(target, "detectedBy"):
+                            if not (i in target.detectedBy):
+                                goodToAttack = False
+                        else:
+                            goodToAttack = False
+
                     print(vars(u))
                     if goodToAttack and checkRange(u, target) <= u.range:#Check if in range
                         if not (target in hurtList): 
@@ -1266,6 +1299,35 @@ class Game:
         for u in UpgradeRemoveList:
             player = self.getPlayerfromUnit(u)
             self.units[player].remove(u)
+
+
+        #Cloak
+
+        #Disable cloaks of units that are being moved into
+        for i in self.units:
+            for u in self.units[i]:
+                if u.state == "move":
+                    blockerUnit = self.getAnyUnitFromPos(u.stateData[0], u.stateData[1])
+                    if blockerUnit and hasattr(blockerUnit, "cloaked"):
+                        del blockerUnit.cloaked
+                        if blockerUnit.state == "cloak":
+                            blockerUnit.state = None
+                elif u.state == "transport" or u.state == "build":
+                    blockerUnit = self.getAnyUnitFromPos(u.stateData[0][0], u.stateData[0][1])
+                    if blockerUnit and hasattr(blockerUnit, "cloaked"):
+                        del blockerUnit.cloaked
+                        if blockerUnit.state == "cloak":
+                            blockerUnit.state = None
+
+        #Toggle Cloaks
+        for i in self.units:
+            for u in self.units[i]:
+                if u.state == "cloak":
+                    if hasattr(u, "cloaked"):
+                        del u.cloaked
+                    else:
+                        u.cloaked = True
+                    u.state = None
 
         #Research
         for playerNum in self.units:
