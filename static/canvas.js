@@ -1216,7 +1216,7 @@ function drawUnit(player, unit) {
         }
 
         if (unit.cloaked != undefined) { // Make cloaked units slightly invisible to show that they are cloaked
-            context.globalAlpha = 0.5
+            context.globalAlpha = 0.4
         }
         let multiplier = getMultiplier(unit.name, unit.type);
         context.drawImage(img, size * unit.position[0] + x_offset + size * (1 - multiplier) * .5, size * unit.position[1] + y_offset + size * (1 - multiplier) * .5, size * multiplier, size * multiplier);

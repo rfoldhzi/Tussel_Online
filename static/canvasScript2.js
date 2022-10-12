@@ -1092,6 +1092,10 @@ function animateUnit(unit1, unit2, t, specfic_player) {
     let defaultAnimation = true;
     let multiplier = getMultiplier(unit.name, unit.type);
 
+    if (unit1.cloaked != undefined || unit2.cloaked != undefined) { //Make cloaked units lerp between transparency
+        context.globalAlpha = Lerp((unit1.cloaked)? 0.4 : 1, (unit2.cloaked)? 0.4 : 1, t)
+    }
+
     if (unit1 == null) {
         //Transport unit stuff
         let parent = getUnitByID(unit2.parent)
@@ -1111,6 +1115,8 @@ function animateUnit(unit1, unit2, t, specfic_player) {
     }
     if (defaultAnimation) {
         context.drawImage(img, size * unit.position[0] + x_offset + size * (1 - multiplier) * .5, size * unit.position[1] + y_offset + size * (1 - multiplier) * .5, size * multiplier, size * multiplier);
+        context.globalAlpha = 1 //Reset transparency in case unit was cloaked
+        
         //Draw "Aura" buff effects
         for (const targetStat in buffedUnits) {
             if (buffedUnits[targetStat].includes((unit.UnitID))) {
@@ -1145,6 +1151,7 @@ function animateUnit(unit1, unit2, t, specfic_player) {
     if (unit1 == unit2) { //This unit is dead
         context.drawImage(RedX, size * x + x_offset, size * y + y_offset, size, size);
     }
+    context.globalAlpha = 1 //Reset transparency in case unit was cloaked
 }
 
 

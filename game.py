@@ -1312,6 +1312,10 @@ class Game:
                         del blockerUnit.cloaked
                         if blockerUnit.state == "cloak":
                             blockerUnit.state = None
+                        if hasattr(u, "cloaked"): # If cloaked unit moves into cloaked unit, they both lose cloaked
+                            del u.cloaked
+                            if u.state == "cloak":
+                                u.state = None
                 elif u.state == "transport" or u.state == "build":
                     blockerUnit = self.getAnyUnitFromPos(u.stateData[0][0], u.stateData[0][1])
                     if blockerUnit and hasattr(blockerUnit, "cloaked"):
