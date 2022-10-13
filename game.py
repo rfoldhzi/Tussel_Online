@@ -911,7 +911,12 @@ class Game:
                         target = self.getUnitFromID(target)
                     #"onlyHeal" means attacker can only heal certain unit types
                     if 'onlyHeal' in u.abilities:
-                        if not (target.type in u.abilities['onlyHeal']):
+                        targetType = False
+                        if type(target) == dict:
+                            targetType = target["type"]
+                        else:
+                            targetType = target.type
+                        if not (targetType in u.abilities['onlyHeal']):
                             goodToHeal = False
                     print(vars(u))
                     if goodToHeal and checkRange(u, target) <= u.range:#Check if in range
@@ -1460,6 +1465,12 @@ class GameMaker(Game):
         for i in self.units:
             for j in range(len(self.units[i])):
                 if self.units[i][j].state == "attack" and type(self.units[i][j].stateData) == str:
+                    print("Okay... I'm going to do the thing")
+                    print("thingL:", self.units[i][j].stateData)
+                    new = self.getUnitFromID2(self.units[i][j].stateData)
+                    print("dfdfjkdrhjdhj")
+                    self.units[i][j].stateData = new
+                elif self.units[i][j].state == "heal" and type(self.units[i][j].stateData) == str:
                     print("Okay... I'm going to do the thing")
                     print("thingL:", self.units[i][j].stateData)
                     new = self.getUnitFromID2(self.units[i][j].stateData)
