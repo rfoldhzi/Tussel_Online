@@ -1310,6 +1310,439 @@ function buildPopup(unit, player = this_player) {
     }
 }
 
+//Draws a popup box describing a unit in detail
+function detailedUnitInfo(unit, unit2) { //TODO more comments on this thing
+    popupUnit = unit
+    //defaultButtonMenu()
+
+    let boxWidth = canvas.width * .3
+    let boxHeight = boxWidth * .75
+
+    let boxXoffset = Math.floor((canvas.width - boxWidth) / 2)
+    let boxYoffset = Math.floor((canvas.height - boxHeight) / 2)
+
+    if (canvas.height > canvas.width) {
+        boxWidth = Math.floor(canvas.width * 0.9)
+        boxXoffset = Math.floor(canvas.width * 0.05)
+
+        boxHeight = Math.floor(canvas.height * 0.33)
+        boxYoffset = Math.floor(canvas.height * 0.33)
+    }
+
+    context.fillStyle = "#222"
+    context.fillRect(boxXoffset, boxYoffset, boxWidth, boxHeight);
+    context.fillStyle = "#333"
+    context.fillRect(boxXoffset+boxWidth*.6, boxYoffset, boxWidth*.4, boxHeight);
+
+    //All the stats
+    let name = unit.name
+    let health = unit.health//UnitDB[unit].health || 10
+    let maxHealth = unit.maxHealth//UnitDB[unit].health || 10
+    let possibleStates = unit.possibleStates//UnitDB[unit].possibleStates || ['attack','move','resources'] 
+    let range = unit.range//UnitDB[unit].range || 1
+    let speed = unit.speed//UnitDB[unit].speed || 1
+    let attack = unit.attack//UnitDB[unit].attack || 2
+    let defense = unit.defense//UnitDB[unit].defense || 2
+    let unitType = unit.type//UnitDB[unit].type || "trooper"
+    let cost = getCost(unit.name)
+    let resourceGen = unit.resourceGen || {
+        "gold": 2,
+        "metal": 0,
+        "energy": 0
+    }
+    let possibleBuilds = unit.possiblebuilds || UnitDB[unit.name]['possibleBuilds'] || []
+    let possibleUpgrades = unit.possibleupgrades || UnitDB[unit.name]['possibleUpgrades'] || []
+
+    let name2, health2, maxHealth2, possibleStates2, range2, speed2, attack2, defense2, resourceGen2, possibleBuilds2, possibleUpgrades2, cost2 = undefined
+    if (unit2 != undefined) {
+        name2 = unit2
+        health2 = UnitDB[unit2].health || 10
+        maxHealth2 = UnitDB[unit2].health || 10
+        possibleStates2 = UnitDB[unit2].possibleStates || ["attack","move"] // TODO: make sure this is right default 
+        range2 = UnitDB[unit2].range || 1
+        speed2 = UnitDB[unit2].speed || 1
+        attack2 = UnitDB[unit2].attack || 2
+        defense2 = UnitDB[unit2].defense || 2
+        resourceGen2 = UnitDB[unit2].resourceGen || {
+            "gold": 2,
+            "metal": 0,
+            "energy": 0
+        }
+        possibleBuilds2 = UnitDB[unit2]['possibleBuilds'] || []
+        possibleUpgrades2 = UnitDB[unit2]['possibleUpgrades'] || []
+        cost2 = getCost(unit2)
+        if (UnitDB[unit2].baseUnit == undefined || UnitDB[unit2].baseUnit != name) {
+            name = name2
+            health = health2
+            maxHealth = maxHealth2
+            possibleStates = possibleStates2
+            range = range2
+            speed = speed2
+            attack = attack2
+            defense = defense2
+            resourceGen = resourceGen2
+            possibleBuilds = possibleBuilds2
+            possibleUpgrades = possibleUpgrades2
+            cost = cost2
+        }
+    } else {
+        name2 = name
+        health2 = health
+        maxHealth2 = maxHealth
+        possibleStates2 = possibleStates
+        range2 = range
+        speed2 = speed
+        attack2 = attack
+        defense2 = defense
+        resourceGen2 = resourceGen
+        possibleBuilds2 = possibleBuilds
+        possibleUpgrades2 = possibleUpgrades
+        cost2 = cost
+    }
+
+    //Tech Title
+    let fontSize = boxHeight*.12
+    context.font = fontSize + "px Arial";
+    context.textAlign = "left";
+    context.fillStyle = "white";
+
+    let titleText = titleCase(name2)
+
+    let costTextSize = 0
+    
+    console.log("here", context.measureText(titleText).width,boxWidth,boxWidth - (boxWidth*.02 + costTextSize))
+    if (context.measureText(titleCase(name2)).width> boxWidth*.6 - 2 * boxWidth*.02) {
+        console.log("too big")
+        let CurrentSize = context.measureText(titleText).width
+        let TargetSize = boxWidth*.6 - 2 * boxWidth*.02
+        fontSize = fontSize * TargetSize/CurrentSize
+        context.font = fontSize + "px Arial";
+    }
+
+    //Draw title
+    context.fillText(titleText, boxXoffset+boxWidth*.02, boxYoffset+fontSize+(boxHeight*.12-fontSize)/3+boxHeight*.02);
+    let startYAfterTitle = boxYoffset+boxHeight*.2
+    
+    // Main unit Image
+    let image = getUnitImage(this_player, unit2)//currentTechImages[tech]
+    context.imageSmoothingEnabled = true;
+    context.fillStyle = "#333"
+    context.fillRect(Math.floor(boxXoffset+boxWidth*.02), Math.floor(boxYoffset+boxHeight*.2), boxHeight*.3, boxHeight*.3);
+    context.drawImage(image, Math.floor(boxXoffset+boxWidth*.02), Math.floor(boxYoffset+boxHeight*.2), boxHeight*.3, boxHeight*.3);
+    var ImageSize = boxHeight*.3
+    
+    let startXAfterImage = Math.floor(boxXoffset+boxWidth*.02 + boxHeight*.3) 
+    
+    
+
+    //Show PossibleBuilds Images
+    let totalPossibleThings = []
+    for (let possibleBuild of possibleBuilds) {
+        if (possibleBuilds.includes(totalPossibleThings)) { //Don't want repeats
+            continue
+        }
+    }
+    for (let possibleBuild of possibleBuilds2) {
+        if (possibleBuilds.includes(totalPossibleThings)) { //Don't want repeats
+            continue
+        }
+    }
+    for (let possibleBuild of possibleUpgrades2) {
+        if (possibleBuilds.includes(totalPossibleThings)) { //Don't want repeats
+            continue
+        }
+    }
+    let numberOfSubtechs = Math.max(totalPossibleThings.length, 3)
+    let xAcrossed = 3
+    if (numberOfSubtechs > 9 || (numberOfSubtechs % 3 != 0 && (numberOfSubtechs % 4 == 0 || numberOfSubtechs % 4 >= numberOfSubtechs % 3))) {
+        xAcrossed = 4
+    }
+    let i = 0
+    for (let possibleBuild of possibleBuilds) { //Draw Build Icons
+        let xPos = Math.floor(boxXoffset+boxWidth*.02 + (i%xAcrossed) * ImageSize/xAcrossed)
+        let yPos = Math.floor(boxYoffset+boxHeight*.22 + ImageSize + (ImageSize/xAcrossed)*Math.floor(i/xAcrossed))
+        let image = getUnitImage(this_player, possibleBuild)//currentTechImages[subTech]
+        context.fillStyle = "#CCC"
+        if (!possibleBuilds2.includes(possibleBuild)) { //Highlight Red if not included in highlight build
+            context.fillStyle = "#F55"
+        }
+        context.fillRect(xPos, yPos, ImageSize/xAcrossed,ImageSize/xAcrossed);
+        context.fillRect(xPos, yPos, ImageSize/xAcrossed,ImageSize/xAcrossed);
+        if (image != null) {
+            context.drawImage(image, xPos, yPos, ImageSize/xAcrossed,ImageSize/xAcrossed);
+        }
+        i += 1
+    }
+    for (let possibleBuild of possibleBuilds2) { //Find all the new things we can build
+        if (possibleBuilds.includes(possibleBuild)) { //Don't want repeats
+            continue
+        }
+        let xPos = Math.floor(boxXoffset+boxWidth*.02 + (i%xAcrossed) * ImageSize/xAcrossed)
+        let yPos = Math.floor(boxYoffset+boxHeight*.22 + ImageSize + (ImageSize/xAcrossed)*Math.floor(i/xAcrossed))
+        let image = getUnitImage(this_player, possibleBuild)//currentTechImages[subTech]
+        context.fillStyle = "#2F2"
+        context.fillRect(xPos, yPos, ImageSize/xAcrossed,ImageSize/xAcrossed);
+        context.fillRect(xPos, yPos, ImageSize/xAcrossed,ImageSize/xAcrossed);
+        if (image != null) {
+            context.drawImage(image, xPos, yPos, ImageSize/xAcrossed,ImageSize/xAcrossed);
+        }
+        i += 1
+    }
+    for (let possibleUpgrade of possibleUpgrades2) { //Only want to show new upgrades
+        let xPos = Math.floor(boxXoffset+boxWidth*.02 + (i%xAcrossed) * ImageSize/xAcrossed)
+        let yPos = Math.floor(boxYoffset+boxHeight*.22 + ImageSize + (ImageSize/xAcrossed)*Math.floor(i/xAcrossed))
+        let image = getUnitImage(this_player, possibleUpgrade)//currentTechImages[subTech]
+        context.fillStyle = "#ffa200"
+        context.fillRect(xPos, yPos, ImageSize/xAcrossed,ImageSize/xAcrossed);
+        if (image != null) {
+            context.drawImage(image, xPos, yPos, ImageSize/xAcrossed,ImageSize/xAcrossed);
+        }
+        i += 1
+    }
+
+
+    let currentStatCount = 0 
+
+    function drawBasicStat(statName, stat, stat2, color) {
+        if (stat != stat2) {
+            if (stat2 > stat) {
+                stat = stat + " + " + (stat2 - stat).toString()
+            } else {
+                stat = stat + " - " + (stat - stat2).toString()
+            }
+        }
+        drawStat(statName, stat, color)
+    }
+
+    function drawStat(stat, text, color) {
+
+        let xPos = startXAfterImage + boxWidth*.02
+        let yPos = startYAfterTitle + boxHeight*.1 * (currentStatCount)
+
+        context.fillStyle = color;
+        context.font = (boxHeight*.09) + "px Arial";
+        context.textAlign = "left";
+
+        context.drawImage(statLogos[stat], xPos,yPos, boxHeight*.08, boxHeight*.08)
+        context.fillText(text, xPos + boxHeight*.10, yPos+(boxHeight*.075))
+
+        
+        currentStatCount += 1
+    }
+
+    
+
+
+    
+    if (maxHealth != maxHealth2) {
+        if (maxHealth2 > maxHealth) {
+            drawStat("health",health+"/"+maxHealth + " + " + (maxHealth2-maxHealth).toString(),"#CEFFD7")
+        } else {
+            drawStat("health",health+"/"+maxHealth + " - " + (maxHealth-maxHealth2).toString(),"#CEFFD7")
+        }
+
+    } else {
+        drawStat("health",health+"/"+maxHealth,"#CEFFD7")
+    }
+
+    //Attack
+    if (possibleStates2.includes("attack")) {
+        drawBasicStat("attack",attack, attack2,"#FF0800")
+    }
+
+    //Defense
+    drawBasicStat("defense",defense, defense2, "#205DFF")
+
+    //Speed
+    if (possibleStates2.includes("move")) {
+        drawBasicStat("speed",speed, speed2,"#00F5B9")
+    }
+    
+    drawBasicStat("range",range, range2,"#FFA300")
+
+    if ((possibleStates2.includes("build") && unitType == 'building') || unit.population != undefined) {
+        let population = unit.population
+        let maxPopulation = unit.maxPopulation
+        let maxPopulation2 = undefined
+        if (unit2 != undefined) {
+            maxPopulation2 = UnitDB[unit2].population || 3
+        } else {
+            maxPopulation2 = maxPopulation
+        }
+        if (maxPopulation != maxPopulation2) {
+            if (maxPopulation2 > maxPopulation) {
+                
+                drawStat("population",population+"/"+maxPopulation + " + " + (maxPopulation2-maxPopulation).toString(),"#9434EB")
+            } else {
+                drawStat("population",population+"/"+maxPopulation + " - " + (maxPopulation-maxPopulation2).toString(),"#9434EB")
+            }
+
+        } else {
+            drawStat("population",population+"/"+maxPopulation,"#9434EB")
+        }
+    }
+
+    if (unit.supplies != undefined) {
+        let supplies = unit.supplies
+        let maxSupplies = unit.maxSupplies
+        let maxSupplies2 = undefined
+        if (unit2 != undefined) {
+            maxSupplies2 = UnitDB[unit2].supplies || 0
+        } else {
+            maxSupplies2 = maxSupplies
+        }
+        if (maxSupplies != maxSupplies2) {
+            if (maxSupplies2 > maxSupplies) {
+                
+                drawStat("supplies",unit.supplies+"/"+unit.maxSupplies + " + " + (maxSupplies2-maxSupplies).toString(),"#FF0")
+            } else {
+                drawStat("supplies",unit.supplies+"/"+unit.maxSupplies + " - " + (maxSupplies-maxSupplies2).toString(),"#FF0")
+            }
+
+        } else {
+            drawStat("supplies",unit.supplies+"/"+unit.maxSupplies,"#FF0")
+        }
+    } else if (UnitDB[unit2].supplies != undefined) {
+        drawStat("supplies","+"+UnitDB[unit2].supplies,"#FF0")
+    }
+
+
+    //List Abilities (if the unit has any)
+    let currentInfoBoxStartHeight = boxYoffset
+    let infoBoxStartX = boxXoffset + boxWidth*.6
+    let infoBoxWidth = boxWidth*.4
+
+    if (Object.keys(unit.abilities).length > 0) {
+        context.fillStyle = "#222"
+        context.fillRect(infoBoxStartX, currentInfoBoxStartHeight, infoBoxWidth, boxHeight*.1);
+        
+
+        context.font = Math.floor(boxHeight*.09) + "px Arial";
+        context.textAlign = "center";
+        context.fillStyle = "white";
+        console.log(infoBoxStartX + infoBoxWidth*.10, currentInfoBoxStartHeight+(boxHeight*.075))
+        context.fillText("Abilities", infoBoxStartX + infoBoxWidth*.5, currentInfoBoxStartHeight+(boxHeight*.08))
+
+        currentInfoBoxStartHeight = currentInfoBoxStartHeight + boxHeight*.1
+
+        //Set font and color for all ability rows
+        context.font = Math.floor(boxHeight*.06) + "px Arial";
+        context.textAlign = "left";
+
+        let i = 0
+        for (let ability in unit.abilities) {
+            context.fillStyle = (i%2 == 0) ? "#444" : "#383838";
+            context.fillRect(infoBoxStartX, currentInfoBoxStartHeight, infoBoxWidth, boxHeight*.08);
+
+            context.fillStyle = "white";
+            context.fillText(ability, infoBoxStartX + infoBoxWidth*.02, currentInfoBoxStartHeight+(boxHeight*.06))
+
+            currentInfoBoxStartHeight = currentInfoBoxStartHeight + boxHeight*.08
+            i++;
+        }
+
+    }
+
+    if (possibleStates.includes("resources")) {
+        context.fillStyle = "#222"
+        context.fillRect(infoBoxStartX, currentInfoBoxStartHeight, infoBoxWidth, boxHeight*.1);
+        
+
+        context.font = Math.floor(boxHeight*.09) + "px Arial";
+        context.textAlign = "center";
+        context.fillStyle = "white";
+        console.log(infoBoxStartX + infoBoxWidth*.10, currentInfoBoxStartHeight+(boxHeight*.075))
+        context.fillText("Production", infoBoxStartX + infoBoxWidth*.5, currentInfoBoxStartHeight+(boxHeight*.08))
+
+        currentInfoBoxStartHeight = currentInfoBoxStartHeight + boxHeight*.1
+
+        //Set font and color for all ability rows
+        context.font = Math.floor(boxHeight*.06) + "px Arial";
+        context.textAlign = "left";
+
+        let i = 0
+        for (let resource in resourceGen) {
+            if (resourceGen[resource] <= 0 && (!((resource in resourceGen2) && resourceGen2[resource] > 0))) {
+                continue
+            }
+            context.fillStyle = (i%2 == 0) ? "#444" : "#383838";
+            context.fillRect(infoBoxStartX, currentInfoBoxStartHeight, infoBoxWidth, boxHeight*.07);
+
+            context.fillStyle = resourceColors[resource];
+            let text = "+"+resourceGen[resource]+" "+resource
+            if (resource in resourceGen2) {
+                if (resourceGen[resource] != resourceGen2[resource]) {
+                    text = "+"+resourceGen[resource]+" ("+resourceGen2[resource]+") "+resource
+                }
+            } else (
+                text = "+"+resourceGen[resource]+" (0) "+resource 
+            )
+            context.fillText(text, infoBoxStartX + infoBoxWidth*.02, currentInfoBoxStartHeight+(boxHeight*.055))
+
+            currentInfoBoxStartHeight = currentInfoBoxStartHeight + boxHeight*.07
+            i++;
+        }
+    }
+
+    if (true) { //All units should have cost
+        context.fillStyle = "#222"
+        context.fillRect(infoBoxStartX, currentInfoBoxStartHeight, infoBoxWidth, boxHeight*.1);
+        
+
+        context.font = Math.floor(boxHeight*.08) + "px Arial";
+        context.textAlign = "center";
+        context.fillStyle = "white";
+        console.log(infoBoxStartX + infoBoxWidth*.10, currentInfoBoxStartHeight+(boxHeight*.07))
+        context.fillText("Cost", infoBoxStartX + infoBoxWidth*.5, currentInfoBoxStartHeight+(boxHeight*.07))
+
+        currentInfoBoxStartHeight = currentInfoBoxStartHeight + boxHeight*.09
+
+        //Set font and color for all ability rows
+        context.font = Math.floor(boxHeight*.06) + "px Arial";
+        context.textAlign = "left";
+
+        let i = 0
+        for (let resource in cost2) {
+            context.fillStyle = (i%2 == 0) ? "#444" : "#383838";
+            context.fillRect(infoBoxStartX, currentInfoBoxStartHeight, infoBoxWidth, boxHeight*.07);
+
+            context.fillStyle = resourceColors[resource];
+            context.fillText(cost2[resource]+" "+resource, infoBoxStartX + infoBoxWidth*.02, currentInfoBoxStartHeight+(boxHeight*.055))
+
+            currentInfoBoxStartHeight = currentInfoBoxStartHeight + boxHeight*.07
+            i++;
+        }
+    }
+
+    if (unit2 != undefined) {
+        let buttonColor = "#1090FF"
+        if (selected.state == "upgrade" && selected.stateData == unit2) {
+            buttonColor = "#10DD30"
+        } else if (!checkIfAffordable(unit2)) {
+            buttonColor = "#FF6060"
+        }
+
+        //"Upgrade" button
+        let buttonwidth = context.measureText("Upgrade").width;
+        upgradeButton = new Button(boxXoffset + boxWidth - boxWidth*.02 - buttonwidth * 1.8, 
+            boxYoffset+boxHeight - boxHeight*.10 - boxHeight*.02, buttonwidth * 1.8, 
+            boxHeight*.1, buttonColor, "Upgrade", trueUpgradeButtonClicked);
+        upgradeButton.name = tempStateData;
+        console.log("upgradeButton", upgradeButton.name)
+        ButtonCollection["upgrade_button"] = upgradeButton
+        upgradeButton.render()
+    }
+
+
+    //"Back" button
+    buttonwidth = context.measureText("Back").width;
+    backButton = new Button(boxXoffset + boxWidth*.02, boxYoffset+boxHeight - boxHeight*.10 - boxHeight*.02, buttonwidth * 1.8, boxHeight*.1, "#555", "Back", clearSelected);
+    ButtonCollection["back_button"] = backButton
+    backButton.render()
+
+    context.imageSmoothingEnabled = true;
+}
+
 //Not a very verstile function: will need to modify if there a major changes to tree layout
 function initilizeTechOffsets() {
     let totalHeight = treeHeight["improvements"] + Math.max(treeHeight["recruitment"], treeHeight["armament"], treeHeight["aviation"])

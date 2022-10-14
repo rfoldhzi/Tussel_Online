@@ -102,6 +102,7 @@ function clearSelected() {
     possibleResupplies = []
     defaultButtonMenu()
     refreshActionableUnits()
+    drawBoard()
 }
 
 function createCancelButton() {
@@ -178,9 +179,23 @@ function resourceButtonClicked(btn) {
 }
 
 function upgradeButtonClicked(btn) {
+
+    tempStateData = btn.name
+    stateDataMode = 'upgrade2'
+
+
+    //selected.state = "upgrade"
+    //selected.stateData = btn.name
+    //sendToServer(convertToStr(selected,'upgrade',btn.name))
+    //clearSelected();
+    //drawBoard();
+}
+
+function trueUpgradeButtonClicked(btn) {
     selected.state = "upgrade"
-    selected.stateData = btn.name
-    sendToServer(convertToStr(selected,'upgrade',btn.name))
+    selected.stateData = tempStateData 
+    console.log("btn.name ", tempStateData )
+    sendToServer(convertToStr(selected,'upgrade',tempStateData))
     clearSelected();
     drawBoard();
 }

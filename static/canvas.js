@@ -817,6 +817,10 @@ function drawBoard() {
     for (let btn of resourceButtons) {
         btn.render();
     }
+
+    if (selected != null && stateDataMode == "upgrade2") {
+        detailedUnitInfo(selected, tempStateData)
+    }
 }
 
 function drawAnimation() {
