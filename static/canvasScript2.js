@@ -1336,6 +1336,10 @@ function detailedUnitInfo(unit, unit2) { //TODO more comments on this thing
 
     //All the stats
     let name = unit.name
+    let baseName = unit.name
+    if (UnitDB[name].baseUnit != undefined) {
+        baseName = UnitDB[name].baseUnit
+    }
     let health = unit.health//UnitDB[unit].health || 10
     let maxHealth = unit.maxHealth//UnitDB[unit].health || 10
     let possibleStates = unit.possibleStates//UnitDB[unit].possibleStates || ['attack','move','resources'] 
@@ -1353,9 +1357,13 @@ function detailedUnitInfo(unit, unit2) { //TODO more comments on this thing
     let possibleBuilds = unit.possiblebuilds || UnitDB[unit.name]['possibleBuilds'] || []
     let possibleUpgrades = unit.possibleupgrades || UnitDB[unit.name]['possibleUpgrades'] || []
 
-    let name2, health2, maxHealth2, possibleStates2, range2, speed2, attack2, defense2, resourceGen2, possibleBuilds2, possibleUpgrades2, cost2 = undefined
+    let name2, baseName2, health2, maxHealth2, possibleStates2, range2, speed2, attack2, defense2, resourceGen2, possibleBuilds2, possibleUpgrades2, cost2 = undefined
     if (unit2 != undefined) {
         name2 = unit2
+        baseName2 = name2
+        if (UnitDB[name2].baseUnit != undefined) {
+            baseName2 = UnitDB[name2].baseUnit
+        }
         health2 = UnitDB[unit2].health || 10
         maxHealth2 = UnitDB[unit2].health || 10
         possibleStates2 = UnitDB[unit2].possibleStates || ["attack","move"] // TODO: make sure this is right default 
@@ -1371,7 +1379,8 @@ function detailedUnitInfo(unit, unit2) { //TODO more comments on this thing
         possibleBuilds2 = UnitDB[unit2]['possibleBuilds'] || []
         possibleUpgrades2 = UnitDB[unit2]['possibleUpgrades'] || []
         cost2 = getCost(unit2)
-        if (UnitDB[unit2].baseUnit == undefined || UnitDB[unit2].baseUnit != name) {
+        if (baseName2 != baseName) { // unit2 is completely different unit from unit1
+            console.log("IT'S THE SAME UNIT")
             name = name2
             health = health2
             maxHealth = maxHealth2
@@ -1387,6 +1396,7 @@ function detailedUnitInfo(unit, unit2) { //TODO more comments on this thing
         }
     } else {
         name2 = name
+        baseName2 = baseName
         health2 = health
         maxHealth2 = maxHealth
         possibleStates2 = possibleStates
@@ -1533,7 +1543,7 @@ function detailedUnitInfo(unit, unit2) { //TODO more comments on this thing
     
 
 
-    
+    //Health
     if (maxHealth != maxHealth2) {
         if (maxHealth2 > maxHealth) {
             drawStat("health",health+"/"+maxHealth + " + " + (maxHealth2-maxHealth).toString(),"#CEFFD7")
@@ -1558,8 +1568,10 @@ function detailedUnitInfo(unit, unit2) { //TODO more comments on this thing
         drawBasicStat("speed",speed, speed2,"#00F5B9")
     }
     
+    //Range
     drawBasicStat("range",range, range2,"#FFA300")
 
+    //Population
     if ((possibleStates2.includes("build") && unitType == 'building') || unit.population != undefined) {
         let population = unit.population
         let maxPopulation = unit.maxPopulation
@@ -1569,7 +1581,7 @@ function detailedUnitInfo(unit, unit2) { //TODO more comments on this thing
         } else {
             maxPopulation2 = maxPopulation
         }
-        if (maxPopulation != maxPopulation2) {
+        if (maxPopulation != maxPopulation2 && baseName == baseName2) {
             if (maxPopulation2 > maxPopulation) {
                 
                 drawStat("population",population+"/"+maxPopulation + " + " + (maxPopulation2-maxPopulation).toString(),"#9434EB")
@@ -1591,7 +1603,7 @@ function detailedUnitInfo(unit, unit2) { //TODO more comments on this thing
         } else {
             maxSupplies2 = maxSupplies
         }
-        if (maxSupplies != maxSupplies2) {
+        if (maxSupplies != maxSupplies2  && baseName == baseName2) {
             if (maxSupplies2 > maxSupplies) {
                 
                 drawStat("supplies",unit.supplies+"/"+unit.maxSupplies + " + " + (maxSupplies2-maxSupplies).toString(),"#FF0")
@@ -1940,7 +1952,11 @@ function wrapText(context, text, x, y, maxWidth, fontSize, fontFace, italicsBold
 function titleCase(str) {
     var splitStr = str.toLowerCase().split(' ');
     for (var i = 0; i < splitStr.length; i++) {
-        splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);     
+        if (splitStr[i] == "ii" || splitStr[i] == "iii" || splitStr[i] == "iv") {
+            splitStr[i] = splitStr[i].toUpperCase();
+        } else {
+            splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);   
+        }
     }
     return splitStr.join(' '); 
 }

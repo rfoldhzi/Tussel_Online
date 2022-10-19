@@ -182,7 +182,7 @@ function upgradeButtonClicked(btn) {
 
     tempStateData = btn.name
     stateDataMode = 'upgrade2'
-
+    drawBoard();
 
     //selected.state = "upgrade"
     //selected.stateData = btn.name
