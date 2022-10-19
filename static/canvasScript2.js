@@ -1092,7 +1092,7 @@ function animateUnit(unit1, unit2, t, specfic_player) {
     let defaultAnimation = true;
     let multiplier = getMultiplier(unit.name, unit.type);
 
-    if (unit1.cloaked != undefined || unit2.cloaked != undefined) { //Make cloaked units lerp between transparency
+    if ((unit1 && unit2) && (unit1.cloaked != undefined || unit2.cloaked != undefined)) { //Make cloaked units lerp between transparency
         context.globalAlpha = Lerp((unit1.cloaked)? 0.4 : 1, (unit2.cloaked)? 0.4 : 1, t)
     }
 
