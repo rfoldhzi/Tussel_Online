@@ -43,6 +43,19 @@ UnitDB = {
         'cost': {'gold':50},
         'health': 20,
         'defense':1,
+        "size": 0.65,
+    },
+    'ranger':{
+        'cost': {'gold':50},
+        'range':2,
+    },
+    'wall breaker':{
+        'cost': {'gold':40},
+        'possibleStates': ['move','attack'],
+        'attack':4,
+        'speed':2,
+        'resourceGen':{"gold": 0},
+        'abilities':{'onlyHit':['building'],'kamikaze':0},
     },
     'medic':{
         'cost': {'gold':50},
@@ -2222,15 +2235,15 @@ TechDB = {
         'cost': 20,
         'time': 1,
         'ability': [['unlock build', 'barracks', 'defender']],
-        'unlocks': ['riot shields', 'rockets'],
-        'quote': "They are literally blocks of shield",
+        'unlocks': ['riot shields', 'rockets', 'rangers'],
+        'quote': "They are literally blocks of shields",
     },
     'riot shields':{
         'cost': 40,
         'time': 2,
         'ability': [['stat', 'defender', 'defense', 0.5]],
         'unlocks': ['blockade'],
-        'quote': "Just a percaution",
+        'quote': "Just a perecaution",
     },
     'blockade':{
         'cost': 10,
@@ -2267,6 +2280,13 @@ TechDB = {
         'unlocks': [],
         'quote': "In my book, experience outranks everything",
     },
+    'rangers':{
+        'cost': 30,
+        'time': 2,
+        'ability': [['unlock build', 'barracks', 'ranger']],
+        'unlocks': [],
+        'quote': '"A ranger is a person who takes care of a park or a piece of land." -Google',
+    },
     'defensive recruitment':{
         'cost': 20,
         'time': 2,
@@ -2293,7 +2313,7 @@ TechDB = {
         'cost': 30,
         'time': 1,
         'ability': [['unlock build', 'barracks', 'brute']],
-        'unlocks': ['ranged support', 'blinding rage'],
+        'unlocks': ['ranged support', 'blinding rage','demolitionists'],
         'quote': "A bit brutish if you ask me.",
     },
     'ranged support':{
@@ -2342,9 +2362,23 @@ TechDB = {
     'head hunter':{
         'cost': 60,
         'time': 3,
-        'ability': [['stat', 'sniper', 'attck', 0.5]],
-        'unlocks': [],
+        'ability': [['stat', 'sniper', 'attack', 0.5]],
+        'unlocks': ['camouflage'],
         'quote': "Full metal jacket",
+    },
+    'camouflage':{
+        'cost': 80,
+        'time': 10,
+        'ability': [['gain state', 'sniper', 'cloak']],
+        'unlocks': [],
+        'quote': "Initiating active camo.",
+    },
+    'demolitionists':{
+        'cost': 100,
+        'time': 1,
+        'ability': [['unlock build', 'barracks', 'wall breaker']],
+        'unlocks': [],
+        'quote': "It only takes a little bit of motivating to get them out there.",
     },
     'offensive coordination':{
         'cost': 50,

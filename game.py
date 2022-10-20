@@ -540,6 +540,8 @@ class Game:
             unit.abilities[v[2]] = v[3]#v[2] is ability, v[3] is value
         elif currentAbility == 'typeAbility' and v[1] == unit.type:#[1] is what unit type was affected
             unit.abilities[v[2]] = v[3]#v[2] is ability, v[3] is value
+        elif currentAbility == 'gain state' and v[1] == unit.name:#[1] is unit
+            unit.possibleStates.append(v[2]) #v[2] is new state
     
     #Upgrades a unit with all techs that a player has
     def upgradeUnit(self, unit, player):
