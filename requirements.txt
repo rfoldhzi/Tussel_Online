@@ -1,3 +1,6 @@
+flask
+numpy
+Pillow
 Flask-WTF
 flask-login
 WTForms

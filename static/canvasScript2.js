@@ -540,7 +540,42 @@ function updateCloudCover() {
             }
         }
     }
+
+    // Update ghosts
+
+    let removeList = []
+    for (const ghostID in ghostList) {
+        drawGhost(ghostList[ghostID])
+        if (cloudGrid[ ghostList[ghostID].pos[1] ][ ghostList[ghostID].pos[0] ]) {
+            removeList.push(ghostID)
+        }
+    }
+    for (const ghostID of removeList) {
+        delete ghostList[ghostID]
+    }
+
+    for (const player in gameObject.units) {
+        if (player == this_player) {
+            continue
+        }
+        for (const unit of gameObject.units[player]) {
+            if (unit.type == "building") {
+                if (unit.UnitID in ghostList) {
+                    // NOT (Unit is on a darkened, but not entirely concealed space)
+                    if (!((!explorationGrid[unit.position[1]][unit.position[0]]) && cloudGrid[unit.position[1]][unit.position[0]])) {
+                        delete ghostList[unit.UnitID]
+                    }
+                } else {
+                    // Unit is on a darkened, but not entirely concealed space
+                    if ((!explorationGrid[unit.position[1]][unit.position[0]]) && cloudGrid[unit.position[1]][unit.position[0]]) {
+                        ghostList[unit.UnitID] = {"name":unit.name, "player": player, "pos":[unit.position[0], unit.position[1]]}
+                    }
+                }
+            }
+        }
+    }
 }
+
 
 function drawClouds() {
     if (cloudType == "clear") {
@@ -875,6 +910,27 @@ function removeCloakedUnits(specific_gameObject) {
         let unitsToRemove = []
         for (const unit of specific_gameObject.units[player]) {
             if (unit.cloaked != undefined) {
+                unitsToRemove.push(unit)
+            }
+        }
+        for (let unit of unitsToRemove) {
+            specific_gameObject.units[player].splice(specific_gameObject.units[player].indexOf(unit), 1)
+        }
+    }
+}
+
+//Remove units that are hidden by clouds
+function removeHiddenUnits(specific_gameObject) {
+    if (cloudType != "halo") { //TODO: Or some other mode I'm sure
+        return
+    }
+    for (const player in specific_gameObject.units) {
+        if (player == this_player) {
+            continue
+        }
+        let unitsToRemove = []
+        for (const unit of specific_gameObject.units[player]) {
+            if (cloudGrid[unit.position[1]][unit.position[0]]) {
                 unitsToRemove.push(unit)
             }
         }

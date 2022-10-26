@@ -21,6 +21,7 @@ let actionableUnits = [] //List of unit ID's of units who still need to be comma
 let cheapestTech = 20 //The cost of the cheapest tech you can research
 let animationTechs = []; // The techs which have made progress from one round to the next
 let continueShowingAnimations = false; //This is for whether or not to draw animation Techs Progress after animations have finished
+let ghostList = {} //"Ghosts" are buildings that are hidden, but remain on the map
 
 class Button {
     constructor(x, y, width, height, color, text, func, ...parameters) {
@@ -154,6 +155,7 @@ function useNewGameObject(newGameObject) {
         animationCounter = 0
         gameObject2 = newGameObject;
         removeCloakedUnits(gameObject2)
+        removeHiddenUnits(gameObject2)
         setAnimateSpeed(gameObject,gameObject2)
         determineAnimationTerritories(gameObject,gameObject2)
         determineAnimationTechs(gameObject,gameObject2)
@@ -171,11 +173,12 @@ function useNewGameObject(newGameObject) {
     console.log("reinit stuff")
     refreshActionableUnits()
     removeCloakedUnits(gameObject)
-    determineTerritories()
     determineBuffedUnits()
     organizeTechTrees()
     initilizeTechOffsets()
     updateCloudCover()
+    removeHiddenUnits(gameObject)
+    determineTerritories()
     regularlyScheduledDrawBoard()
 }
 
@@ -661,6 +664,16 @@ function drawUnits() {
     }
 }
 
+//Draws all "ghosts"
+function drawGhosts() {
+    if (cloudType != "halo") {
+        return
+    }
+    for (const ghostID in ghostList) {
+        drawGhost(ghostList[ghostID])
+    }
+}
+
 function drawUnitHealths() {
     for (const player in gameObject.units) {
         for (const unit of gameObject.units[player]) {
@@ -816,12 +829,13 @@ function drawBoard() {
 
     context.textAlign = "right";
     //drawTerritories()
-    
+    drawClouds()
     drawUnits();
     drawActionIcons()
     drawUnitHealths();
 
-    drawClouds()
+    
+    drawGhosts()
 
     drawUI()
 
@@ -870,6 +884,7 @@ function drawAnimation() {
     drawStateLinesAnimation()
     animateBoard(gameObject,gameObject2,t)
     drawClouds()
+    drawGhosts()
     drawAnimatedResources(gameObject,gameObject2,t)
     drawAnimatedTechs(t)
     //drawClouds()
@@ -1253,6 +1268,15 @@ function drawUnit(player, unit) {
     //context.fillStyle = "white";
     //context.strokeText(unit.health, size * unit.position[0] + size + x_offset, size * unit.position[1] + size + y_offset);
     //context.fillText(unit.health, size * unit.position[0] + size + x_offset, size * unit.position[1] + size + y_offset);
+}
+
+//Draws a ghost. The ghost should just be a dictionary with "name","player","pos"
+function drawGhost(ghost) {
+    let img = getUnitImage(ghost.player, ghost.name);
+    if (img != null) {
+        let multiplier = getMultiplier(ghost.name, "building"); //Only buildings can be ghosts
+        context.drawImage(img, size * ghost.pos[0] + x_offset + size * (1 - multiplier) * .5, size * ghost.pos[1] + y_offset + size * (1 - multiplier) * .5, size * multiplier, size * multiplier);
+    }
 }
 
 function drawUnitHealth(player, unit) {
