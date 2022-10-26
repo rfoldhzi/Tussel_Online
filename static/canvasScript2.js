@@ -507,7 +507,7 @@ function initClouds() {
             if (cloudType == "halo") {
                 CloudColors2.push(randomDark())
                 let BoardColor = hexToRGB(BoardColors[x + y * gameObject.width])
-                CloudColors.push(rgbToHex(BoardColor[0] / 2, BoardColor[1] / 2, BoardColor[2] / 2))
+                CloudColors.push(rgbToHex(Math.floor(BoardColor[0] / 2), Math.floor(BoardColor[1] / 2), Math.floor(BoardColor[2] / 2)))
             } else if (cloudType == "poly") {
                 CloudColors.push(randomWhite())
             }
@@ -546,16 +546,25 @@ function drawClouds() {
     if (cloudType == "clear") {
         return
     }
+    var cloudBoxSizeX = size
+    var cloudBoxSizeY = size
+    if (x_offset % 1 > 0) {
+        cloudBoxSizeX += 1
+    }
+    if (y_offset % 1 > 0) {
+        cloudBoxSizeY += 1
+    } 
     for (let y = 0; y < gameObject.height; y++) {
         for (let x = 0; x < gameObject.width; x++) {
-            if (cloudType == "halo" && explorationGrid[y][x]) {
-                let tileColor = CloudColors2[x + gameObject.width * y]
-                context.fillStyle = tileColor;
-                context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
-            } else if (cloudGrid[y][x]) {
+            if (cloudType == "halo" && ((!explorationGrid[y][x]) && cloudGrid[y][x])) {
                 let tileColor = CloudColors[x + gameObject.width * y]
                 context.fillStyle = tileColor;
-                context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
+                context.fillRect(Math.floor(x * size + x_offset), Math.floor(y * size + y_offset), cloudBoxSizeX, cloudBoxSizeY);
+                //context.fillRect(Math.floor(x * size + x_offset), Math.floor(y * size + y_offset), size, size);
+            } else if (cloudGrid[y][x] || (cloudType == "halo" && explorationGrid[y][x])) {
+                let tileColor = CloudColors2[x + gameObject.width * y]
+                context.fillStyle = tileColor;
+                context.fillRect(Math.floor(x * size + x_offset), Math.floor(y * size + y_offset), cloudBoxSizeX, cloudBoxSizeY);
             }
 
         }
@@ -612,8 +621,8 @@ function initilizeOffsets() {
     regulateSquareSize()
 
 
-    x_offset = (canvas.width - (size*(maxX-minX+1)))/2 - size * minX
-    y_offset = (canvas.height - (size*(maxY-minY+1)))/2 - size * minY
+    x_offset = Math.floor((canvas.width - (size*(maxX-minX+1)))/2 - size * minX)
+    y_offset = Math.floor((canvas.height - (size*(maxY-minY+1)))/2 - size * minY)
 }
 
 function setAnimateSpeed(g1, g2) {

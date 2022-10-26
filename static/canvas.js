@@ -766,6 +766,26 @@ function drawUI() {
     }
 }
 
+function drawTiles() {
+    var cloudBoxSizeX = size
+    var cloudBoxSizeY = size
+    var local_x_offset = Math.floor(x_offset)
+    var local_y_offset = Math.floor(y_offset)
+    if (x_offset % 1 > 0) {
+        cloudBoxSizeX += 1
+    }
+    if (y_offset % 1 > 0) {
+        cloudBoxSizeY += 1
+    } 
+    for (let y = 0; y < gameObject.height; y++) {
+        for (let x = 0; x < gameObject.width; x++) {
+            let tileColor = BoardColors[x + gameObject.width * y]
+            context.fillStyle = tileColor;
+            context.fillRect(x * size + local_x_offset, y * size + local_y_offset, cloudBoxSizeX, cloudBoxSizeY);
+        }
+    }
+}
+
 function drawBoard() {
     if(animationCounter >= 0) {
         console.log("not drawing board")
@@ -784,13 +804,7 @@ function drawBoard() {
 
     currentlyResearch = false
 
-    for (let y = 0; y < gameObject.height; y++) {
-        for (let x = 0; x < gameObject.width; x++) {
-            let tileColor = BoardColors[x + gameObject.width * y]
-            context.fillStyle = tileColor;
-            context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
-        }
-    }
+    drawTiles()
 
     drawTerritories2()
     drawStateLines()
@@ -855,6 +869,7 @@ function drawAnimation() {
     drawTerritories2()
     drawStateLinesAnimation()
     animateBoard(gameObject,gameObject2,t)
+    drawClouds()
     drawAnimatedResources(gameObject,gameObject2,t)
     drawAnimatedTechs(t)
     //drawClouds()
@@ -1362,8 +1377,8 @@ let mouse_move = function (event) {
     let dx = mouseX - startX;
     let dy = mouseY - startY;
 
-    x_offset = startX_offset + dx;
-    y_offset = startY_offset + dy;
+    x_offset = Math.floor(startX_offset + dx);
+    y_offset = Math.floor(startY_offset + dy);
 
     if (stateDataMode == "research") {
         redrawResearch = true //Used to trigger update for research menu
@@ -1501,8 +1516,8 @@ let touch_move = function (event) {
     let dx = mouseX - startX;
     let dy = mouseY - startY;
 
-    x_offset = startX_offset + dx;
-    y_offset = startY_offset + dy;
+    x_offset = Math.floor(startX_offset + dx);
+    y_offset = Math.floor(startY_offset + dy);
 
     currentlyResearch = false //Used to trigger update for research menu
 
