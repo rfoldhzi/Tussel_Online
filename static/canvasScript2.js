@@ -526,7 +526,7 @@ function UpdateGhosts() {
     let removeList = []
     for (const ghostID in ghostList) {
         drawGhost(ghostList[ghostID])
-        if (cloudGrid[ ghostList[ghostID].pos[1] ][ ghostList[ghostID].pos[0] ]) {
+        if (explorationGrid[ ghostList[ghostID].pos[1] ][ ghostList[ghostID].pos[0] ]) {
             removeList.push(ghostID)
         }
     }
@@ -579,6 +579,7 @@ function updateCloudCover() {
         }
     }
     UpdateGhosts()
+    determineCloudBounds()
 }
 
 function updateCloudCoverForAnimation(g1,g2) {
@@ -615,6 +616,7 @@ function updateCloudCoverForAnimation(g1,g2) {
         }
     }
     UpdateGhosts()
+    determineCloudBounds()
 }
 
 
@@ -630,8 +632,8 @@ function drawClouds() {
     if (y_offset % 1 > 0) {
         cloudBoxSizeY += 1
     } 
-    for (let y = 0; y < gameObject.height; y++) {
-        for (let x = 0; x < gameObject.width; x++) {
+    for (let y = border_min_y; y < border_max_y; y++) {
+        for (let x = border_min_x; x < border_max_x; x++) {
             if (cloudType == "halo" && ((!explorationGrid[y][x]) && cloudGrid[y][x])) {
                 let tileColor = CloudColors[x + gameObject.width * y]
                 context.fillStyle = tileColor;
@@ -644,6 +646,57 @@ function drawClouds() {
             }
 
         }
+    }
+}
+
+//Determines the bounds for clouds, which is the rectangle of squares that is rendered
+function determineCloudBounds() {
+    if (cloudType == "clear") {
+        border_min_x = 0
+        border_min_y = 0
+        border_max_x = gameObject.width
+        border_max_y = gameObject.height
+        return
+    }
+    border_min_x = gameObject.width
+    border_min_y = gameObject.height
+    border_max_x = 0
+    border_max_y = 0
+
+    for (let y = 0; y < gameObject.height; y++) {
+        for (let x = 0; x < gameObject.width; x++) {
+            if (!cloudGrid[y][x] || (cloudType == "halo" && !explorationGrid[y][x])) {
+                if (x > border_max_x) {
+                    border_max_x = x
+                }
+                if (y > border_max_y) {
+                    border_max_y = y
+                }
+                if (x < border_min_x) {
+                    border_min_x = x
+                }
+                if (y < border_min_y) {
+                    border_min_y = y
+                }
+            }
+        }
+    }
+    border_min_x -= 1
+    border_min_y -= 1
+    border_max_x += 2
+    border_max_y += 2
+
+    if (border_min_x < 0) {
+        border_min_x = 0
+    }
+    if (border_min_y < 0) {
+        border_min_y = 0
+    }
+    if (border_max_x > gameObject.width) {
+        border_max_x = gameObject.width
+    }
+    if (border_max_y > gameObject.height) {
+        border_max_y = gameObject.height
     }
 }
 

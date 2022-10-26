@@ -22,6 +22,10 @@ let cheapestTech = 20 //The cost of the cheapest tech you can research
 let animationTechs = []; // The techs which have made progress from one round to the next
 let continueShowingAnimations = false; //This is for whether or not to draw animation Techs Progress after animations have finished
 let ghostList = {} //"Ghosts" are buildings that are hidden, but remain on the map
+let border_min_x = 0 //These variables set the borders for where a player can see
+let border_min_y = 0  // look upwards /\
+let border_max_x = 10 // look upwards /\
+let border_max_y = 10 // look upwards /\
 
 class Button {
     constructor(x, y, width, height, color, text, func, ...parameters) {
@@ -791,8 +795,8 @@ function drawTiles() {
     if (y_offset % 1 > 0) {
         cloudBoxSizeY += 1
     } 
-    for (let y = 0; y < gameObject.height; y++) {
-        for (let x = 0; x < gameObject.width; x++) {
+    for (let y = border_min_y; y < border_max_y; y++) {
+        for (let x = border_min_x; x < border_max_x; x++) {
             let tileColor = BoardColors[x + gameObject.width * y]
             context.fillStyle = tileColor;
             context.fillRect(x * size + local_x_offset, y * size + local_y_offset, cloudBoxSizeX, cloudBoxSizeY);
@@ -821,7 +825,7 @@ function drawBoard() {
     drawTiles()
 
     drawTerritories2()
-    drawStateLines()
+    
 
     fontSize = Math.floor(size / 3);
     context.font = fontSize + "px Arial";
@@ -831,6 +835,7 @@ function drawBoard() {
     context.textAlign = "right";
     //drawTerritories()
     drawClouds()
+    drawStateLines()
     drawUnits();
     drawActionIcons()
     drawUnitHealths();
@@ -874,13 +879,8 @@ function drawAnimation() {
     
     clearBoard()
 
-    for (let y = 0; y < gameObject.height; y++) {
-        for (let x = 0; x < gameObject.width; x++) {
-            let tileColor = BoardColors[x + gameObject.width * y]
-            context.fillStyle = tileColor;
-            context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
-        }
-    }
+    drawTiles()
+
     drawTerritories2()
     drawStateLinesAnimation()
     animateBoard(gameObject,gameObject2,t)
