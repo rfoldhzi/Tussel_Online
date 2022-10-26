@@ -518,31 +518,11 @@ function initClouds() {
     }
 }
 
-function updateCloudCover() {
-    if (cloudType == "halo") {
-        cloudGrid = [];
-        for (let y = 0; y < gameObject.height; y++) {
-            let l = []
-            for (let x = 0; x < gameObject.width; x++) {
-                l.push(true)
-            }
-            cloudGrid.push(l)
-        }
+//Updates the ghosts
+function UpdateGhosts() {
+    if (cloudType != "halo") {
+        return
     }
-    for (let unit of gameObject.units[this_player]) {
-        spaces = getRangeCircles(unit, true)
-        for (let pos of spaces) {
-            if (cloudGrid[pos[1]][pos[0]]) {
-                cloudGrid[pos[1]][pos[0]] = false
-            }
-            if (explorationGrid[pos[1]][pos[0]]) {
-                explorationGrid[pos[1]][pos[0]] = false
-            }
-        }
-    }
-
-    // Update ghosts
-
     let removeList = []
     for (const ghostID in ghostList) {
         drawGhost(ghostList[ghostID])
@@ -574,6 +554,67 @@ function updateCloudCover() {
             }
         }
     }
+}
+
+function updateCloudCover() {
+    if (cloudType == "halo") {
+        cloudGrid = [];
+        for (let y = 0; y < gameObject.height; y++) {
+            let l = []
+            for (let x = 0; x < gameObject.width; x++) {
+                l.push(true)
+            }
+            cloudGrid.push(l)
+        }
+    }
+    for (let unit of gameObject.units[this_player]) {
+        spaces = getRangeCircles(unit, true)
+        for (let pos of spaces) {
+            if (cloudGrid[pos[1]][pos[0]]) {
+                cloudGrid[pos[1]][pos[0]] = false
+            }
+            if (explorationGrid[pos[1]][pos[0]]) {
+                explorationGrid[pos[1]][pos[0]] = false
+            }
+        }
+    }
+    UpdateGhosts()
+}
+
+function updateCloudCoverForAnimation(g1,g2) {
+    if (cloudType == "halo") {
+        cloudGrid = [];
+        for (let y = 0; y < gameObject.height; y++) {
+            let l = []
+            for (let x = 0; x < gameObject.width; x++) {
+                l.push(true)
+            }
+            cloudGrid.push(l)
+        }
+    }
+    for (let unit of g1.units[this_player]) {
+        spaces = getRangeCircles(unit, true)
+        for (let pos of spaces) {
+            if (cloudGrid[pos[1]][pos[0]]) {
+                cloudGrid[pos[1]][pos[0]] = false
+            }
+            if (explorationGrid[pos[1]][pos[0]]) {
+                explorationGrid[pos[1]][pos[0]] = false
+            }
+        }
+    }
+    for (let unit of g2.units[this_player]) {
+        spaces = getRangeCircles(unit, true)
+        for (let pos of spaces) {
+            if (cloudGrid[pos[1]][pos[0]]) {
+                cloudGrid[pos[1]][pos[0]] = false
+            }
+            if (explorationGrid[pos[1]][pos[0]]) {
+                explorationGrid[pos[1]][pos[0]] = false
+            }
+        }
+    }
+    UpdateGhosts()
 }
 
 

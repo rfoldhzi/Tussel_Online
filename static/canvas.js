@@ -154,6 +154,7 @@ function useNewGameObject(newGameObject) {
         animationLastTick = performance.now()
         animationCounter = 0
         gameObject2 = newGameObject;
+        updateCloudCoverForAnimation(gameObject,gameObject2)
         removeCloakedUnits(gameObject2)
         removeHiddenUnits(gameObject2)
         setAnimateSpeed(gameObject,gameObject2)
