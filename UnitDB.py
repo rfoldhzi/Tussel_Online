@@ -1336,41 +1336,64 @@ UnitDB = {
     #Wild Life Faction
     'tree':{
         'cost': {'gold':50, 'metal':50, 'energy':50},
-        'possibleBuilds': ['hyena', 'bear','fish'],
+        'possibleBuilds': ['cave', 'shrub','pond','thorns'],
         'possibleStates': ['resources', 'build'],
         'type': 'building',
         'health': 25,
-        'population':5,
+        'population':4,
+        'abilities':{'reclaimable':'town','parent_link':0},
         'resourceGen':{
-            "gold": 10,
-            "metal": 10,
-            "energy": 5
+            "gold": 20,
+            "metal": 20,
+            "energy": 15
+        },
+        "size":0.9,
+    },
+    'small tree':{
+        'cost': {'gold':30, 'metal':30, 'energy':30},
+        'possibleBuilds': ['cave', 'shrub'],
+        'possibleStates': ['resources', 'build'],
+        'type': 'building',
+        'health': 15,
+        'population':1,
+        'abilities':{'reclaimable':'outpost','parent_link':0},
+        'resourceGen':{
+            "gold": 5,
+            "metal": 5,
+            "energy": 0
+        },
+        "size":0.8,
+    },
+    'big tree':{
+        'cost': {'gold':50, 'metal':50, 'energy':50},
+        'possibleBuilds': ['cave', 'shrub','pond','thorns'],
+        'possibleStates': ['resources', 'build'],
+        'type': 'building',
+        'health': 40,
+        'population':6,
+        'abilities':{'reclaimable':'city','parent_link':0},
+        'resourceGen':{
+            "gold": 5,
+            "metal": 5,
+            "energy": 0
         },
         "size":1,
     },
-    'hyena':{
-        'cost': {'metal':10},
-        'health': 8,
-    },
-    'bear':{
-        'cost': {'gold':20},
-        'possibleBuilds': ['cave','tree'],
-        'possibleStates': ['attack','move','resources', 'build'],
-        'health': 12,
-        'attack':3,
-        'population':2,
+    'mountain':{
+        'cost': {'gold':200, 'metal':200, 'energy':200},
+        'possibleBuilds': ['cave', 'shrub','pond','thorns','hawk','pig','wasp'],
+        'possibleStates': ['resources', 'build'],
+        'type': 'building',
+        'health': 50,
+        'defense': 4,
+        'population':9,
+        'abilities':{'reclaimable':'metropolis','parent_link':0},
         'resourceGen':{
-            "gold": 4,
-            "metal": 4,
-            "energy": 0
-        }
-    },
-    'fish':{
-        'cost': {'energy':10},
-        'possibleBuilds': ['pond'],
-        'possibleStates': ['move','build','resources'],
-        'type': 'boat',
-        'resourceGen':{"energy": 3}
+            "gold": 40,
+            "metal": 40,
+            "energy": 35
+        },
+        "size":1.1,
     },
     'pond':{
         'cost': {'gold':20, 'energy':30},
@@ -1385,8 +1408,8 @@ UnitDB = {
         }
     },
     'cave':{
-        'cost': {'gold':10, 'metal':30},
-        'possibleBuilds': ['hyena', 'bats'],
+        'cost': {'gold':10, 'metal':45},
+        'possibleBuilds': ['hyena', 'bats','bear'],
         'possibleStates': ['resources', 'build'],
         'type': 'building',
         'health': 15,
@@ -1397,8 +1420,64 @@ UnitDB = {
             "energy": 0
         }
     },
+    'shrub':{
+        'cost': {'energy':40, 'metal':40},
+        'possibleBuilds': ['wasp','beaver'],
+        'possibleStates': ['resources', 'build','heal'],
+        'type': 'building',
+        'heal':5,
+        'population':2,
+        'abilities':{'onlyHeal':['building']},
+        'resourceGen':{
+            "gold": 5,
+            "metal": 0,
+            "energy": 5
+        }
+    },
+    'thorns':{
+        'cost': {'metal':70},
+        'possibleStates': ['attack'],
+        'type': 'building',
+        'resourceGen':{
+            "gold": 0
+        },
+        'size':.75,
+    },
+    'log':{
+        'cost': {'metal':25},
+        'possibleStates': ['none'],
+        'type': 'building',
+        'health': 10,
+        'defense': 3,
+        'resourceGen':{
+            "gold": 0,
+        }
+    },
+    'hyena':{
+        'cost': {'metal':20},
+        'health': 8,
+    },
+    'bear':{
+        'cost': {'gold':100},
+        'possibleStates': ['attack','move','resources'],
+        'health': 15,
+        'attack':3,
+        'resourceGen':{
+            "gold": 4,
+            "metal": 4,
+            "energy": 0
+        }
+    },
+    'fish':{
+        'cost': {'energy':30},
+        'possibleBuilds': ['pond'],
+        'possibleStates': ['move','heal','resources'],
+        'heal':2,
+        'type': 'boat',
+        'resourceGen':{"energy": 3}
+    },
     'bats':{
-        'cost': {'gold':8},
+        'cost': {'gold':40},
         'possibleStates': ['move','attack'],
         'type': 'aircraft',
         'health':7,
@@ -1407,11 +1486,48 @@ UnitDB = {
         'resourceGen':{"gold": 0}
     },
     'snake':{
-        'cost': {'gold':20,'energy':10},
+        'cost': {'gold':50,'energy':10},
         'possibleStates': ['move','attack'],
         'attack':3.5,
         'abilities':{'onlyHit':['trooper']},
         'resourceGen':{"gold": 8}
+    },
+    'wasp':{
+        'cost': {'gold':100},
+        'possibleStates': ['move','attack'],
+        'type': 'aircraft',
+        'health':5,
+        'speed':2,
+        'defense':1,
+        'attack':3.5,
+        'abilities':{'onlyHit':['trooper']},
+        'resourceGen':{"gold": 0},
+        'size':0.5
+    },
+    'beaver':{
+        'cost': {'gold':50,'metal':50},
+        'possibleBuilds': ['log'],
+        'possibleStates': ['move','attack','build'],
+        'supplies': 2,
+        'health': 10,
+        'defense':3,
+        'abilities':{'onlyHit':['building']},
+    },
+    'hawk':{
+        'cost': {'gold':100},
+        'possibleStates': ['move','attack'],
+        'type': 'aircraft',
+        'health':15,
+        'speed':3,
+        'defense':1,
+        'resourceGen':{"gold": 0}
+    },
+    'pig':{
+        'cost': {'metal':50},
+        'possibleStates': ['move','attack'],
+        'health': 15,
+        'defense':3,
+        'abilities':{'onlyHit':['building','vehicle','boat']},
     },
     #Bots Faction
     'bot fortress':{
@@ -2972,5 +3088,18 @@ TechDB = {
 
 
 
-
+FactionUnits = {
+    "town": {
+        "nature": "tree"
+    },
+    "outpost": {
+        "nature": "small tree"
+    },
+    "city": {
+        "nature": "big tree"
+    },
+    "metropolis": {
+        "nature": "mountain"
+    },
+}
 

@@ -105,6 +105,28 @@ def getAttacks(game, unit, player):
                 finalTarget.append(u)
     return finalTarget
 
+def getHeals(game, unit, player):
+    if not 'heal' in unit.possibleStates:
+        return []
+    spaces = getRangeCircles(unit, True)
+    finalTarget = []
+    for pos in spaces:
+        u = game.getAnyUnitFromPos(pos[0],pos[1])
+        if u:
+            goodToAdd = True
+            if u == unit:
+                goodToAdd = False
+            if 'onlyHeal' in unit.abilities:
+                if not (u.type in unit.abilities['onlyHeal']):
+                    goodToAdd = False
+            if goodToAdd and (not game.checkFriendlyPlayer(u, player)):
+                goodToAdd = False
+            if u.health == u.maxHealth:
+                goodToAdd = False
+            if goodToAdd:
+                finalTarget.append(u)
+    return finalTarget
+
 def randomizeAttacks(game, player):
     for u in game.units[player]:
         targets = getAttacks(game, u, player)
@@ -113,6 +135,13 @@ def randomizeAttacks(game, player):
             u.stateData = random.choice(targets)
         else:
             u.state = None
+
+def randomizeHeals(game, player):
+    for u in game.units[player]:
+        targets = getHeals(game, u, player)
+        if len(targets) > 0:
+            u.state = "heal"
+            u.stateData = random.choice(targets)
 
 def randomBuild(game, player):
     resources = copy.copy(game.resources[player])
@@ -264,6 +293,7 @@ def randomActions(game, player):
     g = game
     Grid = methods.intToList(game.intGrid, game.width)
     randomizeAttacks(game, player)
+    randomizeHeals(game,player)
     randomBuild(game, player)
     randomizeResources(game, player)
     randomMove(game, player)
@@ -274,6 +304,7 @@ def betterActions(game, player):
     g = game
     Grid = methods.intToList(game.intGrid, game.width)
     randomizeAttacks(game, player)
+    randomizeHeals(game,player)
     spaces = betterBuild(game, player)
     print("Spaces buidling at",player,spaces)
     if random.randint(1,2) == 1:

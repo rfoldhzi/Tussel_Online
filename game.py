@@ -2,6 +2,7 @@
 from pathlib import Path
 from UnitDB import UnitDB
 from UnitDB import TechDB
+from UnitDB import FactionUnits
 import numpy as np
 import random,operator,json,copy,os,sys
 #os.chdir(os.path.dirname(sys.argv[0]))
@@ -222,6 +223,7 @@ class Game:
         self.scores = {}
         self.progress = {}
         self.botmode = []
+        self.factions = {}
         self.ready = False
         self.started = False
         self.turn = 0
@@ -344,12 +346,16 @@ class Game:
                         self.units[p].append(self.newUnit(startingspots[p], "town"))
                     elif random.random() < 0.25:
                         self.units[p].append(self.newUnit(startingspots[p], "plant base"))
+                        self.factions[p] = "plants"
                     elif random.random() < 0.33:
                         self.units[p].append(self.newUnit(startingspots[p], "bot fortress"))
+                        self.factions[p] = "bots"
                     elif random.random() < 0.5:
                         self.units[p].append(self.newUnit(startingspots[p], "tree"))
+                        self.factions[p] = "nature"
                     else:
                         self.units[p].append(self.newUnit(startingspots[p], "mothership"))
+                        self.factions[p] = "alien"
                 else:
                     self.units[p].append(self.newUnit(startingspots[p], "town"))
                     spaces = getRangeCircles(self, self.units[p][0])
@@ -379,6 +385,7 @@ class Game:
             self.scores["rebel"] = 0
             self.progress["rebel"] = {}
             self.botmode.append("rebel")
+            self.factions["rebel"] = "rebel"
 
             for unitAndPos in neutralUnits:
                 # unitAndPos[0] is a unit, unitAndPos[1] is the position
@@ -997,7 +1004,10 @@ class Game:
                 elif 'claimable' in u.abilities: 
                     player = self.getPlayerfromUnit(u)
                     if player == "neutral":
-                        newUnit = self.newUnit(u.position,u.name,None, u.score)
+                        newUnitName = u.name
+                        if (u.name in FactionUnits) and (hunterPlayer in self.factions) and (self.factions[hunterPlayer] in FactionUnits[u.name]):
+                            newUnitName = FactionUnits[u.name][self.factions[hunterPlayer]]
+                        newUnit = self.newUnit(u.position,newUnitName,None, u.score)
                         self.upgradeUnit(newUnit, hunterPlayer)
                         
                         self.scores[hunterPlayer] += u.score
@@ -1419,6 +1429,13 @@ class Game:
         #Path("source_data/text_files/raw_data.txt")
         
         #with open('savefiles\\games\\game_%s.txt' % self.id, 'w') as f:
+        for i in self.units:
+            for j in range(len(self.units[i])):
+                if self.units[i][j].state == "attack" and ((type(self.units[i][j].stateData) == Unit) or (type(self.units[i][j].stateData) == UnitMaker)):
+                    self.units[i][j].stateData = self.units[i][j].stateData.UnitID
+                elif self.units[i][j].state == "heal" and ((type(self.units[i][j].stateData) == Unit) or (type(self.units[i][j].stateData) == UnitMaker)):
+                    self.units[i][j].stateData = self.units[i][j].stateData.UnitID
+
         with open(Path("savefiles/games/game_%s.txt" % self.id), 'w') as f:
             f.write(self.getJSON())
     

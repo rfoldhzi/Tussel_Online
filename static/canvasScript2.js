@@ -525,8 +525,8 @@ function UpdateGhosts() {
     }
     let removeList = []
     for (const ghostID in ghostList) {
-        drawGhost(ghostList[ghostID])
-        if (explorationGrid[ ghostList[ghostID].pos[1] ][ ghostList[ghostID].pos[0] ]) {
+        //drawGhost(ghostList[ghostID])
+        if (!cloudGrid[ ghostList[ghostID].pos[1] ][ ghostList[ghostID].pos[0] ]) {
             removeList.push(ghostID)
         }
     }
