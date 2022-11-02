@@ -29,6 +29,8 @@ const resourceColors = {
     "energy": "#00FFFF"
 }
 
+const imageSize = 128
+
 function replaceColor(imageCanvas, src, dst) {
     let context = imageCanvas.getContext('2d');
     let im = context.getImageData(0, 0, imageCanvas.width, imageCanvas.height);
@@ -49,6 +51,16 @@ function replaceColor(imageCanvas, src, dst) {
 
 function colorHalfBrightness(color){
     return [Math.floor(color[0]/2),Math.floor(color[1]/2),Math.floor(color[2]/2)]
+}
+function color3_4thsBrightness(color){
+    return [Math.floor(color[0]*.75),Math.floor(color[1]*.75),Math.floor(color[2]*.75)]
+}
+function color1_25Brightness(color){
+    return [Math.floor(color[0]*.75+63.75),Math.floor(color[1]*.75+63.75),Math.floor(color[2]*.75+63.75)]
+}
+
+function colorTwiceBrightness(color){
+    return [Math.floor((color[0]+255)/2),Math.floor((color[0]+255)/2),Math.floor((color[0]+255)/2)]
 }
 
 function createShadow(imageCanvas) {
@@ -238,26 +250,29 @@ function getUnitImage(player, name) {
         let unitCanvas = document.createElement('canvas');
         //unitCanvas.setAttribute('width', size);
         //unitCanvas.setAttribute('height', size);
-        unitCanvas.setAttribute('width', 60);
-        unitCanvas.setAttribute('height', 60);
+        unitCanvas.setAttribute('width', imageSize);
+        unitCanvas.setAttribute('height', imageSize);
         let ctx = unitCanvas.getContext('2d');
         ctx.imageSmoothingEnabled = false;
         //ctx.drawImage(baseUnitImages[name], 0, 0, size, size);
-        ctx.drawImage(baseUnitImages[name], 0, 0, 60, 60);
+        ctx.drawImage(baseUnitImages[name], 0, 0, imageSize, imageSize);
         replaceColor(unitCanvas, [233, 19, 212], playerColors[player])
-        replaceColor(unitCanvas, [117, 10, 107], colorHalfBrightness(playerColors[player]))
+        replaceColor(unitCanvas, [117, 10, 107], color3_4thsBrightness(playerColors[player]))
+        replaceColor(unitCanvas, [74, 6, 68], colorHalfBrightness(playerColors[player]))
+        replaceColor(unitCanvas, [233, 107, 212], color1_25Brightness(playerColors[player]))
+        replaceColor(unitCanvas, [233, 186, 225], colorTwiceBrightness(playerColors[player]))
         createShadow(unitCanvas)
 
         unitImages[player][name] = ctx.canvas;
         if (player == this_player) {
 
             let highlightCanvas = document.createElement('canvas');
-            highlightCanvas.setAttribute('width', 60);
-            highlightCanvas.setAttribute('height', 60);
+            highlightCanvas.setAttribute('width', imageSize);
+            highlightCanvas.setAttribute('height', imageSize);
 
             let ctx2 = highlightCanvas.getContext('2d');
             ctx2.imageSmoothingEnabled = false;
-            ctx2.drawImage(baseUnitImages[name], 0, 0, 60, 60);
+            ctx2.drawImage(baseUnitImages[name], 0, 0, imageSize, imageSize);
 
             replaceColor(highlightCanvas, [233, 19, 212], playerColors[player])
             replaceColor(highlightCanvas, [117, 10, 107], colorHalfBrightness(playerColors[player]))
