@@ -51,9 +51,14 @@ class Game:
         self.scores = {}
         self.ready = False
         self.started = False
+        self.currentPlayerTurn = None
+        self.playerOrder = []
+        self.width = 10
+        self.height = 10
         self.turn = 0
         self.id = id
         self.currentUnitID = 0
+
         
     #adds a new player and all revelant lists to the game object
     def addPlayer(self):
@@ -75,12 +80,46 @@ class Game:
 
             allCards = list(UnitDB.keys())
 
+            self.playerOrder = []
+
             for p in self.decks:
+                self.playerOrder.append(p)
                 for _ in range(30):
                     self.decks[p].append(random.choice(allCards))
                 
                 for _ in range(7):
                     self.hands[p].append(self.decks[p].pop(0))
+            
+            self.currentPlayerTurn =  self.playerOrder[0]
+            
+            
+
+    def playerAction(self, thisPlayer:str, card:str, pos:tuple):
+        #First, we do checks to ensure this is a valid play
+        if self.currentPlayerTurn != thisPlayer: #has to be this player's turn to play a card
+            return
+
+        if not card in self.hands[thisPlayer]: #Player must have card to play card
+            return
+        if pos[0] < 0 or pos[0] >= self.width or pos[1] < 0 or pos[1] >= self.height: #Play must be in bounds
+            return
+
+        for player in self.units:
+            for unit in self.units[player]:
+                if unit.pos == pos: #Can't play on top of any units
+                    return
+        
+        #Now we handle removing the card from the hand
+        self.hands[thisPlayer].remove(card)
+
+        #and now we place the unit and see all of the effects
+        self.placeUnit(thisPlayer=thisPlayer, unitName=card,pos=pos)
+
+        #And finally we draw a card (if deck isn't empty) and gain a resource
+        if len(self.decks[thisPlayer]) > 0:
+            self.hands[thisPlayer].append(self.decks[thisPlayer].pop(0))
+        
+        self.resources[thisPlayer] += 1
             
     def placeUnit(self, thisPlayer: str, unitName: str, pos: tuple):
         self.currentUnitID += 1
@@ -129,7 +168,26 @@ class Game:
         #Actual removal
         for player in RemoveList:
             for unit in RemoveList[player]:
-                #TODO penalties
+                for item in UnitDB[unit.name]["penalty"]:
+                    if item == "discard":
+                        if len(self.hands[player]) > 0:
+                            self.hands[player].pop(0)
+                        #TODO if out of cards, this player loses
+                    elif item == "resource":
+                        if self.resources[player] <= 0:
+                            if len(self.hands[player]) > 0:
+                                self.hands[player].pop(0)
+                            #TODO if out of cards, this player loses
+                        else:
+                            self.resources[player] -= 1
+                    elif item == "mill":
+                        if len(self.decks[player]) <= 0:
+                            if len(self.hands[player]) > 0:
+                                self.hands[player].pop(0)
+                            #TODO if out of cards, this player loses
+                        else:
+                            self.decks[player].pop(0)
+
                 self.units[player].remove(unit)
         
         #Don't generate anything if the newUnit has died
