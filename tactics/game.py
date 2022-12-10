@@ -20,8 +20,8 @@ def findStartSpot(pattern: tuple):
 
 def findPatternPoints(pattern: tuple, pos:tuple):
     startOffset = findStartSpot(pattern=pattern)
-    offsetX = startOffset[0]+pos[0]
-    offsetY = startOffset[1]+pos[1]
+    offsetX = pos[0]-startOffset[0]
+    offsetY = pos[1]-startOffset[1]
 
     points = []
     for y in range(len(pattern)):
@@ -35,8 +35,8 @@ def checkIfCanCounter(attacker:Unit, defender:Unit):
     if "counter" in UnitDB[defender.name]:
         counterPoints = findPatternPoints(UnitDB[defender.name]["counterPattern"],defender.pos)
         if attacker.pos in counterPoints:
-            return False
-    return True
+            return True
+    return False
 
 
 
@@ -122,6 +122,10 @@ class Game:
                 if unit.pos == pos: #Can't play on top of any units
                     print("there is already a %s at %s" % (unit.name, str(pos)))
                     return
+        
+        if self.resources[thisPlayer] < UnitDB[card]["cost"]:
+            print("You afford a %s cost %s with only %s resources, %s" % (UnitDB[card]["cost"], card, self.resources[thisPlayer], thisPlayer))
+            return
 
         print("passed all checks!")
         
@@ -147,17 +151,20 @@ class Game:
         self.currentUnitID += 1
         newUnit = Unit(unitName, thisPlayer, pos, self.currentUnitID)
         self.units[thisPlayer].append(newUnit)
+        self.resources[thisPlayer] -= UnitDB[unitName]["cost"]
         print(str(self.units[thisPlayer]))
         print("unit created", newUnit)
 
         #TODO: Check Construction pattern
 
         abilities = UnitDB[unitName].get("abilities",{})
+        print("abilities that we have",abilities)
+        print("do we have explosive?","explosive" in abilities)
 
         if "attack" in UnitDB[unitName]:
             attackPoints = findPatternPoints(UnitDB[unitName]["attackPattern"],pos)
             for player in self.units:
-                if player != thisPlayer or "explosive" in abilities:
+                if player != thisPlayer or ("explosive" in abilities):
                     for unit in self.units[player]:
                         if unit.pos in attackPoints:
                             unit.health -= UnitDB[unitName]["attack"] #TODO account for defense
@@ -166,8 +173,11 @@ class Game:
         
         if "heal" in UnitDB[unitName]:
             healPoints = findPatternPoints(UnitDB[unitName]["healPattern"],pos)
+            print("healPoints",healPoints)
             for unit in self.units[thisPlayer]:
+                print("unit.name",unit.name,"pos",unit.pos)
                 if unit.pos in healPoints:
+                    print("found",unit.name,"in heal range")
                     unit.health += UnitDB[unitName]["heal"]
                     #TODO ensure don't go over max health
         
@@ -289,3 +299,4 @@ class GameMaker(Game):
         for i in self.units:
             for j in range(len(self.units[i])):
                 self.units[i][j] = UnitMaker(self.units[i][j])
+                self.units[i][j].pos = tuple(self.units[i][j].pos )

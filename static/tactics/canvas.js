@@ -548,6 +548,7 @@ function drawResources() {
     context.fillStyle = "#505050";
     context.fillRect(0, 0, canvas.width, resourceBoxHeight);
 
+    /*
     context.textAlign = "center";
     context.font = (resourceBoxHeight - 2) + "px Arial";
     context.fillStyle = "#FFFF00";
@@ -556,6 +557,14 @@ function drawResources() {
     context.fillText(gameObject.resources[this_player]["metal"] + " + " + newResources["metal"], canvas.width * .5, resourceBoxHeight - 5);
     context.fillStyle = "#00FFFF";
     context.fillText(gameObject.resources[this_player]["energy"] + " + " + newResources["energy"], canvas.width * .8, resourceBoxHeight - 5);
+    */
+    context.textAlign = "center";
+    context.font = (resourceBoxHeight - 2) + "px Arial";
+    context.fillStyle = "#FFFF00";
+    context.fillText(gameObject.resources[this_player], canvas.width * .333, resourceBoxHeight - 5);
+    context.fillStyle = "#FFFFFF";
+    context.fillText(gameObject.decks[this_player].length + "/30", canvas.width * .666, resourceBoxHeight - 5);
+    
 }
 
 function drawAnimatedResources(g1,g2,t) {
