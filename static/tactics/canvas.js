@@ -8,6 +8,7 @@ let outOfDate = false;
 let currentTurn = -1;
 let territoryMap = []
 let territoryNumberCode = []
+let iconCountMap = []
 let buffedUnits = {}; //Each key is a stat, containing a list of Unit ID's that need a buffed image displayed on them
 let states = {};
 let counter = 0;
@@ -431,9 +432,25 @@ for (let key in statLogos) {
 }
 
 function drawActionIcons() {
+    let currentIconCountMap = []
+    for (let i = 0; i<gameObject.height; i++) {
+        let layer = []
+        for (let j = 0; j<gameObject.width; j++) {
+            layer.push(0)
+        }
+        currentIconCountMap.push(layer)
+    }
     for (const position of moveCircles) {
         //console.log(position);
-        context.drawImage(BlueCircle, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+        if (iconCountMap[position[1]][position[0]] > 1) {
+            let smallSize = size * Math.pow(0.8, iconCountMap[position[1]][position[0]]-1)
+            let shift = (size - smallSize)/(iconCountMap[position[1]][position[0]] - 1)
+            let i = currentIconCountMap[position[1]][position[0]]
+            context.drawImage(BlueCircle, size * position[0] + x_offset + shift*i, size * position[1] + y_offset + shift*i, smallSize, smallSize);
+            currentIconCountMap[position[1]][position[0]] += 1
+        } else {
+            context.drawImage(BlueCircle, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+        }
     }
     if (selected != null && "multibuild" in selected.abilities) {
         // Show many "stacked" icons when a unit has multibuild
@@ -494,10 +511,19 @@ function drawActionIcons() {
     }
     context.fillStyle = "#FF0"
     for (const position of possibleResupplies) {
+        if (iconCountMap[position[1]][position[0]] > 1) {
+            let smallSize = size * Math.pow(0.8, iconCountMap[position[1]][position[0]]-1)
+            let shift = (size - smallSize)/(iconCountMap[position[1]][position[0]] - 1)
+            let i = currentIconCountMap[position[1]][position[0]]
+            context.drawImage(YellowPentagon, size * position[0] + x_offset + shift*i, size * position[1] + y_offset + shift*i, smallSize, smallSize);
+            currentIconCountMap[position[1]][position[0]] += 1
+        } else {
+            context.drawImage(YellowPentagon, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+        }
         //console.log(position);
-        context.drawImage(YellowPentagon, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
-        context.strokeText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
-        context.fillText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
+        ///context.drawImage(YellowPentagon, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+        //context.strokeText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
+        //context.fillText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
     }
     for (const position of transportSpots) {
         //console.log(position);
@@ -824,7 +850,7 @@ function drawBoard() {
     context.textAlign = "right";
     //drawTerritories()
     drawUnits();
-    //drawActionIcons()
+    drawActionIcons()
     drawUnitHealths();
 
     drawUI()

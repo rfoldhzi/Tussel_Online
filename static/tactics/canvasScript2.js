@@ -747,28 +747,49 @@ function determineAnimationTerritories(g1,g2) {
 function determineTerritories() {
     territoryMap = []
     territoryNumberCode = []
+    iconCountMap = []
     for (let i = 0; i<gameObject.height; i++) {
         let layer = []
         let layer2 = []
+        let layer3 = []
         for (let j = 0; j<gameObject.width; j++) {
             layer.push(null)
             layer2.push(0)
+            layer3.push(0)
         }
         territoryMap.push(layer)
         territoryNumberCode.push(layer2)
+        iconCountMap.push(layer3)
     }
+    for (const player in gameObject.units) {
+        for (const unit of gameObject.units[player]) {
+            territoryMap[unit.pos[1]][unit.pos[0]] = player
+        }
+    }
+    possibleResupplies = []
+    moveCircles = []
     for (const player in gameObject.units) {
         for (const unit of gameObject.units[player]) {
             if ("generation" in UnitDB[unit.name]) {
                 let points = findPatternPoints(UnitDB[unit.name]["generationPattern"], unit.pos)
                 for (let point of points) {
-                    territoryMap[point[1]][point[0]] = 6
+                    if (typeof(territoryMap[point[1]][point[0]])=="string") {
+                        continue
+                    } 
+                    //territoryMap[point[1]][point[0]] = 6
+                    possibleResupplies.push(point)
+                    iconCountMap[point[1]][point[0]] += 1
                 }
             }
             if ("counter" in UnitDB[unit.name]) {
                 let points = findPatternPoints(UnitDB[unit.name]["counterPattern"], unit.pos)
                 for (let point of points) {
-                    territoryMap[point[1]][point[0]] = 1
+                    if (typeof(territoryMap[point[1]][point[0]])=="string") {
+                        continue
+                    } 
+                    //territoryMap[point[1]][point[0]] = 1
+                    moveCircles.push(point)
+                    iconCountMap[point[1]][point[0]] += 1
                 }
             }
         }
