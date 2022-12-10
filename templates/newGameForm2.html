@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="icon" href="/static/assets/construction_worker.png">
+        <link rel="stylesheet" href="/static/tussleStyle.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+        <div style="text-align: center;">
+            <div id="middle_div" class="container py-4 text-center" style="display: inline-block; margin:0 auto; background-color: #555555">
+                <img src="/static/images/TussleLogo3.png">
+
+                <form method="POST" action="/newgame2">
+                    {{ form.csrf_token }}
+                    {{ form.hidden_tag() }}
+                    {{ form.player_count.label }} {{ form.player_count(size=20) }}
+                    <div>{{ form.game_id.label }} {{ form.game_id(size=24) }}</div>
+                    <div>{{ form.players.label }} {{ form.players(size=24) }}</div>
+                    <input class="cool_button" type="submit" value="Go">
+                </form>
+
+            </div>
+        </div>
+
+        
+    </body>
+</html>
+
+

@@ -1,5 +1,7 @@
-import random
-from UnitDB import UnitDB
+import random, json, copy
+from tactics.UnitDB import UnitDB
+from pathlib import Path
+from json import JSONEncoder
 
 class Unit:
     def __init__(self, name: str, player: str, pos: tuple, givenID: int):
@@ -61,8 +63,10 @@ class Game:
 
         
     #adds a new player and all revelant lists to the game object
-    def addPlayer(self):
-        p = str(len(self.units))
+    def addPlayer(self, p:str = None):
+        if p == None:
+            p = str(len(self.units))
+        #p = str(len(self.units))
         self.units[p] = []
         self.decks[p] = []
         self.hands[p] = []
@@ -74,8 +78,9 @@ class Game:
     
     #Starts the game and finds starting spots for each of the player's towns
     def start(self):
-        if not self.start:
-            self.start = True
+        if not self.started:
+            print("Starting up")
+            self.started = True
             #Create decks and hands
 
             allCards = list(UnitDB.keys())
@@ -92,22 +97,33 @@ class Game:
             
             self.currentPlayerTurn =  self.playerOrder[0]
             
-            
+    def decodeAction(self, player:str, data:str):
+        split = data.split(':')
+        card = split[0]
+        pos = (int(split[1]),int(split[2]))
+        self.playerAction(thisPlayer=player, card=card, pos=pos)
 
     def playerAction(self, thisPlayer:str, card:str, pos:tuple):
+        print("performing player action")
         #First, we do checks to ensure this is a valid play
         if self.currentPlayerTurn != thisPlayer: #has to be this player's turn to play a card
+            print("it is not %s's turn. It is %s's turn" % (thisPlayer, self.currentPlayerTurn))
             return
 
         if not card in self.hands[thisPlayer]: #Player must have card to play card
+            print("%s doesn't have %s in their hand of %s" % (thisPlayer, card, self.hands[thisPlayer]))
             return
         if pos[0] < 0 or pos[0] >= self.width or pos[1] < 0 or pos[1] >= self.height: #Play must be in bounds
+            print("The position x:%s, y:%s is out of bounds"%(pos[0],pos[1]))
             return
 
         for player in self.units:
             for unit in self.units[player]:
                 if unit.pos == pos: #Can't play on top of any units
+                    print("there is already a %s at %s" % (unit.name, str(pos)))
                     return
+
+        print("passed all checks!")
         
         #Now we handle removing the card from the hand
         self.hands[thisPlayer].remove(card)
@@ -119,18 +135,24 @@ class Game:
         if len(self.decks[thisPlayer]) > 0:
             self.hands[thisPlayer].append(self.decks[thisPlayer].pop(0))
         
+        print("old resources",self.resources[thisPlayer])
         self.resources[thisPlayer] += 1
+        print("new resources",self.resources[thisPlayer])
+
+        self.turn += 1
             
     def placeUnit(self, thisPlayer: str, unitName: str, pos: tuple):
+
+        print("creating unit")
         self.currentUnitID += 1
         newUnit = Unit(unitName, thisPlayer, pos, self.currentUnitID)
         self.units[thisPlayer].append(newUnit)
+        print(str(self.units[thisPlayer]))
+        print("unit created", newUnit)
 
         #TODO: Check Construction pattern
 
-        abilities = UnitDB[unitName]["abilities"] or {}
-
-        newUnit = Unit(unitName, pos)
+        abilities = UnitDB[unitName].get("abilities",{})
 
         if "attack" in UnitDB[unitName]:
             attackPoints = findPatternPoints(UnitDB[unitName]["attackPattern"],pos)
@@ -197,7 +219,7 @@ class Game:
         #Generation Patterns
         for unit in self.units[thisPlayer]:
             if "generation" in UnitDB[unit.name]:
-                generationPoints = findPatternPoints(UnitDB[unitName]["generationPattern"],unit.pos)
+                generationPoints = findPatternPoints(UnitDB[unit.name]["generationPattern"],unit.pos)
                 if pos in generationPoints:
                     pass#TODO Get resources
         
@@ -207,4 +229,63 @@ class Game:
 
         return    
 
+    def getJSON(self):
+        SELF = self
+        uncopied = True
+        JSONData = json.dumps(SELF, indent=0, cls=Encoder)
+        JSONData = str(JSONData)
+        JSONData = JSONData.replace("\n", '')
+        JSONData = JSONData.replace(": ",':')
+        return JSONData
 
+    def saveGame(self):
+        print("saving!!")
+        with open(Path("savefiles/tactics_games/game_%s.txt" % self.id), 'w') as f:
+            f.write(self.getJSON())
+
+class Encoder(JSONEncoder):
+        def default(self, o):
+            #Posible thing to do is is find all units with attack as their state and change statedata to unitID
+            return o.__dict__
+
+class UnitMaker(Unit):
+    def __init__(self, dictionary):
+        for k, v in dictionary.items():
+            setattr(self, k, v)
+
+#This part recreates the game from JSON from the server
+class GameMaker(Game):
+    def __init__(self, text):
+        #print("TEST", text)
+        #text = methods.unzipper(text)
+        #print(text)
+        dictionary = None
+        for i in range(20):
+            try:
+                print("ATTEMPTING")
+                dictionary = json.loads(text)
+                break
+            except json.decoder.JSONDecodeError as e:
+                print("THE TEXT", text)
+                print('e',e)
+                if not e.args[0].startswith("Expecting ',' delimiter:"):
+                    raise
+                text = ','.join((text[:e.pos], text[e.pos:]))
+        else:
+            print("Stuff")
+            raise Exception("Uhhh....something happened, (delimeter comma thing)") 
+        for k, v in dictionary.items():
+            if type(v) == dict:
+                l = []
+                for v2 in v:
+                    l.append(v2)
+                #for v2 in l:
+                #    if v2 == "neutral" or v2 == "rebel":
+                #        continue
+                #    v[int(v2)] = v[v2]
+                #    del(v[v2])
+            setattr(self, k, v)
+        #print(dictionary)
+        for i in self.units:
+            for j in range(len(self.units[i])):
+                self.units[i][j] = UnitMaker(self.units[i][j])

@@ -1,0 +1,1592 @@
+let jsonText = '{"units":{"rjfx3":[],"rjfx5":[]},"decks":{"rjfx3":[],"rjfx5":[]},"hands":{"rjfx3":[],"rjfx5":[]},"discardpiles":[],"resources":{"rjfx3":4,"rjfx5":4},"went":{"rjfx3":false,"rjfx5":false},"tech":{"rjfx3":0,"rjfx5":0},"scores":{"rjfx3":0,"rjfx5":0},"ready":false,"started":false,"currentPlayerTurn":null,"playerOrder":[],"width":10,"height":10,"turn":-1,"id":"strat","currentUnitID":0}';
+let gameObject = JSON.parse(jsonText)
+let gameObject2 = null;
+let ButtonCollection = {};
+let doneButton;
+let logoutButton;
+let outOfDate = false;
+let currentTurn = -1;
+let territoryMap = []
+let territoryNumberCode = []
+let buffedUnits = {}; //Each key is a stat, containing a list of Unit ID's that need a buffed image displayed on them
+let states = {};
+let counter = 0;
+let doneState = "notDone";
+let animationInterval = false;
+let animationLastTick = 0
+let animationCounter = -1;
+let animationMax = 30;
+let animationTerritoryMap = [];
+let actionableUnits = [] //List of unit ID's of units who still need to be commanded
+let cheapestTech = 20 //The cost of the cheapest tech you can research
+let animationTechs = []; // The techs which have made progress from one round to the next
+let continueShowingAnimations = false; //This is for whether or not to draw animation Techs Progress after animations have finished
+let ghostList = {} //"Ghosts" are buildings that are hidden, but remain on the map
+let border_min_x = 0 //These variables set the borders for where a player can see
+let border_min_y = 0  // look upwards /\
+let border_max_x = 10 // look upwards /\
+let border_max_y = 10 // look upwards /\
+
+let UnitDB = {}
+
+class Button {
+    constructor(x, y, width, height, color, text, func, ...parameters) {
+        this.x = x;
+        this.y = y;
+        this.height = height;
+        this.width = width;
+        this.color = color;
+        this.text = text;
+        this.func = func;
+        this.parameters = parameters;
+    }
+
+    addImage(img) {
+        this.img = img;
+    }
+
+    render() {
+        context.fillStyle = this.color;
+        context.fillRect(this.x, this.y, this.width, this.height);
+        let fontSize = this.height - 2
+        if (this.hasOwnProperty('fontSize')) {
+            fontSize = this.fontSize
+        }
+        context.font = fontSize + "px Arial";
+        context.fillStyle = this.textColor || "white";
+        context.textAlign = "center";
+        context.fillText(this.text, this.x + Math.floor(this.width / 2), this.y + Math.floor((this.height - (this.height-fontSize)/2)*.88));
+        if (this.hasOwnProperty('img') && this.img != null) {
+            context.drawImage(this.img, this.x, this.y, this.width, this.height);
+        }
+        if (this.hasOwnProperty('foreground')) {
+            context.fillStyle = this.foreground;
+            context.fillRect(this.x, this.y, this.width, this.height);
+        }
+    }
+
+    potentialMouseClick(mouseX, mouseY) {
+        if (mouseX >= this.x && mouseX < this.x + this.width && mouseY >= this.y && mouseY < this.y + this.height) {
+            this.func(this.parameters)
+            return true;
+        }
+        return false;
+    }
+    isMouseHovering(mouseX, mouseY) {
+        return mouseX >= this.x && mouseX < this.x + this.width && mouseY >= this.y && mouseY < this.y + this.height
+    }
+}
+
+function httpPostAsync(theUrl, data) {
+    var xmlHttp = new XMLHttpRequest();
+    //var data = JSON.stringify({"data": data});
+    xmlHttp.open("POST", theUrl, true);
+    xmlHttp.send(data);
+}
+
+function httpGetAsync(theUrl, callback) {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function () {
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+            callback(xmlHttp.responseText);
+    }
+    xmlHttp.open("GET", theUrl, true); // true for asynchronous 
+    xmlHttp.send(null);
+}
+
+function endTurn() {
+    callback = function (responseText) {
+        jsonText = responseText;
+        newGameObject = JSON.parse(jsonText)
+        clearSelected()
+        useNewGameObject(newGameObject)
+        /*
+        if (gameObject.intGrid.join(',') !== newGameObject.intGrid.join(',')) {
+            gameObject = newGameObject;
+            generateGrid()
+            generateBoardColors();
+            initClouds()
+        }
+        gameObject = newGameObject;
+        clearSelected()
+        updateCloudCover()
+        drawBoard()
+        */
+    }
+    httpGetAsync(location.protocol+"//" + window.location.host + "/done/"+this_game+"/"+this_player, callback);
+    if (states.went != undefined) {
+        states.went[this_player] = true
+    }
+    regularlyScheduledDrawBoard()
+}
+
+function getUnitDB() {
+    callback = function (responseText) {
+        jsonText = responseText;
+        UnitDB = JSON.parse(jsonText)
+    }
+    httpGetAsync(location.protocol+"//" + window.location.host + "/UnitDB2/", callback);
+}
+
+//Sets up a new gameObject
+function useNewGameObject(newGameObject) {
+    gameObject = newGameObject;
+    currentTurn = gameObject.turn;
+    createCardButtons(gameObject.hands[this_player])
+    return
+    if (gameObject.intGrid.join(',') !== newGameObject.intGrid.join(',')) {
+        gameObject = newGameObject;
+        initilizeOffsets()
+        generateGrid()
+        generateBoardColors();
+        initClouds()
+    }
+    //if (outOfDate && currentTurn == newGameObject.turn) {
+    if (outOfDate) {
+        return //Don't render if this is outofdate to recent info sent to server
+        //Just wait for the next request.
+    }
+    if (animationCounter >= 0) { // animationCounter < 0 makes sure not already animating
+        return
+    }
+    if (currentTurn != -1 && newGameObject.turn > currentTurn) { 
+        console.log("entering animation")
+        //animationInterval = window.setInterval(drawAnimation, 33);
+        animationInterval = window.requestAnimationFrame(drawAnimation)
+        animationLastTick = performance.now()
+        animationCounter = 0
+        gameObject2 = newGameObject;
+        setAnimateSpeed(gameObject,gameObject2)
+        determineAnimationTerritories(gameObject,gameObject2)
+        return
+    }
+    gameObject = newGameObject;
+    currentTurn = gameObject.turn;
+    //clearSelected()
+    if (selected) {
+        let newSelected = getUnitByID(selected.UnitID)
+        //newSelected.state = selected.state
+        newSelected.stateData = selected.stateData
+        selected = newSelected
+    }
+    console.log("reinit stuff")
+    determineTerritories()
+    regularlyScheduledDrawBoard()
+}
+
+function loadGame() {
+    callback = function (responseText) {
+        jsonText = responseText;
+        newGameObject = JSON.parse(jsonText)
+        if (gameObject.turn != newGameObject.turn) {
+            useNewGameObject(newGameObject)
+        }
+    }
+    outOfDate = false
+    httpGetAsync(location.protocol+"//" + window.location.host + "/get_game2/"+this_game, callback);
+}
+
+//Takes state data and applies it to current Game
+function setState(data) {
+    let split = data.split(':')
+    let unit = getUnitByID(split[0])
+    if (unit == null) { //Unit doesn't exist (incorrect state file I think)
+        return
+    }
+    if (selected == unit) {
+        return //Don't want to reset the state of selected
+    }
+    let state = split[1]
+    let stateData = split[2]
+    if (state == 'move') {
+        stateData = [parseInt(split[2]),parseInt(split[3])]
+    } else if (state == 'attack') {
+        stateData = getUnitByID(split[2])
+    } else if (state == 'heal') {
+        stateData = getUnitByID(split[2])
+    } else if (state == 'build') {
+        stateData = [[parseInt(split[2]),parseInt(split[3])],split[4]]
+    } else if (state == 'transport') {
+        stateData = [[parseInt(split[2]),parseInt(split[3])],split[4]]
+    } else if (state == 'transport') {
+        state = null
+        stateData = null
+    } else if (state == 'resupply') {
+        stateData = getUnitByID(split[2])
+    }
+
+    unit.state = state
+    unit.stateData = stateData
+}
+
+//Gets state data and updates game if a gameobject is sent here from server
+function loadGame2() {
+    callback = function (responseText) {
+        jsonText = responseText;
+        states = JSON.parse(jsonText)
+        if (states.units != undefined) {
+            //Its not states, its a game object!
+            outOfDate = false
+            useNewGameObject(states)
+            return
+        }
+
+        if (outOfDate) {
+            return
+        }
+        if (this_player in states) {
+            for (let key in states[this_player]) {
+                setState(key + ":"+states[this_player][key])
+            }
+        }
+
+        drawBoard()
+    }
+    outOfDate = false
+    //httpGetAsync(location.protocol+"//" + window.location.host + "/get_states", callback);
+    //httpGetAsync(location.protocol+"//" + window.location.host + "/get_states/"+this_game+"/"+currentTurn, callback);
+}
+
+function logout() {
+    window.location.href = location.protocol+"//" + window.location.host+"/logout"
+    return
+    this_player += 1
+    this_player %= Object.keys(gameObject.units).length
+    console.log("this_player",this_player, gameObject.units.length)
+    loadGame()
+    //drawBoard()
+}
+
+function sendToServer(text) {
+    outOfDate = true
+    console.log("sending to server: " + text)
+    httpPostAsync(location.protocol+"//" + window.location.host + "/action2/"+this_game, text);
+}
+
+function convertToStr(u, state, stateData) {
+    let s = u.UnitID + ':' + state + ':';
+    if (state == 'move') {
+        s += stateData[0] + ':' + stateData[1]
+    } else if (state == 'attack') {
+        s += stateData.UnitID
+    } else if (state == 'heal') {
+        s += stateData.UnitID
+    } else if (state == 'resources') {
+        s += stateData
+    } else if (state == 'research') {
+        s += stateData
+    } else if (state == 'build') {
+        s += stateData[0][0] + ':' + stateData[0][1] + ":"
+        s += stateData[1]
+    } else if (state == 'transport') {
+        s += stateData[0][0] + ':' + stateData[0][1] + ":"
+        s += stateData[1]
+    } else if (state == 'upgrade') {
+        s += stateData
+    } else if (state == 'resupply') {
+        s += stateData.UnitID
+    }
+    return s
+}
+
+/** 
+ * @param card string of card name
+*/
+function convertToStr2(card, x,y) {
+    let s = card+":"+x+":"+y
+    return s
+}
+
+
+function componentToHex(c) {
+    var hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+}
+
+
+function rgbToHex(r, g, b) {
+    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+
+function hexToRGB(hex) {
+    return [
+        parseInt(hex.slice(1,3), 16), 
+        parseInt(hex.slice(3,5), 16),
+        parseInt(hex.slice(5,7), 16)
+    ]
+}
+
+function randomGreen() {
+    let g = Math.random() * 50 + 150;
+    return rgbToHex(Math.floor(g * Math.random() * 0.5), Math.floor(g), Math.floor(g * Math.random() * 0.5));
+}
+function randomYellow() {
+    let y = Math.random() * 55 + 175;
+    return rgbToHex(Math.floor(y), Math.floor(y * (Math.random() * 0.15 + .65)), Math.floor(y * Math.random() * 0.15));
+}
+function randomBlue() {
+    let b = Math.random() * 30 + 180;
+    return rgbToHex(Math.floor(b * Math.random() * 0.2), Math.floor(b * Math.random() * 0.25 + .5), Math.floor(b));
+}
+
+function randomBlueWeighted(x) {
+    let base = 13;
+    let sub = ((base) * (base + 1)) / 2 - ((base - x) * ((base - x) + 1)) / 2;
+    if (x > base) {
+        sub = ((base) * (base + 1)) / 2 + x - base;
+    }
+    sub = Math.floor(sub)
+    let g = Math.max(0, 180 - sub)
+    let b = Math.max(0, 180 - Math.floor(sub / 2))
+    return rgbToHex(Math.floor(b * Math.random() * .1 + .1), Math.floor(g * (Math.random() * .125 + .625)), b)
+}
+
+function randomDark() {
+    let g = Math.random() * 50;
+    return rgbToHex(Math.floor(g), Math.floor(g), Math.floor(g));
+}
+function randomWhite() {
+    let g = Math.random() * 35 + 210;
+    return rgbToHex(Math.floor(g), Math.floor(g), Math.floor(g + Math.random() * 20));
+}
+
+var canvas// = document.getElementById("myCanvas");
+let is_dragging = false;
+let maybe_dragging = false;
+let drag_click = false;
+let forceTouchEnabled = false;
+let startX;
+let startY;
+let startX_offset;
+let startY_offset;
+let true_startX;
+let true_startY;
+let true_startX_offset;
+let true_startY_offset;
+let x_offset = 0;
+let y_offset = 0;
+let size = 20;
+let zoom_distance;
+let start_size = 20;
+
+let this_player = 0;
+let this_game = 0;
+let selected = null;
+let enemySelected = null;
+let enemySelectedPlayer = null;
+
+var context;// = canvas.getContext('2d');
+let fontSize = Math.floor(size / 2);
+
+function clearBoard() {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+let BlueCircle = new Image(40, 40)
+BlueCircle.src = '/static/assets/MoveCircle.png'
+let OrangeHex = new Image(40, 40)
+OrangeHex.src = '/static/assets/BuildHex.png'
+let RedX = new Image(40, 40)
+RedX.src = '/static/assets/AttackX.png'
+let RedTarget = new Image(40, 40)
+RedTarget.src = '/static/assets/AttackTarget.png'
+let GreenT = new Image(40, 40)
+GreenT.src = '/static/assets/HealT.png'
+let GreenCircle = new Image(40, 40)
+GreenCircle.src = '/static/assets/TransportCircle.png'
+let Beaker = new Image(40, 40)
+Beaker.src = '/static/assets/Beaker.png'
+let YellowPentagon = new Image(40, 40)
+YellowPentagon.src = '/static/assets/SupplyPentagon.png'
+let CloakArrow = new Image(40, 40)
+CloakArrow.src = '/static/assets/CloakArrow.png'
+let DecloakArrow = new Image(40, 40)
+DecloakArrow.src = '/static/assets/DecloakArrow.png'
+let UpgradeArrow = new Image(40, 40)
+UpgradeArrow.src = '/static/assets/UpgradeArrow.png'
+
+let buffImages = {
+    "attack": new Image(40,40),
+    "defense": new Image(40,40),
+    "speed": new Image(40,40),
+}
+
+for (let key in buffImages) {
+    buffImages[key].src = '/static/assets/buffEffects/'+key+'.png'
+}
+
+let statLogos = {
+    "attack":new Image(20, 20),
+    "defense":new Image(20, 20),
+    "health":new Image(20, 20),
+    "population":new Image(20, 20),
+    "range":new Image(20, 20),
+    "speed":new Image(20, 20),
+    "supplies":new Image(20, 20),
+}
+
+for (let key in statLogos) {
+    statLogos[key].src = '/static/assets/statLogos/'+key+'.png'
+}
+
+function drawActionIcons() {
+    for (const position of moveCircles) {
+        //console.log(position);
+        context.drawImage(BlueCircle, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+    }
+    if (selected != null && "multibuild" in selected.abilities) {
+        // Show many "stacked" icons when a unit has multibuild
+        let buildCount = selected.abilities.multibuild + 1
+        //Limited by supplies
+        if (selected.supplies !== undefined && selected.supplies < buildCount) {
+            buildCount = selected.supplies
+        }
+        //Limited by population
+        if (selected.population !== undefined && selected.maxPopulation - selected.population < buildCount) {
+            buildCount = selected.maxPopulation - selected.population
+        }
+        //Can't be less than 1
+        if (buildCount <= 1) {
+            buildCount = 1
+        }
+        let smallSize = size * Math.pow(0.8, buildCount-1)
+        let shift = (size - smallSize)/(buildCount - 1)
+        //If it's one, its just like normal
+        if (buildCount == 1) {
+            smallSize = size
+            shift = 0
+        }
+        for (const position of buildHexes) {
+            for (let i = 0; i<buildCount; i++) {
+                context.drawImage(OrangeHex, size * position[0] + x_offset + shift*i, size * position[1] + y_offset + shift*i, smallSize, smallSize);
+            }
+        }
+    } else {
+        for (const position of buildHexes) {
+            //console.log(position);
+            context.drawImage(OrangeHex, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+        }
+    }
+
+    context.textAlign = "right";
+    fontSize = Math.floor(size / 3);
+    context.font = fontSize + "px Arial";
+    context.fillStyle = "#F00"
+    context.strokeStyle = 'black';
+    context.lineWidth = Math.floor(fontSize / 6);
+    let image = RedX
+    if (enemySelected != null) {
+        image = RedTarget
+    }
+
+    for (const position of possibleAttacks) {
+        context.drawImage(image, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+        context.strokeText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
+        context.fillText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
+    }
+    context.fillStyle = "#0F0"
+    for (const position of possibleHeals) {
+        //console.log(position);
+        context.drawImage(GreenT, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+        context.strokeText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
+        context.fillText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
+    }
+    context.fillStyle = "#FF0"
+    for (const position of possibleResupplies) {
+        //console.log(position);
+        context.drawImage(YellowPentagon, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+        context.strokeText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
+        context.fillText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
+    }
+    for (const position of transportSpots) {
+        //console.log(position);
+        context.drawImage(GreenCircle, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+    }
+    for (const position of dropOffSpots) {
+        //console.log(position);
+        context.drawImage(GreenCircle, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+    }
+    if (selected != null) {
+        if (selected.possibleStates.includes("research") && stateDataMode == null) {
+            context.drawImage(Beaker, size * selected.position[0] + x_offset, size * selected.position[1] + y_offset, size, size);
+        }
+        // Cloak button on top of selected unit
+        if (selected.possibleStates.includes("cloak") && stateDataMode == null) {
+            let image = CloakArrow
+            if (selected.cloaked != undefined) {
+                image = DecloakArrow
+            }
+            context.drawImage(image, size * selected.position[0] + x_offset, size * selected.position[1] + y_offset, size, size);
+        }
+    }
+}
+
+let resourceBoxHeight = 22
+let statBoxHeight = 22
+
+
+function drawResources() {
+
+    let newResources = {
+        "gold": 0,
+        "metal": 0,
+        "energy": 0
+    }
+
+    for (let unit of gameObject.units[this_player]) {
+        if (unit.state == "resources") {
+            if (unit.stateData || unit.stateData in newResources) {
+                newResources[unit.stateData] += unit.resourceGen[unit.stateData]
+            }
+        }
+    }
+
+    if (canvas.height > canvas.width) {
+        resourceBoxHeight = Math.floor(canvas.height / 36) + 6
+    }
+
+    context.fillStyle = "#505050";
+    context.fillRect(0, 0, canvas.width, resourceBoxHeight);
+
+    context.textAlign = "center";
+    context.font = (resourceBoxHeight - 2) + "px Arial";
+    context.fillStyle = "#FFFF00";
+    context.fillText(gameObject.resources[this_player]["gold"] + " + " + newResources["gold"], canvas.width * .2, resourceBoxHeight - 5);
+    context.fillStyle = "#DDDDDD";
+    context.fillText(gameObject.resources[this_player]["metal"] + " + " + newResources["metal"], canvas.width * .5, resourceBoxHeight - 5);
+    context.fillStyle = "#00FFFF";
+    context.fillText(gameObject.resources[this_player]["energy"] + " + " + newResources["energy"], canvas.width * .8, resourceBoxHeight - 5);
+}
+
+function drawAnimatedResources(g1,g2,t) {
+
+    let newResources = {}
+    let lerpedResources = {}
+
+    for (let resource in g1.resources[this_player]) {
+        newResources[resource] = g2.resources[this_player][resource] - g1.resources[this_player][resource]
+        lerpedResources[resource] = Math.floor(Lerp(g1.resources[this_player][resource], g2.resources[this_player][resource], t))
+    }
+
+    if (canvas.height > canvas.width) {
+        resourceBoxHeight = Math.floor(canvas.height / 36) + 6
+    }
+
+    context.fillStyle = "#505050";
+    context.fillRect(0, 0, canvas.width, resourceBoxHeight);
+
+    context.textAlign = "center";
+    context.font = (resourceBoxHeight - 2) + "px Arial";
+    context.fillStyle = "#FFFF00";
+    context.fillText(lerpedResources["gold"] + " + " + newResources["gold"], canvas.width * .2, resourceBoxHeight - 5);
+    context.fillStyle = "#DDDDDD";
+    context.fillText(lerpedResources["metal"] + " + " + newResources["metal"], canvas.width * .5, resourceBoxHeight - 5);
+    context.fillStyle = "#00FFFF";
+    context.fillText(lerpedResources["energy"] + " + " + newResources["energy"], canvas.width * .8, resourceBoxHeight - 5);
+}
+
+function drawStats() {
+
+    if (selected == null) {
+        statBoxHeight = 0
+        return
+    }
+
+    statBoxHeight = resourceBoxHeight
+
+    context.fillStyle = "#202020";
+    context.fillRect(0, resourceBoxHeight, canvas.width, statBoxHeight);
+
+    let statCount = 7
+    let currentStatCount = 0
+    if (!selected.possibleStates.includes("attack")) {
+        statCount -= 1
+    }
+    if (!selected.possibleStates.includes("move")) {
+        statCount -= 1
+    }
+    if (selected.population == undefined) {
+        statCount -= 1
+    }
+    if (selected.maxSupplies == undefined) {
+        statCount -= 1
+    }
+
+    context.textAlign = "left";
+    context.font = (statBoxHeight - 2) + "px Arial";
+
+    function drawStat(stat, text, color) {
+        let width = statBoxHeight + statBoxHeight/4 + statBoxHeight*0.5*text.toString().length
+        console.log("width", width)
+        context.fillStyle = color;
+        context.fillText(text, canvas.width * (currentStatCount+1.3) * (1/(statCount+1)) + statBoxHeight/4 - width/2, resourceBoxHeight + statBoxHeight - 6);
+        context.drawImage(statLogos[stat], canvas.width * (currentStatCount+1.3) * (1/(statCount+1))-statBoxHeight - width/2,resourceBoxHeight,statBoxHeight,statBoxHeight)
+        currentStatCount += 1
+    }
+
+    console.log(statLogos["health"])
+
+    drawStat("health",selected.health + "/" + selected.maxHealth,"#CEFFD7")
+
+    if (selected.possibleStates.includes("attack")) {
+        drawStat("attack",selected.attack,"#FF0800")
+    }
+
+    drawStat("defense",selected.defense,"#205DFF")
+
+    if (selected.possibleStates.includes("move")) {
+        drawStat("speed",selected.speed,"#00F5B9")
+    }
+    
+    drawStat("range",selected.range,"#FFA300")
+
+    if (selected.population != undefined) {
+        drawStat("population",selected.population + "/" + selected.maxPopulation,"#9434EB")
+    }
+
+    if (selected.maxSupplies != undefined) {
+        drawStat("supplies",selected.supplies + "/" + selected.maxSupplies,"#FF0")
+    }
+
+    return
+}
+
+function drawUnits() {
+    for (const player in gameObject.units) {
+        for (const unit of gameObject.units[player]) {
+            //console.log(unit)
+            drawUnit(player, unit);
+        }
+    }
+    for (const unit of gameObject.units[this_player]) {
+        //console.log(unit)
+        drawUnitResources(this_player, unit);
+    }
+}
+
+//Draws all "ghosts"
+function drawGhosts() {
+    if (cloudType != "halo") {
+        return
+    }
+    for (const ghostID in ghostList) {
+        drawGhost(ghostList[ghostID])
+    }
+}
+
+function drawUnitHealths() {
+    for (const player in gameObject.units) {
+        for (const unit of gameObject.units[player]) {
+            //console.log(unit)
+            drawUnitHealth(player, unit);
+        }
+    }
+}
+
+// Draws colored boxes for territories during animations
+function drawAnimationTerritories() {
+    let y = 0
+    for (const layer of animationTerritoryMap) {
+        let x = 0
+        for (const player of layer) {
+            if (player != null) {
+                drawTerritoryAtPos(player,x,y)
+            }
+            x += 1
+        }
+        y += 1
+    }
+}
+
+// Draws colored boxes for territories normally
+function drawTerritories2() {
+    let selectedX = -1
+    let selectedY = -1
+    if (selected != null) {
+        selectedX = selected.position[0]
+        selectedY = selected.position[1]
+    }
+    if (enemySelected != null) {
+        selectedX = enemySelected.position[0]
+        selectedY = enemySelected.position[1]
+    }
+    let y = 0
+    for (const layer of territoryMap) {
+        let x = 0
+        for (const player of layer) {
+            if (player != null) {
+                if (x == selectedX && y == selectedY) {
+                    drawTerritoryAtPos2Highlight(player,x,y)
+                } else {
+                    drawTerritoryAtPos2(player,x,y)
+                }
+            }
+            x += 1
+        }
+        y += 1
+    }
+}
+
+function drawTerritories() {
+    for (const player in gameObject.units) {
+        for (const unit of gameObject.units[player]) {
+            //console.log(unit)
+            drawTerritory(player, unit);
+        }
+    }
+}
+
+function drawTerritoriesSpecificGameObject(specific_gameObject) {
+    for (const player in specific_gameObject.units) {
+        for (const unit of specific_gameObject.units[player]) {
+            //console.log(unit)
+            drawTerritory(player, unit);
+        }
+    }
+}
+
+function drawUI() {
+    //Gui is rendered below
+    drawResources()
+    drawStats()
+    
+
+    for (let key in ButtonCollection) {
+        ButtonCollection[key].render();
+    }
+
+    if (stateDataMode == "build2") {
+        buildPopup(tempStateData)
+    }
+    if (enemySelected != null) {
+        buildPopup(enemySelected.name, enemySelectedPlayer)
+    }
+}
+
+function drawTiles() {
+    var cloudBoxSizeX = size
+    var cloudBoxSizeY = size
+    var local_x_offset = Math.floor(x_offset)
+    var local_y_offset = Math.floor(y_offset)
+    if (x_offset % 1 > 0) {
+        cloudBoxSizeX += 1
+    }
+    if (y_offset % 1 > 0) {
+        cloudBoxSizeY += 1
+    } 
+    for (let y = border_min_y; y < border_max_y; y++) {
+        for (let x = border_min_x; x < border_max_x; x++) {
+            let tileColor = BoardColors[x + gameObject.width * y]
+            context.fillStyle = tileColor;
+            context.fillRect(x * size + local_x_offset, y * size + local_y_offset, cloudBoxSizeX, cloudBoxSizeY);
+        }
+    }
+}
+
+function drawBoard() {
+    if(animationCounter >= 0) {
+        console.log("not drawing board")
+        return
+    }
+    console.log("drawing board")
+    
+
+    if (selected != null && stateDataMode == "research") {
+        researchMenu();
+        drawUI()
+        return
+    }
+
+    clearBoard()
+
+    currentlyResearch = false
+
+    drawTiles()
+
+    drawTerritories2()
+    
+
+    fontSize = Math.floor(size / 3);
+    context.font = fontSize + "px Arial";
+    context.strokeStyle = 'black';
+    context.lineWidth = Math.floor(fontSize / 6);
+
+    context.textAlign = "right";
+    //drawTerritories()
+    drawUnits();
+    //drawActionIcons()
+    drawUnitHealths();
+
+    drawUI()
+
+    for (let btn of buildButtons) {
+        btn.render();
+    }
+    for (let btn of resourceButtons) {
+        btn.render();
+    }
+
+    if (selected != null && stateDataMode == "upgrade2") {
+        //detailedUnitInfo(selected, tempStateData)
+    }
+}
+
+function drawAnimation() {
+    animationCounter += (performance.now()-animationLastTick)/30;
+    if (animationCounter >= animationMax) {
+        animationCounter = -1
+        //clearInterval(animationInterval) //Ends animation frame rendering
+        window.cancelAnimationFrame(animationInterval)
+        //gameObject = gameObject2
+        //gameObject2 = null
+        currentTurn = gameObject2.turn
+        useNewGameObject(gameObject2)
+
+
+        //drawBoard()
+        return 
+    }
+    animationLastTick = performance.now()
+    animationInterval = window.requestAnimationFrame(drawAnimation)
+
+    let t = animationCounter/animationMax
+    
+    clearBoard()
+
+    drawTiles()
+
+    drawTerritories2()
+    animateBoard(gameObject,gameObject2,t)
+    drawAnimatedResources(gameObject,gameObject2,t)
+    //drawClouds()
+}
+
+var intervalID = window.setInterval(myCallback, 2000);
+
+function myCallback() {
+    loadGame()//drawBoard();
+}
+
+var ticker = window.setInterval(regularlyScheduledDrawBoard, 1000);
+
+//Triggered every second. Primary use is to make the done button flash
+//when every other player is ready, and this_player is not. 
+function regularlyScheduledDrawBoard() {
+    counter += 1
+    if (states.went != undefined) {
+        let selfDone = states.went[this_player]
+        if (selfDone) {
+            doneState = "done"
+        } else {
+            doneState = "notDone"
+            let everyoneElseDone = true
+            for (let player in states.went) {
+                if (player == this_player) {
+                    continue
+                }
+                if (states.went[player] == false) {
+                    everyoneElseDone = false
+                    break
+                }
+            }
+            //"counter % 2 == 0" is used to make it alternate between the two states
+            if (everyoneElseDone && counter % 2 == 0) {
+                doneState = "hurry"
+            }
+        }
+        //Update Button Color
+        if ("done" in ButtonCollection) {
+            if (doneState == "notDone") { //Blue
+                ButtonCollection["done"].color = "#1188FF"
+                ButtonCollection["done"].textColor = "#FFFFFF"
+            } else if (doneState == "done") { //Gray
+                ButtonCollection["done"].color = "#AAAAAA"
+                ButtonCollection["done"].textColor = "#FFFFFF"
+            } else if (doneState == "hurry") { //Inverted white and blue
+                ButtonCollection["done"].textColor = "#1188FF"
+                ButtonCollection["done"].color = "#FFFFFF"
+            }
+        }
+    }
+    drawBoard();
+}
+
+function replaceColor2(srcR, srcG, srcB, dstR, dstG, dstB) {
+    const im = context.getImageData(0, 0, canvas.width, canvas.height);
+    for (var i = 0; i < im.data.length; i += 4) {
+        //console.log(im.data[i]+ " " + im.data[i + 1] + " " + im.data[i + 2]);
+        if (
+            im.data[i] === srcR &&
+            im.data[i + 1] === srcG &&
+            im.data[i + 2] === srcB
+        ) {
+
+            im.data[i] = dstR;
+            im.data[i + 1] = dstG;
+            im.data[i + 2] = dstB;
+        }
+    }
+    context.putImageData(im, 0, 0);
+}
+
+function drawStateLine(unit) { //As in "action state" (draws the line corresponding to a units action)
+    if (unit.state == null || unit.stateData == null) {
+        return
+    }
+    let position1 = unit.pos
+    let position2 = null
+    let color = "#FFFFFF"
+
+    if (unit.state == "move") {
+        position2 = unit.stateData
+        color = "#00FFFF"
+    } else if (unit.state == "build") {
+        position2 = unit.stateData[0]
+        color = "#FF8800"
+    } else if (unit.state == "attack") {
+        position2 = unit.stateData.position
+        if (position2 == undefined) {
+            let target = getUnitByID(unit.stateData)
+            if (target) {
+                position2 = target.position
+            }
+        }
+        color = "#FF0000"
+    } else if (unit.state == "heal") {
+        position2 = unit.stateData.position
+        color = "#FFFFFF"
+    } else if (unit.state == "transport") {
+        position2 = unit.stateData[0]
+        color = "#32E632"
+    } else if (unit.state == "resupply") {
+        position2 = unit.stateData.position
+        color = "#FFFF00"
+    }
+
+    if (position2 != null) {
+        //Here we define position3, used for the midpoint of the bezier curve
+        let xCenter = (position1[0]+position2[0])/2
+        let yCenter = (position1[1]+position2[1])/2
+
+        let x = position1[0]
+        let y = position2[1]
+        //This statement is used to switch direction of the curve on every other space
+        if ((position1[0]+position1[1]) % 2 == 0) {
+            x = position2[0]
+            y = position1[1]
+        }
+
+        //If statement checks if pos1 and pos2 are colinear, and if they are range 2 or further apart
+        //If so, add slight curve
+        if ((position1[0] == position2[0] || position1[1] == position2[1]) && Math.abs(position1[0] + position1[1] - position2[0] - position2[1]) > 1) {
+            let mult = 1
+            if ((position1[0]+position1[1]) % 2 == 0) {
+                mult = -1
+            }
+            x = xCenter
+            y = yCenter
+            if (position1[0] == position2[0]) {
+                x += 0.5*mult
+            } else {
+                y += 0.5*mult
+            }
+        }
+
+        let position3 = [(xCenter + x)/2, (yCenter + y)/2]
+        
+        //Black line and sqaure (for outline)
+        context.strokeStyle = "#000000";
+        context.lineWidth = size * .25;
+        context.fillStyle = "#000000";
+
+        let halfSize = size / 2; //Used to center the line in the middle of square
+
+        context.beginPath();
+        context.moveTo(position1[0] * size + x_offset + halfSize, position1[1] * size + y_offset + halfSize);
+        
+        
+        context.quadraticCurveTo(position3[0] * size + x_offset + halfSize, position3[1] * size + y_offset + halfSize,
+            position2[0] * size + x_offset + halfSize, position2[1] * size + y_offset + halfSize);
+        context.stroke();
+
+        let boxSize = .33
+
+        context.fillRect(position2[0] * size + x_offset + size * (1 - (boxSize))/2, position2[1] * size + y_offset + size * (1 - (boxSize))/2, size * boxSize, size * boxSize);
+
+        //Colored line and square
+        context.strokeStyle = color;
+        context.lineWidth = size * .21;
+
+        context.fillStyle = color;
+
+        context.beginPath();
+        context.moveTo(position1[0] * size + x_offset + halfSize, position1[1] * size + y_offset + halfSize);
+        //context.lineTo(position2[0] * size + x_offset + halfSize, position2[1] * size + y_offset + halfSize);
+        context.quadraticCurveTo(position3[0] * size + x_offset + halfSize, position3[1] * size + y_offset + halfSize,
+            position2[0] * size + x_offset + halfSize, position2[1] * size + y_offset + halfSize);
+        
+        context.stroke();
+
+        boxSize = boxSize-0.04
+
+        context.fillRect(position2[0] * size + x_offset + size * (1 - (boxSize))/2, position2[1] * size + y_offset + size * (1 - (boxSize))/2, size * boxSize, size * boxSize);
+    }
+}
+
+function drawTerritoryAtPos(player,x,y) {
+    context.fillStyle = rgbToHex(playerColors[player][0], playerColors[player][1], playerColors[player][2]) + "99";
+    context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
+}
+
+let thickness = 0.05
+let oppositeThickness = 1 - thickness
+
+//Draws outlined territory
+function drawTerritoryAtPos2(player,x,y) {
+    context.fillStyle = rgbToHex(playerColors[player][0], playerColors[player][1], playerColors[player][2]);
+    if (territoryNumberCode[y][x] % 2 >= 1) { //Top
+        context.fillRect(x * size + x_offset, y * size + y_offset, size, size * thickness);
+    }
+    if (territoryNumberCode[y][x] % 4 >= 2) { //Top right
+        context.fillRect((x+oppositeThickness) * size + x_offset, y * size + y_offset, size * thickness, size * thickness);
+    }
+    if (territoryNumberCode[y][x] % 8 >= 4) { //Right
+        context.fillRect((x+oppositeThickness) * size + x_offset, y * size + y_offset, size * thickness, size);
+    }
+    if (territoryNumberCode[y][x] % 16 >= 8) { //Right bottom
+        context.fillRect((x+oppositeThickness) * size + x_offset, (y+oppositeThickness) * size + y_offset, size * thickness, size * thickness);
+    }
+    if (territoryNumberCode[y][x] % 32 >= 16) { //Bottom
+        context.fillRect(x * size + x_offset, (y+oppositeThickness) * size + y_offset, size, size * thickness);
+    }
+    if (territoryNumberCode[y][x] % 64 >= 32) { //Bottom left
+        context.fillRect(x * size + x_offset, (y+oppositeThickness) * size + y_offset, size * thickness, size * thickness);
+    }
+    if (territoryNumberCode[y][x] % 128 >= 64) { //Left
+        context.fillRect(x * size + x_offset, y * size + y_offset, size * thickness, size);
+    }
+    if (territoryNumberCode[y][x] % 256 >= 128) { //Left
+        context.fillRect(x * size + x_offset, y * size + y_offset, size * thickness, size * thickness);
+    }
+    context.fillStyle = rgbToHex(playerColors[player][0], playerColors[player][1], playerColors[player][2]) + "33";
+    context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
+    //context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
+}
+
+//Same as function before, but this one highlights the square
+function drawTerritoryAtPos2Highlight(player,x,y) {
+    context.fillStyle = "#FFFFFFBB";
+    context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
+
+    context.fillStyle = rgbToHex(playerColors[player][0], playerColors[player][1], playerColors[player][2]);
+    if (territoryNumberCode[y][x] % 2 >= 1) { //Top
+        context.fillRect(x * size + x_offset, y * size + y_offset, size, size * thickness);
+    }
+    if (territoryNumberCode[y][x] % 4 >= 2) { //Top right
+        context.fillRect((x+oppositeThickness) * size + x_offset, y * size + y_offset, size * thickness, size * thickness);
+    }
+    if (territoryNumberCode[y][x] % 8 >= 4) { //Right
+        context.fillRect((x+oppositeThickness) * size + x_offset, y * size + y_offset, size * thickness, size);
+    }
+    if (territoryNumberCode[y][x] % 16 >= 8) { //Right bottom
+        context.fillRect((x+oppositeThickness) * size + x_offset, (y+oppositeThickness) * size + y_offset, size * thickness, size * thickness);
+    }
+    if (territoryNumberCode[y][x] % 32 >= 16) { //Bottom
+        context.fillRect(x * size + x_offset, (y+oppositeThickness) * size + y_offset, size, size * thickness);
+    }
+    if (territoryNumberCode[y][x] % 64 >= 32) { //Bottom left
+        context.fillRect(x * size + x_offset, (y+oppositeThickness) * size + y_offset, size * thickness, size * thickness);
+    }
+    if (territoryNumberCode[y][x] % 128 >= 64) { //Left
+        context.fillRect(x * size + x_offset, y * size + y_offset, size * thickness, size);
+    }
+    if (territoryNumberCode[y][x] % 256 >= 128) { //Left
+        context.fillRect(x * size + x_offset, y * size + y_offset, size * thickness, size * thickness);
+    }
+    
+    //context.fillRect(x * size + x_offset, y * size + y_offset, size, size);
+}
+
+function drawTerritory(player, unit) {
+    if (selected === unit) {
+        context.fillStyle = "#FFFFFFBB";
+    } else {
+        context.fillStyle = rgbToHex(playerColors[player][0], playerColors[player][1], playerColors[player][2]) + "33";
+    }
+    context.fillRect(unit.pos[0] * size + x_offset, unit.pos[1] * size + y_offset, size, size);
+}
+
+//Checks to see if there is a viable action that can be taken
+function checkActionable(unit) {
+    if (unit.state == null || unit.state == "cancel" || (unit.state == "resources" && unit.possibleStates.length > 1)) {
+        if ((unit.state == null || unit.state == "cancel") && unit.possibleStates.includes("resources")) {
+            return true
+        }
+        if (unit.possibleStates.includes("build")) {
+            if (!(unit.maxPopulation && unit.maxPopulation <= unit.population) && !(unit.maxSupplies && unit.supplies <= 0)) {
+                let possibleBuilds = unit.possiblebuilds || UnitDB[unit.name]['possibleBuilds'] || []
+                for (let unitName of possibleBuilds) {
+                    if (checkIfAffordable(unitName)) {
+                        return true
+                    }
+                }
+            }
+        }
+        if (unit.possibleStates.includes("move")) {
+            if (getMoveCircles(unit).length > 0) {
+                return true
+            }
+        }
+        if (unit.possibleStates.includes("attack")) {
+            if (getAttacks(unit).length > 0) {
+                return true
+            }
+        }
+        if (unit.possibleStates.includes("heal")) {
+            if (getHeals(unit).length > 0) {
+                return true
+            }
+        }
+        if (unit.possibleStates.includes("research")) {
+            if (effectiveResources["energy"] >= cheapestTech) {
+                return true
+            }
+        }
+        if (unit.possibleStates.includes("resupply")) {
+            if (getResupplies(unit).length > 0) {
+                return true
+            }
+        }
+        if (unit.possibleStates.includes("upgrade")) { 
+            let possibleUpgrades = unit.possibleupgrades || UnitDB[unit.name]['possibleUpgrades'] || []
+            for (let upgradeName of possibleUpgrades) {
+                
+                if (checkIfAffordable(upgradeName)) {
+                    return true
+                }
+            }
+        }
+        if (unit.possibleStates.includes("transport")) { 
+            if (unit.carrying != undefined && unit.carrying.length > 0) {
+                return true
+            }
+        }
+        //return true
+    }
+    return false
+}
+
+
+//Get unit image size multiplier based on unit type (or specified size)
+function getMultiplier(unitName, unitType = -1) {
+    if (unitType == -1) {
+        unitType = UnitDB[unitName].type || "trooper";
+    }
+    let multiplier = 0.7;
+    if (unitType == "building") {
+        multiplier = 0.85;
+    } else if (unitType == "trooper" || unitType == "bot") {
+        multiplier = 0.6;
+    }
+    multiplier = UnitDB[unitName].size || multiplier;
+    return multiplier
+}
+
+function drawUnit(player, unit) {
+
+    let img = getUnitImage(player, unit.name);
+
+    if (img != null) {
+        //Outline unit if they still need to be given an action
+        if (player == this_player && actionableUnits.indexOf(unit.UnitID) != -1){//checkActionable(unit)) {
+            img = getOutlinedUnitImage(player, unit.name)
+        }
+
+        if (unit.cloaked != undefined) { // Make cloaked units slightly invisible to show that they are cloaked
+            context.globalAlpha = 0.4
+        }
+        let multiplier = getMultiplier(unit.name, unit.type);
+        context.drawImage(img, size * unit.pos[0] + x_offset + size * (1 - multiplier) * .5, size * unit.pos[1] + y_offset + size * (1 - multiplier) * .5, size * multiplier, size * multiplier);
+        context.globalAlpha = 1
+        //Draw "Aura" buff effects
+        for (const targetStat in buffedUnits) {
+            if (buffedUnits[targetStat].includes((unit.UnitID))) {
+                context.drawImage(buffImages[targetStat], size * unit.pos[0] + x_offset + size * (1 - multiplier) * .5, size * unit.pos[1] + y_offset + size * (1 - multiplier) * .5, size * multiplier, size * multiplier);
+            }
+        }
+    }
+
+    //context.fillStyle = "white";
+    //context.strokeText(unit.health, size * unit.pos[0] + size + x_offset, size * unit.pos[1] + size + y_offset);
+    //context.fillText(unit.health, size * unit.pos[0] + size + x_offset, size * unit.pos[1] + size + y_offset);
+}
+
+//Draws a ghost. The ghost should just be a dictionary with "name","player","pos"
+function drawGhost(ghost) {
+    let img = getUnitImage(ghost.player, ghost.name);
+    if (img != null) {
+        let multiplier = getMultiplier(ghost.name, "building"); //Only buildings can be ghosts
+        context.drawImage(img, size * ghost.pos[0] + x_offset + size * (1 - multiplier) * .5, size * ghost.pos[1] + y_offset + size * (1 - multiplier) * .5, size * multiplier, size * multiplier);
+    }
+}
+
+function drawUnitHealth(player, unit) {
+    context.fillStyle = "white";
+    context.strokeText(unit.health, size * unit.pos[0] + size + x_offset, size * unit.pos[1] + size + y_offset);
+    context.fillText(unit.health, size * unit.pos[0] + size + x_offset, size * unit.pos[1] + size + y_offset);
+}
+
+function drawUnitResources(player, unit) {
+    if (unit.state == "resources") {
+        context.fillStyle = "#000";
+        context.fillRect(size * unit.pos[0] + x_offset + size * (1 - 0.2) * .1, size * unit.pos[1] + y_offset + size * (1 - 0.2) * .9, size*.2, size*.2);
+        context.fillStyle = resourceColors[unit.stateData];
+        context.fillRect(size * unit.pos[0] + x_offset + size * (1 - 0.2) * .11, size * unit.pos[1] + y_offset + size * (1 - 0.2) * .91, size*.18, size*.18);
+    } else if (unit.state == "research") { // Research icon in bottom left corner
+        context.drawImage(Beaker, size * unit.pos[0] + x_offset + size * (1 - 0.3) * .1, size * unit.pos[1] + y_offset + size * (1 - 0.3) * .9, size*.3, size*.3);
+    } else if (unit.state == "upgrade") { // Research icon in bottom left corner
+        context.drawImage(UpgradeArrow, size * unit.pos[0] + x_offset + size * (1 - 0.3) * .1, size * unit.pos[1] + y_offset + size * (1 - 0.3) * .9, size*.3, size*.3);
+    } else if (unit.state == "cloak") { // Cloak icon in bottom left corner
+        let image = CloakArrow
+        if (unit.cloaked != undefined) {
+            image = DecloakArrow
+        }
+        context.drawImage(image, size * unit.pos[0] + x_offset + size * (1 - 0.3) * .1, size * unit.pos[1] + y_offset + size * (1 - 0.3) * .9, size*.3, size*.3);
+    } 
+}
+
+
+
+let mouse_down = function (event) {
+    event.preventDefault();
+    console.log(event)
+
+    startX = parseInt(event.clientX);
+    startY = parseInt(event.clientY);
+    startX_offset = x_offset;
+    startY_offset = y_offset;
+
+
+    maybe_dragging = true;
+    //is_dragging = true;
+    return;
+}
+
+let mouse_up = function (event) {
+    if (!is_dragging) {
+        if (maybe_dragging) {
+            maybe_dragging = false;
+            event.preventDefault();
+            handleClick(parseInt(event.clientX), parseInt(event.clientY))
+        }
+        return;
+    } else {
+        let mouseX = parseInt(event.clientX);
+        let mouseY = parseInt(event.clientY);
+        if (checkWhatCouldBeClicked(startX,startY) == checkWhatCouldBeClicked(mouseX,mouseY)) {
+            event.preventDefault();
+            handleClick(mouseX, mouseY)
+            is_dragging = false;
+            return
+        }
+    }
+
+    event.preventDefault();
+    is_dragging = false;
+}
+
+let mouse_out = function (event) {
+    if (!is_dragging) {
+        return;
+    }
+
+    event.preventDefault();
+    is_dragging = false;
+}
+
+let mouse_move = function (event) {
+    if (maybe_dragging) {
+        maybe_dragging = false;
+        is_dragging = true;
+    }
+    if (!is_dragging) {
+        if (stateDataMode == "research") {
+            let mouseX = parseInt(event.clientX);
+            let mouseY = parseInt(event.clientY);
+            for (let btn of currentTechButtons) {
+                if (btn.isMouseHovering(mouseX,mouseY)) {
+                    //currentTechButtons[CurrentTechHover].img = currentTechImages[CurrentTechHover]
+                    CurrentTechHover = btn.name;
+                    console.log("current hover", CurrentTechHover)
+                    //currentTechButtons[CurrentTechHover].img = currentTechImagesInverted[CurrentTechHover]
+                    redrawResearch = true //Used to trigger update for research menu
+                    drawBoard()
+                    return
+                }
+            }
+            /*
+            for (let key in currentTechButtons) {
+                if (currentTechButtons[key].isMouseHovering(mouseX,mouseY)) {
+                    //currentTechButtons[CurrentTechHover].img = currentTechImages[CurrentTechHover]
+                    CurrentTechHover = key;
+                    console.log("current hover", CurrentTechHover)
+                    //currentTechButtons[CurrentTechHover].img = currentTechImagesInverted[CurrentTechHover]
+                    redrawResearch = true //Used to trigger update for research menu
+                    drawBoard()
+                    return
+                }
+            }
+            */
+            redrawResearch = true
+            CurrentTechHover = null;
+            drawBoard()
+        }
+        return;
+    }
+
+    event.preventDefault();
+
+    let mouseX = parseInt(event.clientX);
+    let mouseY = parseInt(event.clientY);
+
+    let dx = mouseX - startX;
+    let dy = mouseY - startY;
+
+    x_offset = Math.floor(startX_offset + dx);
+    y_offset = Math.floor(startY_offset + dy);
+
+    if (stateDataMode == "research") {
+        redrawResearch = true //Used to trigger update for research menu
+    }
+    
+
+    drawBoard();
+}
+
+//Touch based events
+let touch_down = function (event) {
+    event.preventDefault();
+
+    if (event.touches.length == 1) {
+
+        startX = parseInt(event.touches[0].clientX);
+        startY = parseInt(event.touches[0].clientY);
+        startX_offset = x_offset;
+        startY_offset = y_offset;
+
+        true_startX = startX;
+        true_startY = startY;
+        true_startX_offset = startX_offset;
+        true_startY_offset = startY_offset;
+
+        maybe_dragging = true;
+        if (event.touches[0].force <= 0.5) { //If there is a touch with less force, enable force click drag
+            forceTouchEnabled = true
+        }
+    } else if (event.touches.length == 2) {
+        if (!is_dragging) {
+            startX = parseInt(event.touches[0].clientX);
+            startY = parseInt(event.touches[0].clientY);
+            startX_offset = x_offset;
+            startY_offset = y_offset;
+
+            true_startX = startX;
+            true_startY = startY;
+            true_startX_offset = startX_offset;
+            true_startY_offset = startY_offset;
+
+            is_dragging = true;
+            maybe_dragging = false;
+        }
+        let secondX = parseInt(event.touches[1].clientX);
+        let secondY = parseInt(event.touches[1].clientY);
+        zoom_distance = Math.pow((Math.pow(event.touches[0].clientX - secondX, 2) + Math.pow(event.touches[0].clientY - secondY, 2)), 0.5);
+        start_size = size;
+    }
+    return;
+}
+
+let touch_up = function (event) {
+    drag_click = false
+    if (!is_dragging) {
+        if (maybe_dragging) {
+            maybe_dragging = false;
+            event.preventDefault();
+            handleClick(parseInt(startX), parseInt(startY))
+        }
+        return;
+    }
+
+    event.preventDefault();
+
+    if (event.touches.length == 1) {
+        startX = parseInt(event.touches[0].clientX);
+        startY = parseInt(event.touches[0].clientY);
+        startX_offset = x_offset;
+        startY_offset = y_offset;
+
+        true_startX = startX;
+        true_startY = startY;
+        true_startX_offset = startX_offset;
+        true_startY_offset = startY_offset;
+    } else if (event.touches.length == 0) {
+        is_dragging = false;
+    }
+
+}
+
+let touch_move = function (event) {
+    event.preventDefault();
+    if (drag_click) {
+        startX = parseInt(event.touches[0].clientX);
+        startY = parseInt(event.touches[0].clientY);
+        return;
+    }
+    if (maybe_dragging) {
+        if (forceTouchEnabled && event.touches[0].force >= 0.2) {
+            drag_click = true;
+            handleClick(parseInt(startX), parseInt(startY))
+            startX = parseInt(event.touches[0].clientX);
+            startY = parseInt(event.touches[0].clientY);
+            return
+        }
+        maybe_dragging = false;
+        is_dragging = true;
+    }
+    if (!is_dragging) {
+        return;
+    }
+
+
+    let mouseX = parseInt(event.touches[0].clientX);
+    let mouseY = parseInt(event.touches[0].clientY);
+
+    if (event.touches.length == 2) {
+        let secondX = parseInt(event.touches[1].clientX);
+        let secondY = parseInt(event.touches[1].clientY);
+        let new_zoom_distance = Math.pow((Math.pow(event.touches[0].clientX - secondX, 2) + Math.pow(event.touches[0].clientY - secondY, 2)), 0.5);
+        size = start_size * (new_zoom_distance / zoom_distance);
+
+        let xBlocks = (true_startX - true_startX_offset) / start_size
+        let xProjected = true_startX_offset + size * xBlocks
+        let xChange = true_startX - xProjected
+
+        startX = true_startX - xChange
+
+        let yBlocks = (true_startY - true_startY_offset) / start_size
+        let yProjected = true_startY_offset + size * yBlocks
+        let yChange = true_startY - yProjected
+
+        startY = true_startY - yChange
+
+        //startX_offset = true_startX_offset - (true_startX-true_startX_offset) * (new_zoom_distance/zoom_distance);
+        //startY_offset = true_startY_offset - (true_startY-true_startY_offset) * (new_zoom_distance/zoom_distance);
+
+        //startX = true_startX - (true_startX-true_startX_offset) * (new_zoom_distance/zoom_distance);
+        //startY = true_startY - (true_startY-true_startY_offset) * (new_zoom_distance/zoom_distance);
+
+        //unitImages = {};
+    }
+
+    let dx = mouseX - startX;
+    let dy = mouseY - startY;
+
+    x_offset = Math.floor(startX_offset + dx);
+    y_offset = Math.floor(startY_offset + dy);
+
+    currentlyResearch = false //Used to trigger update for research menu
+
+    drawBoard();
+}
+
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    getUnitDB()
+
+    if (document.querySelector('meta[name="player_id"]')){
+        //this_player = parseInt(document.querySelector('meta[name="player_id"]').content)
+        this_player = document.querySelector('meta[name="player_id"]').content
+    }
+    if (document.querySelector('meta[name="game_id"]')){
+        this_game = document.querySelector('meta[name="game_id"]').content
+    }
+
+    canvas = document.getElementById("myCanvas");
+    context = canvas.getContext('2d');
+    canvas.onmousedown = mouse_down;
+    canvas.onmouseup = mouse_up;
+    canvas.onmouseout = mouse_out;
+    canvas.onmousemove = mouse_move;
+    canvas.addEventListener("touchstart", touch_down, false);
+    canvas.addEventListener("touchmove", touch_move, false);
+    canvas.addEventListener("touchend", touch_up, false);
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    defaultButtonMenu()
+
+    canvas.addEventListener('wheel', function (event) {
+
+        console.log(event.deltaY);
+
+        let mouseX = parseInt(event.clientX);
+        let mouseY = parseInt(event.clientY);
+
+        let xBlocks = (mouseX - x_offset) / size
+        let yBlocks = (mouseY - y_offset) / size
+
+        let change = event.deltaY / -50
+        size *= 1+(change)/10;
+        regulateSquareSize()
+
+        let xProjected = x_offset + size * xBlocks
+        let xChange = mouseX - xProjected
+
+        x_offset += xChange
+        startX_offset += xChange
+
+        let yProjected = y_offset + size * yBlocks
+        let yChange = mouseY - yProjected
+
+        y_offset += yChange
+        startY_offset += yChange
+
+
+        console.log(size);
+
+        //unitImages = {};
+        currentlyResearch = false //Used to trigger update for research menu
+
+        drawBoard();
+
+        event.preventDefault();
+    }, false);
+
+    generateGrid()
+    generateBoardColors();
+
+    if (canvas.getContext) {
+        context.fillStyle = '#fa4b2a';    // color of fill
+        context.fillRect(10, 40, 140, 160); // create rectangle  
+
+
+        for (let y = 0; y < 20; y++) {
+            for (let x = 0; x < 20; x++) {
+                context.fillStyle = randomGreen();
+                context.fillRect(x * 20, y * 20, 20, 20);
+            }
+        }
+    }
+    loadGame();
+
+    document.body.onkeyup = function (e) {
+        if (e.key == " " ||
+            e.code == "Space" ||
+            e.keyCode == 32
+        ) {
+            endTurn()
+        }
+    }
+})
+

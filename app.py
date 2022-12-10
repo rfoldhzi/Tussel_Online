@@ -8,7 +8,10 @@ from flask import (
     request
 )
 from game import Game, GameMaker
-import game, UnitDB
+from tactics.game import Game as TacticalGame
+from tactics.game import GameMaker as TacticalGameMaker
+import game, UnitDB, traceback
+import tactics.UnitDB as TacticalUnitDB
 from os import walk
 import json
 
@@ -170,6 +173,17 @@ def canvas_game_by_id(game_id):
         userid = CurrentGame.playernames[0][current_user.username.lower()]
         return render_template('canvas2.html', player_id = userid, game_id = game_id)
 
+@app.route('/game2/<game_id>')
+@login_required
+def canvas_game_by_id2(game_id):
+    with open(Path("savefiles/tactics_games/game_%s.txt"%game_id), 'r') as f:
+        CurrentGame = TacticalGameMaker(f.read())
+        if not (current_user.username.lower() in CurrentGame.units):
+            return redirect(url_for('find_game'))
+        userid = current_user.username.lower()
+        return render_template('canvas3.html', player_id = userid, game_id = game_id)
+
+
 @app.route('/')
 @login_required
 def canvas():
@@ -214,6 +228,21 @@ def get_states():
         print(str(e))
         return "{}"
 """
+
+@app.route('/get_game2/<game_id>')
+@login_required
+def get_game2(game_id):
+    try:
+        try:
+            with open(Path("savefiles/tactics_games/game_%s.txt" % game_id), 'r') as f:
+                CurrentGame = TacticalGameMaker(f.read())
+                return CurrentGame.getJSON()
+        except:
+            print("panik545")
+            return "" #This means not good,could not open file
+    except Exception as e:
+        print(str(e))
+        return "{}"
 
 @app.route('/get_states/<game_id>/<turn>')
 @login_required
@@ -266,6 +295,31 @@ def action(game_id):
             CurrentGame.saveGame()
         except Exception as e:
             print(str(e))
+    print("HELLO")
+    print("this is it ->", request.data.decode())
+    return "bye"
+
+@app.route('/action2/<game_id>', methods=['GET', 'POST'])
+def action2(game_id):
+    if request.method == "POST":
+        try:
+            print("data recieved",request.data.decode())
+            CurrentGame = None
+            with open(Path("savefiles/tactics_games/game_%s.txt"%game_id), 'r') as f:
+                CurrentGame = TacticalGameMaker(f.read())
+            #player = CurrentGame.playernames[0][current_user.username.lower()]
+            player = current_user.username.lower()
+            print("MY units:", str(CurrentGame.units["rjfx3"]))
+            print("adfgadfgadfg")
+            CurrentGame.decodeAction(player, request.data.decode())
+            print("MY units:", str(CurrentGame.units["rjfx3"]))
+            #game.stateStuff(game_id, player,request.data.decode())
+            #CurrentGame.setState(0, request.data.decode())
+            CurrentGame.saveGame()
+        except Exception as e:
+            print("an EXCEPTION has occured")
+            print(str(e))
+            print(traceback.format_exc())
     print("HELLO")
     print("this is it ->", request.data.decode())
     return "bye"
@@ -324,6 +378,51 @@ def newGame():
         form=form,
         )
 
+@app.route('/newgame2', methods=("GET", "POST"), strict_slashes=False)
+@login_required
+def newGame2():
+    global CurrentGame
+    form = create_game_form()
+    print("something2")
+
+    print(form.errors)
+
+    if form.is_submitted():
+        print("submitted")
+
+    if form.validate():
+        print("valid")
+
+    print(form.errors)
+
+    if form.validate_on_submit():
+        try:
+            x = int(form.player_count.data)
+            CurrentGame = TacticalGame(form.game_id.data)
+
+
+            playerText = form.players.data.lower()
+            if playerText == "":
+                playerText = "RjFx3,RjFx5"
+            playerText = playerText.replace(" ", "")
+            players = playerText.split(",")
+            i = 0
+            for player in players:
+                CurrentGame.addPlayer(player)
+                i+=1
+
+            #CurrentGame.addPlayer()
+            CurrentGame.start()
+            CurrentGame.saveGame()
+            return redirect(url_for('canvas_game_by_id2',game_id=form.game_id.data))
+        except Exception as e:
+            print("Exception",e)
+            flash(e, "danger")
+
+    return render_template("newGameForm2.html",
+        form=form,
+        )
+
 class Encoder(json.JSONEncoder):
     def default(self, o):
         #Posible thing to do is is find all units with attack as their state and change statedata to unitID
@@ -336,3 +435,7 @@ def getUnitDB():
 @app.route('/TechDB/', strict_slashes=False)
 def getTechDB():
     return json.dumps(UnitDB.TechDB, indent=0, cls=Encoder)
+
+@app.route('/UnitDB2/', strict_slashes=False)
+def getUnitDB2():
+    return json.dumps(TacticalUnitDB.UnitDB, indent=0, cls=Encoder)

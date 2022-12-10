@@ -34,7 +34,7 @@ UnitDB = {
         ]
     },
     "mine": {
-        "health":2,
+        "health":4,
         "trap":5,
         "cost":0,
         "penalty":[],
