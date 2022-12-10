@@ -759,15 +759,32 @@ function determineTerritories() {
     }
     for (const player in gameObject.units) {
         for (const unit of gameObject.units[player]) {
-            territoryMap[unit.position[1]][unit.position[0]] = player
+            if ("generation" in UnitDB[unit.name]) {
+                let points = findPatternPoints(UnitDB[unit.name]["generationPattern"], unit.pos)
+                for (let point of points) {
+                    territoryMap[point[1]][point[0]] = 6
+                }
+            }
+            if ("counter" in UnitDB[unit.name]) {
+                let points = findPatternPoints(UnitDB[unit.name]["counterPattern"], unit.pos)
+                for (let point of points) {
+                    territoryMap[point[1]][point[0]] = 1
+                }
+            }
         }
     }
+    for (const player in gameObject.units) {
+        for (const unit of gameObject.units[player]) {
+            territoryMap[unit.pos[1]][unit.pos[0]] = player
+        }
+    }
+
     
-    claim3s()
-    claimAcross()
-    claim3s()
-    claimAcross()
-    claim3s()
+    //claim3s()
+    //claimAcross()
+    //claim3s()
+    //claimAcross()
+    //claim3s()
 
     numberMap()
 }
@@ -1623,4 +1640,33 @@ function createCardButtons(hand) {
         //i++;
         currentButtonHeight += btnSize * 1.2;
     }
+}
+
+function findStartSpot(pattern) {
+    for (let y=0; y<pattern.length; y++) {
+        for (let x=0; x<pattern[0].length; x++) {
+            if (pattern[y][x] == 'S') {
+                return [x,y]
+            }
+        }
+    }
+    return null
+}
+
+function findPatternPoints(pattern, pos) {
+    let startOffset = findStartSpot(pattern)
+    let offsetX = pos[0]-startOffset[0]
+    let offsetY = pos[1]-startOffset[1]
+
+    let points = []
+    for (let y=0; y<pattern.length; y++) {
+        for (let x=0; x<pattern[0].length; x++) {
+            if (pattern[y][x] == 'X') {
+                if (x >= 0 && x < gameObject.width && y >= 0 && y < gameObject.height) {
+                    points.push([x+offsetX,y+offsetY])
+                }
+            }
+        }
+    }
+    return points
 }

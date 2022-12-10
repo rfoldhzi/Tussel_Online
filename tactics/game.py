@@ -229,9 +229,18 @@ class Game:
         #Generation Patterns
         for unit in self.units[thisPlayer]:
             if "generation" in UnitDB[unit.name]:
+                print("fonud a generationner")
                 generationPoints = findPatternPoints(UnitDB[unit.name]["generationPattern"],unit.pos)
                 if pos in generationPoints:
-                    pass#TODO Get resources
+                    print("AND we are close to it!")
+                    for item in UnitDB[unit.name]["generation"]:
+                        print("the item we get is",item)
+                        if item == "card":
+                            if len(self.decks[thisPlayer]) > 0:
+                                self.hands[thisPlayer].push(self.decks[player].pop(0))
+                        elif item == "resource":
+                            print("yay money")
+                            self.resources[thisPlayer] += 1
         
         #Tech increase
         if "tech" in UnitDB[unitName]:

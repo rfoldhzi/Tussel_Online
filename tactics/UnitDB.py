@@ -4,7 +4,7 @@ UnitDB = {
         "attack":2,
         "counter":2,
         "cost":1,
-        "penalty":["resource"],
+        "penalty":["resource",],
         "attackPattern": [
             " X ",
             "XSX",
@@ -21,7 +21,7 @@ UnitDB = {
         "attack":4,
         "counter":1,
         "cost":1,
-        "penalty":["discard"],
+        "penalty":["discard",],
         "attackPattern": [
             "  X ",
             "SXXX",
@@ -35,6 +35,22 @@ UnitDB = {
     },
     "mine": {
         "health":4,
+        "cost":1,
+        "penalty":("discard",),
+        "generation":("resource",),
+        "generationPattern":(
+            "X X",
+            " S ",
+            "X X",
+        ),
+        "constructionPattern":(
+            "XXX",
+            "XSX",
+            "XXX",
+        ),
+    },
+    "seamine": {
+        "health":2,
         "trap":5,
         "cost":0,
         "penalty":[],
@@ -45,11 +61,12 @@ UnitDB = {
         ],
         "abilities":{"kamikaze":0}
     },
+    
     "sniper": {
         "health":2,
         "attack":5,
         "cost":1,
-        "penalty":["resource"],
+        "penalty":["resource",],
         "attackPattern": [
             "X  X  X",
             "       ",
@@ -63,7 +80,7 @@ UnitDB = {
     "medic":{
         "health":3,
         "cost":1,
-        "penalty":("resource"),
+        "penalty":("resource",),
         "heal":3,
         "healPattern":(
             "XXX",
@@ -74,7 +91,7 @@ UnitDB = {
     "heavy": {
         "health":5,
         "cost":1,
-        "penalty":("discard"),
+        "penalty":("discard",),
         "attack":4,
         "attackPattern":(
             "X X",
@@ -92,7 +109,7 @@ UnitDB = {
         "health":5,
         "defense":1,
         "cost":1,
-        "penalty":("resource"),
+        "penalty":("resource",),
         "counter":4,
         "counterPattern":(
             "XXX",
@@ -103,7 +120,7 @@ UnitDB = {
     "plane": {
         "health":4,
         "cost":1,
-        "penalty":("discard"),
+        "penalty":("discard",),
         "attack":4,
         "attackPattern":(
             " S ",
@@ -120,7 +137,7 @@ UnitDB = {
     "bomber": {
         "health":7,
         "cost":2,
-        "penalty":("discard"),
+        "penalty":("discard",),
         "attack":5,
         "attackPattern":(
             "  S  ",
@@ -134,8 +151,8 @@ UnitDB = {
     "factory":{
         "health":8,
         "cost":2,
-        "penalty":("discard"),
-        "generation":("resource"),
+        "penalty":("discard",),
+        "generation":("resource",),
         "generationPattern":(
             "XXX",
             "XSX",
@@ -150,7 +167,7 @@ UnitDB = {
     "research center":{
         "health":7,
         "cost":3,
-        "penalty":("lostTech"),
+        "penalty":("lostTech",),
         "tech":1,
         "constructionPattern":(
             "XXX",

@@ -133,6 +133,7 @@ function useNewGameObject(newGameObject) {
     gameObject = newGameObject;
     currentTurn = gameObject.turn;
     createCardButtons(gameObject.hands[this_player])
+    determineTerritories()
     return
     if (gameObject.intGrid.join(',') !== newGameObject.intGrid.join(',')) {
         gameObject = newGameObject;
@@ -170,7 +171,7 @@ function useNewGameObject(newGameObject) {
         selected = newSelected
     }
     console.log("reinit stuff")
-    determineTerritories()
+    
     regularlyScheduledDrawBoard()
 }
 
