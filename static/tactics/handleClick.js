@@ -15,6 +15,11 @@ let friendlyTraps = []
 let enemyTraps = []
 let friendlyResources = []
 let enemyResources = []
+let potentialAttacks = []
+let potentialHeals = []
+let potentialGeneration = []
+let potentialCounters = []
+let potentialTraps = []
 let stateDataMode = null;
 let tempStateData = null;
 let effectiveResources = {}
@@ -201,6 +206,99 @@ function checkWhatCouldBeClicked(xPos,yPos) {
     y = position[1] + board_y_start;
 
     return x+","+y
+}
+
+let currentKnownHoverX = -1
+let currentKnownHoverY = -1
+
+function checkForHovering(xPos,yPos) {
+    if (tempStateData == null) {
+        currentKnownHoverX = -1
+        currentKnownHoverY = -1
+        potentialAttacks = []
+        potentialHeals = []
+        potentialGeneration = []
+        potentialCounters = []
+        potentialTraps = []
+        return
+    }
+    let position = gridMouse(xPos,yPos);
+
+
+    x = position[0] + board_x_start;
+    y = position[1] + board_y_start;
+
+    if (x >= 0 && y >= 0 && y<gameObject.height && x< gameObject.width) {
+        console.log("in there")
+        if (currentKnownHoverX != x || currentKnownHoverY != y) {
+            console.log("in bounds")
+            currentKnownHoverX = x
+            currentKnownHoverY = y
+
+            potentialAttacks = []
+            potentialHeals = []
+            potentialGeneration = []
+            potentialCounters = []
+            potentialTraps = []
+
+            let pos = [x,y]
+
+            iconCountMap2 = []
+            for (let i = 0; i<gameObject.height; i++) {
+                let layer = []
+                for (let j = 0; j<gameObject.width; j++) {
+                    layer.push(0)
+                }
+                iconCountMap2.push(layer)
+            }
+
+            if ("attack" in UnitDB[tempStateData]) {
+                let points = findPatternPoints(UnitDB[tempStateData]["attackPattern"], pos)
+                for (let point of points) {
+                    potentialAttacks.push(point)
+                    iconCountMap2[point[1]][point[0]] += 1
+                }
+            }
+            if ("heal" in UnitDB[tempStateData]) {
+                let points = findPatternPoints(UnitDB[tempStateData]["healPattern"], pos)
+                for (let point of points) {
+                    potentialHeals.push(point)
+                    iconCountMap2[point[1]][point[0]] += 1
+                }
+            }
+            if ("generation" in UnitDB[tempStateData]) {
+                let points = findPatternPoints(UnitDB[tempStateData]["generationPattern"], pos)
+                for (let point of points) {
+                    potentialGeneration.push(point)
+                    iconCountMap2[point[1]][point[0]] += 1
+                }
+            }
+            if ("counter" in UnitDB[tempStateData]) {
+                let points = findPatternPoints(UnitDB[tempStateData]["counterPattern"], pos)
+                for (let point of points) {
+                    potentialCounters.push(point)
+                    iconCountMap2[point[1]][point[0]] += 1
+                }
+            }
+            if ("trap" in UnitDB[tempStateData]) {
+                let points = findPatternPoints(UnitDB[tempStateData]["trapPattern"], pos)
+                for (let point of points) {
+                    potentialTraps.push(point)
+                    iconCountMap2[point[1]][point[0]] += 1
+                }
+            }
+            drawBoard()
+        }
+    } else {
+        currentKnownHoverX = -1
+        currentKnownHoverY = -1
+        potentialAttacks = []
+        potentialHeals = []
+        potentialGeneration = []
+        potentialCounters = []
+        potentialTraps = []
+    }
+
 }
 
 function handleClick(xPos,yPos) {

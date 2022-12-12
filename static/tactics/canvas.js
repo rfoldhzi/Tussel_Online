@@ -9,6 +9,7 @@ let currentTurn = -1;
 let territoryMap = []
 let territoryNumberCode = []
 let iconCountMap = []
+let iconCountMap2 = [] //Used by potential mouse hover to keep track of icon counts
 let buffedUnits = {}; //Each key is a stat, containing a list of Unit ID's that need a buffed image displayed on them
 let states = {};
 let counter = 0;
@@ -445,9 +446,13 @@ for (let key in statLogos) {
 
 function drawIcon(listOfPositions, icon, currentIconCountMap) {
     for (const position of listOfPositions) {
-        if (iconCountMap[position[1]][position[0]] > 1) {
-            let smallSize = size * Math.pow(0.8, iconCountMap[position[1]][position[0]]-1)
-            let shift = (size - smallSize)/(iconCountMap[position[1]][position[0]] - 1)
+        let stackCount = iconCountMap[position[1]][position[0]]
+        if (tempStateData != null && iconCountMap2.length > 0) {
+            stackCount+=iconCountMap2[position[1]][position[0]]
+        }
+        if (stackCount > 1) {
+            let smallSize = size * Math.pow(0.8, stackCount-1)
+            let shift = (size - smallSize)/(stackCount - 1)
             let i = currentIconCountMap[position[1]][position[0]]
             context.drawImage(icon, size * position[0] + x_offset + shift*i, size * position[1] + y_offset + shift*i, smallSize, smallSize);
             currentIconCountMap[position[1]][position[0]] += 1
@@ -472,7 +477,17 @@ function drawActionIcons() {
     drawIcon(enemyTraps, RedTrap,currentIconCountMap)
     drawIcon(friendlyResources, YellowPentagon,currentIconCountMap)
     drawIcon(enemyResources, PurplePentagon,currentIconCountMap)
+    drawIcon(potentialAttacks, RedX,currentIconCountMap)
+    drawIcon(potentialHeals, GreenT,currentIconCountMap)
+    drawIcon(potentialGeneration, YellowPentagon,currentIconCountMap)
+    drawIcon(potentialCounters, BlueShield,currentIconCountMap)
+    drawIcon(potentialTraps, BlueTrap,currentIconCountMap)
 
+    if (tempStateData != null && currentKnownHoverX != -1 && currentKnownHoverY != -1) {
+        let img = getUnitImage(this_player, tempStateData);
+        let multiplier = getMultiplier(tempStateData, "");
+        context.drawImage(img, size * currentKnownHoverX + x_offset + size * (1 - multiplier) * .5, size * currentKnownHoverY + y_offset + size * (1 - multiplier) * .5, size * multiplier, size * multiplier);
+    }
 
     if (selected != null && "multibuild" in selected.abilities) {
         // Show many "stacked" icons when a unit has multibuild
@@ -1385,6 +1400,9 @@ let mouse_move = function (event) {
             CurrentTechHover = null;
             drawBoard()
         }
+        let mouseX = parseInt(event.clientX);
+        let mouseY = parseInt(event.clientY);
+        checkForHovering(mouseX,mouseY)
         return;
     }
 
