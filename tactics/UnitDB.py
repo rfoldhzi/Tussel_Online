@@ -49,7 +49,7 @@ UnitDB = {
             "XXX",
         ),
     },
-    "seamine": {
+    "sea mine": {
         "health":2,
         "trap":5,
         "cost":0,
@@ -154,9 +154,9 @@ UnitDB = {
         "penalty":("discard",),
         "generation":("resource",),
         "generationPattern":(
-            "XXX",
-            "XSX",
-            "XXX",
+            "  X  ",
+            "XXSXX",
+            "  X  ",
         ),
         "constructionPattern":(
             "XXX",

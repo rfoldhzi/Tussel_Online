@@ -124,9 +124,11 @@ function buildButtonClicked(btn) {
         let color = "#EE5555"
         if (tempStateData == unitName) {
             color = "#6464FF"
+        } else if (gameObject.currentPlayerTurn != this_player)  {
+            color = "#404040"
         } else if (checkIfAffordable(unitName))  {
             color = "#EEEEEE"
-        }
+        } 
         btn.color = color
     }
 

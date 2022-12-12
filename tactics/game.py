@@ -144,6 +144,8 @@ class Game:
         print("new resources",self.resources[thisPlayer])
 
         self.turn += 1
+        #set it to the next player's turn
+        self.currentPlayerTurn = self.playerOrder[(self.playerOrder.index(self.currentPlayerTurn)+1)%len(self.playerOrder)] 
             
     def placeUnit(self, thisPlayer: str, unitName: str, pos: tuple):
 

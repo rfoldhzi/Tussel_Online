@@ -494,7 +494,9 @@ function getEffectiveResources(unitToIgnore) {
 }
 
 function checkIfAffordable(unitName) {
-    let cost = getCost(unitName);
+    let cost = UnitDB[unitName]["cost"]
+    return gameObject.resources[this_player] >= cost
+    //let cost = getCost(unitName);
     for (let r in cost) {
         if (effectiveResources[r] < cost[r]) {
             return false;
@@ -1676,12 +1678,18 @@ function createCardButtons(hand) {
     }
 
     buildButtons = []
-    let color = (255,255,255)
+    let color = "#FFFFFF"
+    if (gameObject.currentPlayerTurn != this_player) {
+        color = "#404040"
+    }
     for (let card of hand) {
         let newBuildButton = new Button(0, btnHeightStart + currentButtonHeight, btnSize, btnSize, color, "", buildButtonClicked);
         newBuildButton.name = card
         newBuildButton.parameters = newBuildButton;
         newBuildButton.addImage(getUnitImage(this_player, card));
+        if (!checkIfAffordable(card)) {
+            newBuildButton.color = "#EE5555"
+        }
         buildButtons.push(newBuildButton);
         //i++;
         currentButtonHeight += btnSize * 1.2;
