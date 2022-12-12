@@ -188,7 +188,7 @@ class Game:
             if player != thisPlayer:
                 for unit in self.units[player]:
                     if "trap" in UnitDB[unit.name]:
-                        trapPoints = findPatternPoints(UnitDB[unitName]["trapPattern"],unit.pos)
+                        trapPoints = findPatternPoints(UnitDB[unit.name]["trapPattern"],unit.pos)
                         if pos in trapPoints:
                             newUnit.health -= UnitDB[unitName]["trap"] #TODO Defense
 

@@ -1716,7 +1716,7 @@ function findPatternPoints(pattern, pos) {
     for (let y=0; y<pattern.length; y++) {
         for (let x=0; x<pattern[0].length; x++) {
             if (pattern[y][x] == 'X') {
-                if (x >= 0 && x < gameObject.width && y >= 0 && y < gameObject.height) {
+                if (x+offsetX >= 0 && x+offsetX < gameObject.width && y+offsetY >= 0 && y+offsetY < gameObject.height) {
                     points.push([x+offsetX,y+offsetY])
                 }
             }
