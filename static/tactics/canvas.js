@@ -400,12 +400,24 @@ let Beaker = new Image(40, 40)
 Beaker.src = '/static/assets/Beaker.png'
 let YellowPentagon = new Image(40, 40)
 YellowPentagon.src = '/static/assets/SupplyPentagon.png'
+/*
 let CloakArrow = new Image(40, 40)
 CloakArrow.src = '/static/assets/CloakArrow.png'
 let DecloakArrow = new Image(40, 40)
 DecloakArrow.src = '/static/assets/DecloakArrow.png'
 let UpgradeArrow = new Image(40, 40)
 UpgradeArrow.src = '/static/assets/UpgradeArrow.png'
+*/
+let PurplePentagon = new Image(64, 64)
+PurplePentagon.src = '/static/assets/PurplePentagon.png'
+let BlueShield = new Image(64, 64)
+BlueShield.src = '/static/assets/BlueShield.png'
+let OrangeShield = new Image(64, 64)
+OrangeShield.src = '/static/assets/OrangeShield.png'
+let BlueTrap = new Image(64, 64)
+BlueTrap.src = '/static/assets/BlueTrap.png'
+let RedTrap = new Image(64, 64)
+RedTrap.src = '/static/assets/RedTrap.png'
 
 let buffImages = {
     "attack": new Image(40,40),
@@ -431,6 +443,20 @@ for (let key in statLogos) {
     statLogos[key].src = '/static/assets/statLogos/'+key+'.png'
 }
 
+function drawIcon(listOfPositions, icon, currentIconCountMap) {
+    for (const position of listOfPositions) {
+        if (iconCountMap[position[1]][position[0]] > 1) {
+            let smallSize = size * Math.pow(0.8, iconCountMap[position[1]][position[0]]-1)
+            let shift = (size - smallSize)/(iconCountMap[position[1]][position[0]] - 1)
+            let i = currentIconCountMap[position[1]][position[0]]
+            context.drawImage(icon, size * position[0] + x_offset + shift*i, size * position[1] + y_offset + shift*i, smallSize, smallSize);
+            currentIconCountMap[position[1]][position[0]] += 1
+        } else {
+            context.drawImage(icon, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+        }
+    }    
+}
+
 function drawActionIcons() {
     let currentIconCountMap = []
     for (let i = 0; i<gameObject.height; i++) {
@@ -440,18 +466,14 @@ function drawActionIcons() {
         }
         currentIconCountMap.push(layer)
     }
-    for (const position of moveCircles) {
-        //console.log(position);
-        if (iconCountMap[position[1]][position[0]] > 1) {
-            let smallSize = size * Math.pow(0.8, iconCountMap[position[1]][position[0]]-1)
-            let shift = (size - smallSize)/(iconCountMap[position[1]][position[0]] - 1)
-            let i = currentIconCountMap[position[1]][position[0]]
-            context.drawImage(BlueCircle, size * position[0] + x_offset + shift*i, size * position[1] + y_offset + shift*i, smallSize, smallSize);
-            currentIconCountMap[position[1]][position[0]] += 1
-        } else {
-            context.drawImage(BlueCircle, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
-        }
-    }
+    drawIcon(friendlyCounters, BlueShield,currentIconCountMap)
+    drawIcon(enemyCounters, OrangeShield,currentIconCountMap)
+    drawIcon(friendlyTraps, BlueTrap,currentIconCountMap)
+    drawIcon(enemyTraps, RedTrap,currentIconCountMap)
+    drawIcon(friendlyResources, YellowPentagon,currentIconCountMap)
+    drawIcon(enemyResources, PurplePentagon,currentIconCountMap)
+
+
     if (selected != null && "multibuild" in selected.abilities) {
         // Show many "stacked" icons when a unit has multibuild
         let buildCount = selected.abilities.multibuild + 1
@@ -510,21 +532,7 @@ function drawActionIcons() {
         context.fillText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
     }
     context.fillStyle = "#FF0"
-    for (const position of possibleResupplies) {
-        if (iconCountMap[position[1]][position[0]] > 1) {
-            let smallSize = size * Math.pow(0.8, iconCountMap[position[1]][position[0]]-1)
-            let shift = (size - smallSize)/(iconCountMap[position[1]][position[0]] - 1)
-            let i = currentIconCountMap[position[1]][position[0]]
-            context.drawImage(YellowPentagon, size * position[0] + x_offset + shift*i, size * position[1] + y_offset + shift*i, smallSize, smallSize);
-            currentIconCountMap[position[1]][position[0]] += 1
-        } else {
-            context.drawImage(YellowPentagon, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
-        }
-        //console.log(position);
-        ///context.drawImage(YellowPentagon, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
-        //context.strokeText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
-        //context.fillText(position[2], size * position[0] + size + x_offset, size * position[1] + size - fontSize + y_offset);
-    }
+
     for (const position of transportSpots) {
         //console.log(position);
         context.drawImage(GreenCircle, size * position[0] + x_offset, size * position[1] + y_offset, size, size);

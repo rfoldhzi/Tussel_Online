@@ -766,8 +766,12 @@ function determineTerritories() {
             territoryMap[unit.pos[1]][unit.pos[0]] = player
         }
     }
-    possibleResupplies = []
-    moveCircles = []
+    friendlyCounters = []
+    enemyCounters = []
+    friendlyTraps = []
+    enemyTraps = []
+    friendlyResources = []
+    enemyResources = []
     for (const player in gameObject.units) {
         for (const unit of gameObject.units[player]) {
             if ("generation" in UnitDB[unit.name]) {
@@ -776,8 +780,11 @@ function determineTerritories() {
                     if (typeof(territoryMap[point[1]][point[0]])=="string") {
                         continue
                     } 
-                    //territoryMap[point[1]][point[0]] = 6
-                    possibleResupplies.push(point)
+                    if (player == this_player) {
+                        friendlyResources.push(point)
+                    } else {
+                        enemyResources.push(point)
+                    }
                     iconCountMap[point[1]][point[0]] += 1
                 }
             }
@@ -788,7 +795,25 @@ function determineTerritories() {
                         continue
                     } 
                     //territoryMap[point[1]][point[0]] = 1
-                    moveCircles.push(point)
+                    if (player == this_player) {
+                        friendlyCounters.push(point)
+                    } else {
+                        enemyCounters.push(point)
+                    }
+                    iconCountMap[point[1]][point[0]] += 1
+                }
+            }
+            if ("trap" in UnitDB[unit.name]) {
+                let points = findPatternPoints(UnitDB[unit.name]["trapPattern"], unit.pos)
+                for (let point of points) {
+                    if (typeof(territoryMap[point[1]][point[0]])=="string") {
+                        continue
+                    } 
+                    if (player == this_player) {
+                        friendlyTraps.push(point)
+                    } else {
+                        enemyTraps.push(point)
+                    }
                     iconCountMap[point[1]][point[0]] += 1
                 }
             }
