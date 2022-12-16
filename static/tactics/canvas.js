@@ -415,6 +415,8 @@ let BlueShield = new Image(64, 64)
 BlueShield.src = '/static/assets/BlueShield.png'
 let OrangeShield = new Image(64, 64)
 OrangeShield.src = '/static/assets/OrangeShield.png'
+let GrayShield = new Image(64, 64)
+GrayShield.src = '/static/assets/GrayShield.png'
 let BlueTrap = new Image(64, 64)
 BlueTrap.src = '/static/assets/BlueTrap.png'
 let RedTrap = new Image(64, 64)
@@ -473,6 +475,7 @@ function drawActionIcons() {
     }
     drawIcon(friendlyCounters, BlueShield,currentIconCountMap)
     drawIcon(enemyCounters, OrangeShield,currentIconCountMap)
+    drawIcon(neutralCounters, GrayShield,currentIconCountMap)
     drawIcon(friendlyTraps, BlueTrap,currentIconCountMap)
     drawIcon(enemyTraps, RedTrap,currentIconCountMap)
     drawIcon(friendlyResources, YellowPentagon,currentIconCountMap)

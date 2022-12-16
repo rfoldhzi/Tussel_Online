@@ -770,6 +770,7 @@ function determineTerritories() {
     }
     friendlyCounters = []
     enemyCounters = []
+    neutralCounters = []
     friendlyTraps = []
     enemyTraps = []
     friendlyResources = []
@@ -800,8 +801,32 @@ function determineTerritories() {
                     if (player == this_player) {
                         friendlyCounters.push(point)
                     } else {
-                        enemyCounters.push(point)
+                        
+                        console.log("STEP 0")
+                        if (tempStateData) {
+                            if ("attackPattern" in UnitDB[tempStateData]) {
+                                let start = findStartSpot(UnitDB[tempStateData]["attackPattern"])
+                                //if (unit.pos[0] >= point[0]-(UnitDB[tempStateData]["attackPattern"][0].length-start[0]-1)) {
+                                if (unit.pos[0] >= point[0]-(start[0]) 
+                                    && unit.pos[0] < point[0]+(UnitDB[tempStateData]["attackPattern"][0].length-start[0]) 
+                                    && unit.pos[1] >= point[1]-(start[1]) 
+                                    && unit.pos[1] < point[1]+(UnitDB[tempStateData]["attackPattern"][1].length-start[1]) 
+                                    ) {
+                                        if (UnitDB[tempStateData]["attackPattern"][unit.pos[1]-point[1]+start[1]][unit.pos[0]-point[0]+start[0]]=="X") {
+                                            enemyCounters.push(point)
+                                            iconCountMap[point[1]][point[0]] += 1
+                                            continue
+                                        }
+                                    
+                                }
+                            }
+                            neutralCounters.push(point)
+                        } else {
+                            enemyCounters.push(point)
+                        }
+                        
                     }
+                    
                     iconCountMap[point[1]][point[0]] += 1
                 }
             }

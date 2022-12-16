@@ -11,6 +11,7 @@ let possibleHeals = []
 let possibleResupplies = []
 let friendlyCounters = []
 let enemyCounters = []
+let neutralCounters = []
 let friendlyTraps = []
 let enemyTraps = []
 let friendlyResources = []
@@ -133,6 +134,8 @@ function buildButtonClicked(btn) {
     }
 
     btn.color = "#00FFCC";
+
+    determineTerritories()
     
 
     drawBoard();
@@ -231,9 +234,7 @@ function checkForHovering(xPos,yPos) {
     y = position[1] + board_y_start;
 
     if (x >= 0 && y >= 0 && y<gameObject.height && x< gameObject.width) {
-        console.log("in there")
         if (currentKnownHoverX != x || currentKnownHoverY != y) {
-            console.log("in bounds")
             currentKnownHoverX = x
             currentKnownHoverY = y
 
