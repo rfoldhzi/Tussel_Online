@@ -83,6 +83,19 @@ input {
     transform: translateY(0);
 }
 
+.blue_button {
+    background-color: #241ced;
+}
+.blue_button:hover,
+.blue_button:focus {
+    background-color: #6661f0;
+    box-shadow: rgba(0, 0, 0, 0.1) 0 4px 12px;
+}
+.blue_button:active {
+    background-color: #241ced;
+}
+
+
 .v2 {
     background-color: #292929;
     color: #e4e4e4;

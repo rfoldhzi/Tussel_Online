@@ -18,6 +18,12 @@
                     Game {{ game_name }}</button>
                 </div>
             {% endfor %}
+            {% for game_name in gameList2 %}
+                <div>
+                    <button class="cool_button blue_button" onclick="location.href='/game2/{{ game_name }}'" type="button">
+                    Game {{ game_name }}</button>
+                </div>
+            {% endfor %}
             <div>
                 <button class="cool_button v2" onclick="location.href='/newgame/'" type="button">New Game</button>
             </div>

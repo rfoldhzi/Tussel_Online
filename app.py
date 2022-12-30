@@ -139,8 +139,8 @@ def login():
         form=form,
         )
 
-def getAllgameIDs():
-    filenames = next(walk(Path("savefiles/games/")), (None, None, []))[2]  # [] if no file
+def getAllgameIDs(path="savefiles/games/"):
+    filenames = next(walk(Path(path)), (None, None, []))[2]  # [] if no file
     l = []
     for fileName in filenames:
         if fileName == ".gitignore":
@@ -157,11 +157,19 @@ def findGamesPlayerIsIn(username):
                 output.append(game_id)
     return output
 
+def findTacticalGamesPlayerIsIn(username):
+    gameList = getAllgameIDs(path="savefiles/tactics_games/")
+    output = []
+    for game_id in gameList:
+        with open(Path("savefiles/tactics_games/game_%s.txt" % game_id), "r+") as text_file:
+            if text_file.read().find(username.lower()) != -1:
+                output.append(game_id)
+    return output
 
 @app.route('/find_game')
 @login_required
 def find_game():
-    return render_template('gameSelection.html', gameList = findGamesPlayerIsIn(current_user.username))
+    return render_template('gameSelection.html', gameList = findGamesPlayerIsIn(current_user.username), gameList2 = findTacticalGamesPlayerIsIn(current_user.username))
 
 @app.route('/game/<game_id>')
 @login_required
