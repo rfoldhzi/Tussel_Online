@@ -458,8 +458,16 @@ function drawIcon(listOfPositions, icon, currentIconCountMap) {
             let i = currentIconCountMap[position[1]][position[0]]
             context.drawImage(icon, size * position[0] + x_offset + shift*i, size * position[1] + y_offset + shift*i, smallSize, smallSize);
             currentIconCountMap[position[1]][position[0]] += 1
+            if (position.length == 3) {
+                context.strokeText(position[2], size * position[0] + smallSize/2 + x_offset + shift*i, size * position[1] + smallSize/2 + fontSize/3 + y_offset + shift*i);
+                context.fillText(position[2], size * position[0] + smallSize/2 + x_offset + shift*i, size * position[1] + smallSize/2 + fontSize/3 + y_offset + shift*i);
+            }
         } else {
             context.drawImage(icon, size * position[0] + x_offset, size * position[1] + y_offset, size, size);
+            if (position.length == 3) {
+                context.strokeText(position[2], size * position[0] + size/2 + x_offset, size * position[1] + size/2 + fontSize/3 + y_offset);
+                context.fillText(position[2], size * position[0] + size/2 + x_offset, size * position[1] + size/2 + fontSize/3 + y_offset);
+            }
         }
     }    
 }
@@ -473,18 +481,31 @@ function drawActionIcons() {
         }
         currentIconCountMap.push(layer)
     }
+    context.textAlign = "center";
+    fontSize = Math.floor(size / 3);
+    context.font = fontSize + "px Arial";
+    context.strokeStyle = 'black';
+    context.fillStyle = "#00A8F3"
     drawIcon(friendlyCounters, BlueShield,currentIconCountMap)
+    context.fillStyle = "#FF7F27"
     drawIcon(enemyCounters, OrangeShield,currentIconCountMap)
+    context.fillStyle = "#949494"
     drawIcon(neutralCounters, GrayShield,currentIconCountMap)
+    context.fillStyle = "#3F48CC"
     drawIcon(friendlyTraps, BlueTrap,currentIconCountMap)
+    context.fillStyle = "#88001B"
     drawIcon(enemyTraps, RedTrap,currentIconCountMap)
     drawIcon(friendlyResources, YellowPentagon,currentIconCountMap)
     drawIcon(enemyResources, PurplePentagon,currentIconCountMap)
-    drawIcon(potentialAttacks, RedX,currentIconCountMap)
+    context.fillStyle = "#1CCE3D"
     drawIcon(potentialHeals, GreenT,currentIconCountMap)
     drawIcon(potentialGeneration, YellowPentagon,currentIconCountMap)
+    context.fillStyle = "#00A8F3"
     drawIcon(potentialCounters, BlueShield,currentIconCountMap)
+    context.fillStyle = "#3F48CC"
     drawIcon(potentialTraps, BlueTrap,currentIconCountMap)
+    context.fillStyle = "#F00"
+    drawIcon(potentialAttacks, RedX,currentIconCountMap)
 
     if (tempStateData != null && currentKnownHoverX != -1 && currentKnownHoverY != -1) {
         let img = getUnitImage(this_player, tempStateData);

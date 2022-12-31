@@ -259,6 +259,7 @@ function checkForHovering(xPos,yPos) {
                 let points = findPatternPoints(UnitDB[tempStateData]["attackPattern"], pos)
                 for (let point of points) {
                     potentialAttacks.push(point)
+                    point.push(UnitDB[tempStateData]["attack"])
                     iconCountMap2[point[1]][point[0]] += 1
                 }
             }
@@ -266,6 +267,7 @@ function checkForHovering(xPos,yPos) {
                 let points = findPatternPoints(UnitDB[tempStateData]["healPattern"], pos)
                 for (let point of points) {
                     potentialHeals.push(point)
+                    point.push(UnitDB[tempStateData]["heal"])
                     iconCountMap2[point[1]][point[0]] += 1
                 }
             }
@@ -280,6 +282,7 @@ function checkForHovering(xPos,yPos) {
                 let points = findPatternPoints(UnitDB[tempStateData]["counterPattern"], pos)
                 for (let point of points) {
                     potentialCounters.push(point)
+                    point.push(UnitDB[tempStateData]["counter"])
                     iconCountMap2[point[1]][point[0]] += 1
                 }
             }
@@ -287,6 +290,7 @@ function checkForHovering(xPos,yPos) {
                 let points = findPatternPoints(UnitDB[tempStateData]["trapPattern"], pos)
                 for (let point of points) {
                     potentialTraps.push(point)
+                    point.push(UnitDB[tempStateData]["trap"])
                     iconCountMap2[point[1]][point[0]] += 1
                 }
             }

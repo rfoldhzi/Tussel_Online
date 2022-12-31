@@ -814,6 +814,7 @@ function determineTerritories() {
                                     ) {
                                         if (UnitDB[tempStateData]["attackPattern"][unit.pos[1]-point[1]+start[1]][unit.pos[0]-point[0]+start[0]]=="X") {
                                             enemyCounters.push(point)
+                                            point.push(UnitDB[unit.name]["counter"])
                                             iconCountMap[point[1]][point[0]] += 1
                                             continue
                                         }
@@ -826,6 +827,7 @@ function determineTerritories() {
                         }
                         
                     }
+                    point.push(UnitDB[unit.name]["counter"])
                     
                     iconCountMap[point[1]][point[0]] += 1
                 }
@@ -841,6 +843,7 @@ function determineTerritories() {
                     } else {
                         enemyTraps.push(point)
                     }
+                    point.push(UnitDB[unit.name]["trap"])
                     iconCountMap[point[1]][point[0]] += 1
                 }
             }
