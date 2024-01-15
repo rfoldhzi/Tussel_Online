@@ -1,4 +1,4 @@
-UnitDB = {
+let UnitDB = {
     'soldier':{
         'cost': {'gold':20},
     },
@@ -1956,7 +1956,7 @@ UnitDB = {
     },
 }
 
-TechDB = {
+let TechDB = {
     #RED
     'bionics':{
         'cost': 20,
