@@ -427,7 +427,7 @@ let UnitDB = {
         'type': 'building',
         'health': 10,
         'defense': 1,
-        #'abilities':{'costly':1.5},
+        //'abilities':{'costly':1.5},
         'resourceGen':{
             "gold": 5,
         }
@@ -536,7 +536,7 @@ let UnitDB = {
         'type': 'building',
         'health': 10,
         'defense': 1,
-        #'abilities':{'costly':1.5},
+        //'abilities':{'costly':1.5},
         'resourceGen':{
             "gold": 0,
             "metal": 0,
@@ -558,11 +558,11 @@ let UnitDB = {
     },
     'factory':{
         'cost': {'metal':25},
-        #'possibleBuilds': ['bot','minibot'],
+        //'possibleBuilds': ['bot','minibot'],
         'possibleStates': ['resources'],
         'type': 'building',
         'health': 10,
-        #'abilities':{'costly':1.5},
+        //'abilities':{'costly':1.5},
         'resourceGen':{
             "gold": 0,
             "metal": 5,
@@ -599,7 +599,7 @@ let UnitDB = {
     },
     'barracks':{
         'cost': {'metal':50},
-        #'possibleBuilds': ['soldier','scout','heavy','defender','sniper','rocket','brute','medic'],
+        //'possibleBuilds': ['soldier','scout','heavy','defender','sniper','rocket','brute','medic'],
         'possibleBuilds': ['soldier','scout','heavy','medic'],
         'possibleStates': ['build'],
         'type': 'building',
@@ -643,7 +643,7 @@ let UnitDB = {
     },
     'tank factory':{
         'cost': {'metal':100},
-        #'possibleBuilds': ['tank','heavy tank','artillery','jeep','crane','mobile fortress'],
+        //'possibleBuilds': ['tank','heavy tank','artillery','jeep','crane','mobile fortress'],
         'possibleBuilds': ['tank','jeep','crane'],
         'possibleStates': ['build'],
         'type': 'building',
@@ -741,7 +741,7 @@ let UnitDB = {
     },
     'airport':{
         'cost': {'gold':50, 'metal':200},
-        #'possibleBuilds': ['plane','helicopter','bomber'],
+        //'possibleBuilds': ['plane','helicopter','bomber'],
         'possibleBuilds': ['plane'],
         'possibleStates': ['build'],
         'type': 'building',
@@ -756,7 +756,7 @@ let UnitDB = {
         'possibleStates': ['move','attack'],
         'type': 'aircraft',
         'health':15,
-        #'speed':3,
+        //'speed':3,
         'speed':2,
         'range':2,
         'defense':1,
@@ -764,7 +764,7 @@ let UnitDB = {
     },
     'helicopter':{
         'cost': {'gold':100, 'metal':50, 'energy':20},
-        #'possibleBuilds': ['soldier','construction worker'],
+        //'possibleBuilds': ['soldier','construction worker'],
         'possibleStates': ['move','attack','transport','resupply'],
         'type': 'aircraft',
         'speed':2,
@@ -777,7 +777,7 @@ let UnitDB = {
     },
     'chinook':{
         'cost': {'gold':100, 'metal':100, 'energy':20},
-        #'possibleBuilds': ['tank','crane','heavy'],
+        //'possibleBuilds': ['tank','crane','heavy'],
         'possibleStates': ['move','attack','transport','resupply'],
         'type': 'aircraft',
         'speed':2,
@@ -890,7 +890,7 @@ let UnitDB = {
     'transport boat':{
         'cost': {'gold':25, 'metal':25},
         'possibleStates': ['move','resources','transport'],
-        #'possibleBuilds': ['soldier','construction worker'],
+        //'possibleBuilds': ['soldier','construction worker'],
         'type': 'boat',
         'population':2,
         'abilities':{'transport':['trooper','bot']},
@@ -1062,7 +1062,7 @@ let UnitDB = {
     },
     'agent':{
         'cost': {'gold':50, 'energy':20},
-        #'possibleBuilds': ['experimental facility', 'hall of heroes'],
+        //'possibleBuilds': ['experimental facility', 'hall of heroes'],
         'possibleBuilds': ['hall of heroes'],
         'possibleStates': ['attack','move', 'build'],
         'resourceGen':{
@@ -1083,7 +1083,7 @@ let UnitDB = {
     },
     'experimental facility':{
         'cost': {'gold':200, 'metal':100, 'energy':200},
-        #'possibleBuilds': ['sonic cannon', 'ultrabot', 'invinsa tank'],
+        //'possibleBuilds': ['sonic cannon', 'ultrabot', 'invinsa tank'],
         'possibleBuilds': [],
         'possibleStates': ['build'],
         'type': 'building',
@@ -1333,7 +1333,7 @@ let UnitDB = {
     },
 
 
-    #Wild Life Faction
+    //Wild Life Faction
     'tree':{
         'cost': {'gold':50, 'metal':50, 'energy':50},
         'possibleBuilds': ['cave', 'shrub','pond','thorns'],
@@ -1529,7 +1529,7 @@ let UnitDB = {
         'defense':3,
         'abilities':{'onlyHit':['building','vehicle','boat']},
     },
-    #Bots Faction
+    //Bots Faction
     'bot fortress':{
         'cost': {'gold':0, 'metal':150, 'energy':150},
         'possibleBuilds': ['servitor'],
@@ -1632,7 +1632,7 @@ let UnitDB = {
             "gold": 0
         }
     },
-    #Plant Faction
+    //Plant Faction
     'plant base':{
         'cost': {'energy':200},
         'possibleBuilds': ['walking roots'],
@@ -1809,7 +1809,7 @@ let UnitDB = {
         }
     },
 
-    #Glob Faction
+    //Glob Faction
     'mothership':{
         'cost': {'energy':200},
         'possibleBuilds': ['glob lab','alien fighter','alien transport','mining vessel','alien power generator'],
@@ -1849,7 +1849,7 @@ let UnitDB = {
     'alien foot soldier':{
         'cost': {'gold':20},
         'resourceGen':{"gold": 0}
-        #Maybe multi-attack ability
+        //Maybe multi-attack ability
     },
 
     'alien fighter':{
@@ -1957,7 +1957,7 @@ let UnitDB = {
 }
 
 let TechDB = {
-    #RED
+    //RED
     'bionics':{
         'cost': 20,
         'time': 1,
@@ -1968,8 +1968,8 @@ let TechDB = {
     'experimental facility':{
         'cost': 20,
         'time': 1,
-        #'ability': [['unlock build', 'agent', 'experimental facility']],
-        #'ability': [['unlock build', 'metropolis', 'experimental facility']],
+        //'ability': [['unlock build', 'agent', 'experimental facility']],
+        //'ability': [['unlock build', 'metropolis', 'experimental facility']],
         'ability': [['unlock upgrade', 'crane', 'experimental facility']],
         'unlocks': ['sonic cannon','ultrabot','invinsa tank'],
         'text': "Unlocks the Experimental Facility at the Crane.",
@@ -2158,7 +2158,7 @@ let TechDB = {
         'quote':"Going to the gym works too...",
     },
 
-    #Blue
+    //Blue
     'time travel':{
         'cost': 20,
         'time': 1,
@@ -2324,7 +2324,7 @@ let TechDB = {
         'quote':"Not a slime, a friend",
     },
     
-    #Green
+    //Green
     'recruitment':{
         'cost': 20,
         'time': 1,
@@ -2504,7 +2504,7 @@ let TechDB = {
         'quote': "Here comes the general",
     },
     
-    #Yellow
+    //Yellow
     'armament':{
         'cost': 20,
         'time': 1,
@@ -2781,7 +2781,7 @@ let TechDB = {
         'unlocks': [],
 	    'quote': "Verticle launch platforms engage",
     },
-    #Orange
+    //Orange
     'aviation':{
         'cost': 40,
         'time': 2,
@@ -2926,12 +2926,12 @@ let TechDB = {
         'quote': "They'll never see it coming",
     },
     
-    #Purple
+    //Purple
     'improvements':{
         'cost': 20,
         'time': 1,
         'ability': [],
-        #'unlocks': ['the city', 'miscellaneous upgrades'],
+        //'unlocks': ['the city', 'miscellaneous upgrades'],
         'unlocks': ['bionics','time travel', 'miscellaneous upgrades'],
         'quote':"There is always room for improvement",
     },
@@ -2940,8 +2940,8 @@ let TechDB = {
         'time': 1,
         'ability': [],
         'unlocks': ['bionics','time travel'],
-        #'ability': [['unlock build', 'crane', 'metropolis']],
-        #'unlocks': ['bionics','city planning','time travel'],
+        //'ability': [['unlock build', 'crane', 'metropolis']],
+        //'unlocks': ['bionics','city planning','time travel'],
     },
     'city planning':{
         'cost': 5,
