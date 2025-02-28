@@ -62,9 +62,9 @@ function defaultButtonMenu() {
 
 //Flip the stored research board variables with the real ones
 function flipBoardVariables() {
-    let offsetX_temp = x_offset;
-    let offsetY_temp = y_offset;
-    let size_temp = size;
+    let offsetX_temp = x_offset+0;
+    let offsetY_temp = y_offset+0;
+    let size_temp = size+0;
     x_offset = researchOffsetXStored;
     y_offset = researchOffsetYStored;
     size = researchOffsetSizeStored;
