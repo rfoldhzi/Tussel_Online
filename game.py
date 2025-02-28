@@ -1438,6 +1438,23 @@ class Game:
 
         with open(Path("savefiles/games/game_%s.txt" % self.id), 'w') as f:
             f.write(self.getJSON())
+        
+        clearAndReWrite = False
+        
+        with open(Path("savefiles/games/game_%s.txt" % self.id), 'r') as f:
+            try:
+                if (f.read() != self.getJSON()):
+                    clearAndReWrite = True
+            except:
+                print("An exception occurred")
+                clearAndReWrite = True
+        
+        if clearAndReWrite:
+            with open(Path("savefiles/games/game_%s.txt" % self.id), 'r+') as f:
+                f.truncate(0)
+            with open(Path("savefiles/games/game_%s.txt" % self.id), 'w') as f:
+                f.write(self.getJSON())
+            print("REQ WROTE THE DEAL")
     
     def newUnit(self, pos = [0,0], name = 'soldier', parent= None, score = -1):
         self.currentUnitID += 1
