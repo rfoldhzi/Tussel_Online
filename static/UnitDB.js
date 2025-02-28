@@ -870,7 +870,7 @@ let UnitDB = {
     'naval defense platform':{
         'cost': {'gold':150 ,'metal':200, 'energy':50},
         'possibleStates': ['attack','build'],
-        'possibleBuilds': ['mine layer, speed boat'],
+        'possibleBuilds': ['mine layer', 'speed boat'],
         'type': 'building',
         'attack': 3.5,
         'defense': 3,
